@@ -1,0 +1,478 @@
+cmake_minimum_required(VERSION 3.12)
+
+# include(cmake/arm-gcc.6.2.inc)
+
+set(ARM_MCU "samd20j18")
+
+project(MyProject C CXX ASM)
+
+set(target_name ${PROJECT_NAME})
+
+set(elf_file ${target_name}-${ARM_MCU}.elf)
+set(map_file ${target_name}-${ARM_MCU}.map)
+set(hex_file ${target_name}-${ARM_MCU}.hex)
+set(lst_file ${target_name}-${ARM_MCU}.lst)
+
+# create elf file
+add_executable(
+    ${elf_file}
+
+    Emerald.cpp
+)
+
+set_target_properties(
+    ${elf_file}
+
+    PROPERTIES
+
+        C_STANDARD   11
+        C_STANDARD_REQUIRED TRUE
+        C_EXTENSIONS FALSE
+
+        CXX_STANDARD 11
+        CXX_STANDARD_REQUIRED TRUE
+        CXX_EXTENSIONS FALSE
+
+        INTERPROCEDURAL_OPTIMIZATION FALSE      # This disables LTO, (Which is default off)
+
+	LINK_FLAGS "-mcpu=cortex-m0plus -mthumb -mtune=cortex-m0plus -Os -T${CMAKE_SOURCE_DIR}/cmsis/linkerScripts/samd20j18_flash.ld -Wl,--gc-sections -Wl,-Map=${map_file} -Xlinker --defsym=STACK_SIZE=0x1000"
+)
+
+target_sources(
+    ${elf_file}
+
+    PRIVATE
+        ../shared/firmware/source/ApplicationLayer/Advice.cpp
+        ../shared/firmware/source/ApplicationLayer/AdviceState_AdviceDone.cpp
+        ../shared/firmware/source/ApplicationLayer/AdviceState_MeasureSkin.cpp
+        ../shared/firmware/source/ApplicationLayer/AdviceState_ShowAdvice.cpp
+        ../shared/firmware/source/ApplicationLayer/AdviceState_ShowSkinTooDark.cpp
+        ../shared/firmware/source/ApplicationLayer/AdviceState_WaitBeforeMeasure.cpp
+        ../shared/firmware/source/ApplicationLayer/AdviceState_WaitForSkin.cpp
+        ../shared/firmware/source/ApplicationLayer/AirOutChecker.cpp
+        ../shared/firmware/source/ApplicationLayer/Attachment.cpp
+        ../shared/firmware/source/ApplicationLayer/AttachmentData.cpp
+        ../shared/firmware/source/ApplicationLayer/BarFluenceLevelVisualizer.cpp
+        ../shared/firmware/source/ApplicationLayer/ChargeLevel.cpp
+        ../shared/firmware/source/ApplicationLayer/ChargeLevelState_Charging.cpp
+        ../shared/firmware/source/ApplicationLayer/ChargeLevelState_Discharging.cpp
+        ../shared/firmware/source/ApplicationLayer/ChargeLevelState_NotInUse.cpp
+        ../shared/firmware/source/ApplicationLayer/ChargeLevelState_Wait.cpp
+        ../shared/firmware/source/ApplicationLayer/ChargeLevelState.cpp
+        ../shared/firmware/source/ApplicationLayer/CutOffTimes.cpp
+        ../shared/firmware/source/ApplicationLayer/DeltaChecker.cpp
+        ../shared/firmware/source/ApplicationLayer/ErrorHandler.cpp
+        ../shared/firmware/source/ApplicationLayer/FluenceLevelVisualizer.cpp
+        ../shared/firmware/source/ApplicationLayer/ObserverAttacher.cpp
+        ../shared/firmware/source/ApplicationLayer/PowerOnSelfTester.cpp
+        ../shared/firmware/source/ApplicationLayer/PressedEventToAbortAdapter.cpp
+        ../shared/firmware/source/ApplicationLayer/PressedEventToConfirmAdviceEventAdapter.cpp
+        ../shared/firmware/source/ApplicationLayer/RepetitionTimer.cpp
+        ../shared/firmware/source/ApplicationLayer/RepetitionTimes.cpp
+        ../shared/firmware/source/ApplicationLayer/SerialChargePump.cpp
+        ../shared/firmware/source/ApplicationLayer/SerialDebug.cpp
+        ../shared/firmware/source/ApplicationLayer/SerialLogging.cpp
+        ../shared/firmware/source/ApplicationLayer/SerialLogIn.cpp
+        ../shared/firmware/source/ApplicationLayer/SerialSkinAnalysis.cpp
+        ../shared/firmware/source/ApplicationLayer/SerialSystem.cpp
+        ../shared/firmware/source/ApplicationLayer/ShutdownTimer.cpp
+        ../shared/firmware/source/ApplicationLayer/SingleFaultChecker.cpp
+        ../shared/firmware/source/ApplicationLayer/SingleFluenceLevelVisualizer.cpp
+        ../shared/firmware/source/ApplicationLayer/SkinAnalysis.cpp
+        ../shared/firmware/source/ApplicationLayer/SkinToneCalculation.cpp
+        ../shared/firmware/source/ApplicationLayer/SkinToneSensorChecker.cpp
+        ../shared/firmware/source/ApplicationLayer/StackMonitor.cpp
+        ../shared/firmware/source/ApplicationLayer/StopWatch.cpp
+        ../shared/firmware/source/ApplicationLayer/SystemData.cpp
+        ../shared/firmware/source/ApplicationLayer/TargetChargeVoltage.cpp
+        ../shared/firmware/source/ApplicationLayer/TestMode.cpp
+        ../shared/firmware/source/ApplicationLayer/Treatment.cpp
+        ../shared/firmware/source/ApplicationLayer/TreatmentState_FlashCapacitorCharged.cpp
+        ../shared/firmware/source/ApplicationLayer/TreatmentState_FlashCapacitorCharging.cpp
+        ../shared/firmware/source/ApplicationLayer/TreatmentState_Flashing.cpp
+        ../shared/firmware/source/ApplicationLayer/TreatmentState_NotInUse.cpp
+        ../shared/firmware/source/ApplicationLayer/TreatmentState.cpp
+        ../shared/firmware/source/ApplicationLayer/UIPattern_AllOff.cpp
+        ../shared/firmware/source/ApplicationLayer/UIPattern_AmberBlinking.cpp
+        ../shared/firmware/source/ApplicationLayer/UIPattern_AmberBlinkingAndAllLevelBlinking.cpp
+        ../shared/firmware/source/ApplicationLayer/UIPattern_AmberBlinkingAndCurrentLevel.cpp
+        ../shared/firmware/source/ApplicationLayer/UIPattern_CurrentFluenceLevel.cpp
+        ../shared/firmware/source/ApplicationLayer/UIPattern_DisableTestmode.cpp
+        ../shared/firmware/source/ApplicationLayer/UIPattern_FadeLevel.cpp
+        ../shared/firmware/source/ApplicationLayer/UIPattern_GreenBlinkingAndCurrentLevel.cpp
+        ../shared/firmware/source/ApplicationLayer/UIPattern_GreenSteadyAndCurrentLevel.cpp
+        ../shared/firmware/source/ApplicationLayer/UserInterfaceState_AdviceKnightrider.cpp
+        ../shared/firmware/source/ApplicationLayer/UserInterfaceState_AdviceSkinTooDark.cpp
+        ../shared/firmware/source/ApplicationLayer/UserInterfaceState_AdviceSuggestLevel.cpp
+        ../shared/firmware/source/ApplicationLayer/UserInterfaceState_DisableTestmode.cpp
+        ../shared/firmware/source/ApplicationLayer/UserInterfaceState_FluenceLevelReadyToFlashBlink.cpp
+        ../shared/firmware/source/ApplicationLayer/UserInterfaceState_FluenceLevelReadyToFlashFade.cpp
+        ../shared/firmware/source/ApplicationLayer/UserInterfaceState_FluenceLevelReadyToFlashSteady.cpp
+        ../shared/firmware/source/ApplicationLayer/UserInterfaceState_NoAttachment.cpp
+        ../shared/firmware/source/ApplicationLayer/UserInterfaceState_OnlyFluenceLevel.cpp
+        ../shared/firmware/source/ApplicationLayer/UserInterfaceState_Shutdown.cpp
+        ../shared/firmware/source/ApplicationLayer/UserInterfaceState_SkinTooDark.cpp
+        ../shared/firmware/source/ApplicationLayer/UserInterfaceState_Startup.cpp
+        ../shared/firmware/source/ApplicationLayer/UserInterfaceState_UnrecoverableError.cpp
+        ../shared/firmware/source/ApplicationLayer/UserInterfaceState.cpp
+        ../shared/firmware/source/Common/AdcLeveler.cpp
+        ../shared/firmware/source/Common/AtomicAction.cpp
+        ../shared/firmware/source/Common/cxa.cpp
+        ../shared/firmware/source/Common/cxx.cpp
+        ../shared/firmware/source/Common/EventDispatcher.cpp
+        ../shared/firmware/source/Common/Logger.cpp
+        ../shared/firmware/source/Common/Mathematics.cpp
+        ../shared/firmware/source/Common/SystemDelay.cpp
+        ../shared/firmware/source/Common/Timer.cpp
+        ../shared/firmware/source/Generated/CPP/AdviceThresholds.cpp
+        ../shared/firmware/source/Generated/CPP/BatteryDebugProxy.cpp
+        ../shared/firmware/source/Generated/CPP/BatteryDebugSkeleton.cpp
+        ../shared/firmware/source/Generated/CPP/ChargePumpProxy.cpp
+        ../shared/firmware/source/Generated/CPP/ChargePumpSkeleton.cpp
+        ../shared/firmware/source/Generated/CPP/DebugProxy.cpp
+        ../shared/firmware/source/Generated/CPP/DebugSkeleton.cpp
+        ../shared/firmware/source/Generated/CPP/ErrorLog.cpp
+        ../shared/firmware/source/Generated/CPP/LoggingEventsProxy.cpp
+        ../shared/firmware/source/Generated/CPP/LoggingEventsSkeleton.cpp
+        ../shared/firmware/source/Generated/CPP/LoggingProxy.cpp
+        ../shared/firmware/source/Generated/CPP/LoggingSkeleton.cpp
+        ../shared/firmware/source/Generated/CPP/LogInProxy.cpp
+        ../shared/firmware/source/Generated/CPP/LogInSkeleton.cpp
+        ../shared/firmware/source/Generated/CPP/QtouchErrorLog.cpp
+        ../shared/firmware/source/Generated/CPP/RepetitionTimeCorrectionData.cpp
+        ../shared/firmware/source/Generated/CPP/SkinAnalysisProxy.cpp
+        ../shared/firmware/source/Generated/CPP/SkinAnalysisSkeleton.cpp
+        ../shared/firmware/source/Generated/CPP/SkinParameters.cpp
+        ../shared/firmware/source/Generated/CPP/StsCalibrationValues.cpp
+        ../shared/firmware/source/Generated/CPP/SystemProxy.cpp
+        ../shared/firmware/source/Generated/CPP/SystemSkeleton.cpp
+        ../shared/firmware/source/Generated/CPP/SystemTemperatures.cpp
+        ../shared/firmware/source/HardwareLayer/AdConverter.cpp
+        ../shared/firmware/source/HardwareLayer/DaConverter.cpp
+        ../shared/firmware/source/HardwareLayer/NvmDriver.cpp
+        ../shared/firmware/source/HardwareLayer/OutputPin.cpp
+        ../shared/firmware/source/HardwareLayer/Platform.cpp
+        ../shared/firmware/source/HardwareLayer/RepetitionTimeCounter.cpp
+        ../shared/firmware/source/HardwareLayer/ResetChecker.cpp
+        ../shared/firmware/source/HardwareLayer/Stack.cpp
+        ../shared/firmware/source/HardwareLayer/TouchSensor.cpp
+        ../shared/firmware/source/HardwareLayer/TriggerDelayCounter.cpp
+        ../shared/firmware/source/HardwareLayer/UART.cpp
+        ../shared/firmware/source/HardwareLayer/Watchdog.cpp
+        ../shared/firmware/source/PeripheralLayer/AdcTester.cpp
+        ../shared/firmware/source/PeripheralLayer/AirOutTemperatureFeedback.cpp
+        ../shared/firmware/source/PeripheralLayer/Button.cpp
+        ../shared/firmware/source/PeripheralLayer/ButtonStateDown.cpp
+        ../shared/firmware/source/PeripheralLayer/ButtonStateUp.cpp
+        ../shared/firmware/source/PeripheralLayer/FlashCapacitorCharger.cpp
+        ../shared/firmware/source/PeripheralLayer/FlashCapacitorDischarger.cpp
+        ../shared/firmware/source/PeripheralLayer/FlashCapacitorFeedback.cpp
+        ../shared/firmware/source/PeripheralLayer/Lamp.cpp
+        ../shared/firmware/source/PeripheralLayer/MemoryRecorder.cpp
+        ../shared/firmware/source/PeripheralLayer/MemoryRecorderV2.cpp
+        ../shared/firmware/source/PeripheralLayer/PowerSupply.cpp
+        ../shared/firmware/source/PeripheralLayer/RepetitionTimeConverter.cpp
+        ../shared/firmware/source/PeripheralLayer/SkinColorDetection.cpp
+        ../shared/firmware/source/PeripheralLayer/SkinColorDetectionState_MeasureIr.cpp
+        ../shared/firmware/source/PeripheralLayer/SkinColorDetectionState_MeasureRed.cpp
+        ../shared/firmware/source/PeripheralLayer/SkinColorDetectionState_MeasureReference.cpp
+        ../shared/firmware/source/PeripheralLayer/SkinColorDetectorTemperatureFeedback.cpp
+        ../shared/firmware/source/PeripheralLayer/SkinPresenceDetection.cpp
+        ../shared/firmware/source/PeripheralLayer/TemperatureLut.cpp
+        ../shared/firmware/source/PeripheralLayer/TemperatureLutFactory.cpp
+        ../shared/firmware/source/QTouch/v5.0.3/sf_selfcap_fmea_samd20.c
+        ../shared/firmware/source/QTouch/v5.0.3/touch.c
+        source/ApplicationLayer/BatteryCharger.cpp
+        source/ApplicationLayer/BatteryChargerState_BatteryCharging.cpp
+        source/ApplicationLayer/BatteryChargerState_BatteryFull.cpp
+        source/ApplicationLayer/BatteryChargerState_BatteryWaitForTemperatureOk.cpp
+        source/ApplicationLayer/BatteryLevel.cpp
+        source/ApplicationLayer/BatteryPowerManagement.cpp
+        source/ApplicationLayer/BatteryUserInterfaceState_ConnectedCharging.cpp
+        source/ApplicationLayer/BatteryUserInterfaceState_ConnectedFull.cpp
+        source/ApplicationLayer/BatteryUserInterfaceState_DisconnectedLow.cpp
+        source/ApplicationLayer/BatteryUserInterfaceState_DisconnectedOk.cpp
+        source/ApplicationLayer/BleController.cpp
+        source/ApplicationLayer/BleUnPair.cpp
+        source/ApplicationLayer/ButtonAdviceStarter.cpp
+        source/ApplicationLayer/ClearTreatmentDataMediator.cpp
+        source/ApplicationLayer/ConnectivityNodeController.cpp
+        source/ApplicationLayer/Cooling.cpp
+        source/ApplicationLayer/DiCommBatteryStateUpdater.cpp
+        source/ApplicationLayer/DiCommRealTimeDataUpdater.cpp
+        source/ApplicationLayer/DischargerChecker.cpp
+        source/ApplicationLayer/DischargeTimer.cpp
+        source/ApplicationLayer/DriverSupplyChecker.cpp
+        source/ApplicationLayer/EmeraldApplication.cpp
+        source/ApplicationLayer/EmeraldChargeLevel.cpp
+        source/ApplicationLayer/EmeraldCommunication.cpp
+        source/ApplicationLayer/EmeraldSingleFaultChecker.cpp
+        source/ApplicationLayer/EmeraldSkinToneSensorChecker.cpp
+        source/ApplicationLayer/EmeraldUserInterface.cpp
+        source/ApplicationLayer/FadingSingleFluenceLevelVisualizer.cpp
+        source/ApplicationLayer/FinitePresentFluenceLevel.cpp
+        source/ApplicationLayer/HighEndShutdownButtons.cpp
+        source/ApplicationLayer/HighVoltageConverter.cpp
+        source/ApplicationLayer/IgnitionVoltageWaiter.cpp
+        source/ApplicationLayer/LampVoltageChecker.cpp
+        source/ApplicationLayer/PressedEventToDecreaseFluenceLevelEventAdapter.cpp
+        source/ApplicationLayer/PressedEventToIncreaseFluenceLevelEventAdapter.cpp
+        source/ApplicationLayer/PressedEventToResetShutDownTimerAdapter.cpp
+        source/ApplicationLayer/RepetitionTimesFromAttachment.cpp
+        source/ApplicationLayer/SafetyMode.cpp
+        source/ApplicationLayer/SerialBatteryDebug.cpp
+        source/ApplicationLayer/SkinAnalysisPresence.cpp
+        source/ApplicationLayer/StartupSequence.cpp
+        source/ApplicationLayer/TreatmentController.cpp
+        source/ApplicationLayer/UIPattern_BlinkLevelAndConfirmButtonOn.cpp
+        source/ApplicationLayer/UIPattern_FullBlinkingLowOff.cpp
+        source/ApplicationLayer/UIPattern_FullOffLowBlinking.cpp
+        source/ApplicationLayer/UIPattern_FullOffLowOff.cpp
+        source/ApplicationLayer/UIPattern_FullOnLowOff.cpp
+        source/ApplicationLayer/UIPattern_GreenFadingAndCurrentLevel.cpp
+        source/ApplicationLayer/UIPattern_NightRiderAndAdviceButtonOn.cpp
+        source/ApplicationLayer/UIPattern_StartupSequence.cpp
+        source/Common/atomic.cpp
+        source/Common/CrcCcittCalculator.cpp
+        source/Common/DataStore.cpp
+        source/Common/DataStoreContent.cpp
+        source/Common/DateTime.cpp
+        source/Common/DSString.cpp
+        source/Common/QueueForOneReaderOneIrqWriter.cpp
+        source/Common/Stream.cpp
+        source/HardwareLayer/DirectInputPin.cpp
+        source/HardwareLayer/EmeraldExternalInterrupts.cpp
+        source/HardwareLayer/EmeraldHardware.cpp
+        source/HardwareLayer/EmeraldPinPool.cpp
+        source/HardwareLayer/I2C.cpp
+        source/HardwareLayer/I2CAddressPool.cpp
+        source/HardwareLayer/I2CEepromDriver.cpp
+        source/HardwareLayer/I2CLedDriver.cpp
+        source/HardwareLayer/InputPin.cpp
+        source/HardwareLayer/UartS.cpp
+        source/PeripheralLayer/Adapter.cpp
+        source/PeripheralLayer/AdviceButtonI2CLeds.cpp
+        source/PeripheralLayer/BatteryI2CLeds.cpp
+        source/PeripheralLayer/BluetoothI2CLed.cpp
+        source/PeripheralLayer/Converter.cpp
+        source/PeripheralLayer/DiCommJsonParser.cpp
+        source/PeripheralLayer/DiCommMessage.cpp
+        source/PeripheralLayer/DiCommProtocol.cpp
+        source/PeripheralLayer/DiCommProxy.cpp
+        source/PeripheralLayer/DiCommServer.cpp
+        source/PeripheralLayer/DiCommValueInterface.cpp
+        source/PeripheralLayer/DigitalFan.cpp
+        source/PeripheralLayer/DischargerCurrentFeedback.cpp
+        source/PeripheralLayer/DriverSupplyVoltageFeedback.cpp
+        source/PeripheralLayer/EmeraldButtons.cpp
+        source/PeripheralLayer/EmeraldInterrupt.cpp
+        source/PeripheralLayer/EmeraldPeripherals.cpp
+        source/PeripheralLayer/FluenceLevelI2CLeds.cpp
+        source/PeripheralLayer/I2CLed.cpp
+        source/PeripheralLayer/LampVoltageFeedback.cpp
+        source/PeripheralLayer/PowerBattery.cpp
+        source/PeripheralLayer/PowerConnectivityNode.cpp
+        source/PeripheralLayer/RemovableAttachment.cpp
+        source/PeripheralLayer/SetButton.cpp
+        source/PeripheralLayer/StatusI2CLeds.cpp
+        source/PeripheralLayer/SwitchablePower.cpp
+        src/ASF/common/utils/interrupt/interrupt_sam_nvic.c
+        src/ASF/common2/boards/user_board/init.c
+        src/ASF/common2/services/delay/sam0/systick_counter.c
+        src/ASF/sam0/drivers/adc/adc_sam_d_r/adc.c
+        src/ASF/sam0/drivers/dac/dac_sam_d/dac.c
+        src/ASF/sam0/drivers/extint/extint_callback.c
+        src/ASF/sam0/drivers/extint/extint_sam_d_r/extint.c
+        src/ASF/sam0/drivers/nvm/nvm.c
+        src/ASF/sam0/drivers/port/port.c
+        src/ASF/sam0/drivers/rtc/rtc_sam_d_r/rtc_count.c
+        src/ASF/sam0/drivers/sercom/i2c/i2c_samd20/i2c_master.c
+        src/ASF/sam0/drivers/sercom/sercom_interrupt.c
+        src/ASF/sam0/drivers/sercom/sercom.c
+        src/ASF/sam0/drivers/sercom/usart/usart_interrupt.c
+        src/ASF/sam0/drivers/sercom/usart/usart.c
+        src/ASF/sam0/drivers/system/clock/clock_samd20/clock.c
+        src/ASF/sam0/drivers/system/clock/clock_samd20/gclk.c
+        src/ASF/sam0/drivers/system/interrupt/system_interrupt.c
+        src/ASF/sam0/drivers/system/pinmux/pinmux.c
+        src/ASF/sam0/drivers/system/system.c
+        src/ASF/sam0/drivers/tc/tc_interrupt.c
+        src/ASF/sam0/drivers/tc/tc_sam_d_r/tc.c
+        src/ASF/sam0/drivers/wdt/wdt.c
+        src/ASF/sam0/utils/cmsis/samd20/source/gcc/startup_samd20.c
+        src/ASF/sam0/utils/cmsis/samd20/source/system_samd20.c
+        src/ASF/sam0/utils/syscalls/gcc/syscalls.c
+)
+
+target_include_directories(
+    ${elf_file}
+
+    PRIVATE
+        ../shared/firmware/source/ApplicationLayer
+        ../shared/firmware/source/Common
+        ../shared/firmware/source/Generated/CPP
+        ../shared/firmware/source/HardwareLayer
+        ../shared/firmware/source/PeripheralLayer
+        ../shared/firmware/source/QTouch
+        ../shared/firmware/source/QTouch/v5.0.3
+        common2/applications/user_application/user_board/config_samd20
+        source/ApplicationLayer
+        source/Common
+        source/HardwareLayer
+        source/PeripheralLayer
+        source/QTouch
+        src
+        src/ASF/common/boards
+        src/ASF/common/utils
+        src/ASF/common2/boards/user_board
+        src/ASF/common2/services/delay
+        src/ASF/common2/services/delay/sam0
+        src/ASF/sam0/drivers/adc
+        src/ASF/sam0/drivers/adc/adc_sam_d_r
+        src/ASF/sam0/drivers/dac
+        src/ASF/sam0/drivers/dac/dac_sam_d
+        src/ASF/sam0/drivers/extint
+        src/ASF/sam0/drivers/extint/extint_sam_d_r
+        src/ASF/sam0/drivers/nvm
+        src/ASF/sam0/drivers/port
+        src/ASF/sam0/drivers/rtc
+        src/ASF/sam0/drivers/sercom
+        src/ASF/sam0/drivers/sercom/i2c
+        src/ASF/sam0/drivers/sercom/i2c/i2c_samd20
+        src/ASF/sam0/drivers/sercom/usart
+        src/ASF/sam0/drivers/system
+        src/ASF/sam0/drivers/system/clock
+        src/ASF/sam0/drivers/system/clock/clock_samd20
+        src/ASF/sam0/drivers/system/interrupt
+        src/ASF/sam0/drivers/system/interrupt/system_interrupt_samd20
+        src/ASF/sam0/drivers/system/pinmux
+        src/ASF/sam0/drivers/system/power
+        src/ASF/sam0/drivers/system/power/power_sam_d_r
+        src/ASF/sam0/drivers/system/reset
+        src/ASF/sam0/drivers/system/reset/reset_sam_d_r
+        src/ASF/sam0/drivers/tc
+        src/ASF/sam0/drivers/tc/tc_sam_d_r
+        src/ASF/sam0/drivers/wdt
+        src/ASF/sam0/utils
+        src/ASF/sam0/utils/cmsis/samd20/include
+        src/ASF/sam0/utils/cmsis/samd20/source
+        src/ASF/sam0/utils/header_files
+        src/ASF/sam0/utils/preprocessor
+        src/ASF/thirdparty/CMSIS/Include
+        src/ASF/thirdparty/CMSIS/Lib/GCC
+        src/config
+)
+
+# set definitions
+add_definitions(
+    -D__SAMD20J18__
+    -DADC_CALLBACK_MODE=false
+    -DARM_MATH_CM0=true
+    -DBOARD=USER_BOARD
+    -DDAC_CALLBACK_MODE=false
+    -DDEBUG
+    -DEMERALDCONNECTED
+    -DEXTINT_CALLBACK_MODE=true
+    -DI2C_MASTER_CALLBACK_MODE=false
+    -DRTC_COUNT_ASYNC=false
+    -DSYSTICK_MODE
+    -DTC_ASYNC=true
+    -DUSART_CALLBACK_MODE=true
+    -DWDT_CALLBACK_MODE=false
+)
+
+add_subdirectory(./../shared/libraries/EmbeddedRPC_Topaz EmbeddedRPC_Topaz)
+add_subdirectory(./BootAssistantMonitor)
+
+# Set compiler flags and options
+target_compile_options(
+    ${elf_file}
+
+	PRIVATE
+		${COMPILER_FLAGS}
+)
+
+# target_link_options(
+#     ${elf_file}
+# 
+#     PRIVATE
+#         -mcpu=cortex-m0plus
+#         -mthumb
+#         -mtune=cortex-m0plus
+#         -Os
+#         -T${CMAKE_SOURCE_DIR}/cmsis/linkerScripts/samd20j18_flash.ld
+#         -Wl,--gc-sections
+#         -Wl,-Map=${map_file}
+#         -Xlinker --defsym=STACK_SIZE=0x1000
+# )
+
+# Link all required libraries
+target_link_libraries(
+    ${elf_file}
+    Lib_RPC
+    ${CMAKE_SOURCE_DIR}/../shared/firmware/source/QTouch/v5.0.3/libsamd20_safety_gcc.a
+)
+
+# Following four statements are used to tell cmake to use a response file for the linker.
+    SET(CMAKE_C_USE_RESPONSE_FILE_FOR_OBJECTS 1)
+    SET(CMAKE_CXX_USE_RESPONSE_FILE_FOR_OBJECTS 1)
+
+    SET(CMAKE_C_RESPONSE_FILE_LINK_FLAG "@")
+    SET(CMAKE_CXX_RESPONSE_FILE_LINK_FLAG "@")
+
+# generate the lst file
+add_custom_command(
+    OUTPUT ${lst_file}
+
+    COMMAND
+        ${CMAKE_OBJDUMP} -h -S ${elf_file} > ${lst_file}
+
+    DEPENDS ${elf_file}
+)
+
+# create hex file
+add_custom_command(
+    OUTPUT ${hex_file}
+
+    COMMAND
+        ${CMAKE_OBJCOPY} -j .text -j .data -O ihex ${elf_file} ${hex_file}
+
+    DEPENDS ${elf_file}
+)
+
+add_custom_command(
+    OUTPUT "print-size-${elf_file}"
+
+    COMMAND
+        ${ARM_SIZE} ${elf_file}
+
+    DEPENDS ${elf_file}
+)
+
+# build the intel hex file for the device
+add_custom_target(
+    ${target_name}
+    ALL
+    DEPENDS ${hex_file} ${lst_file} "print-size-${elf_file}"
+)
+
+set_target_properties(
+    ${target_name}
+
+    PROPERTIES
+        OUTPUT_NAME ${elf_file}
+)
+
+# # flash command
+# add_custom_command(
+#     OUTPUT "flash-${hex_file}"
+
+#     COMMAND
+#         ${ARM_UPLOAD} -b${ARM_UPLOAD_BUAD} -c${ARM_UPLOAD_PROGRAMMER} -p${ARM_MCU} -U flash:w:${hex_file} -P${ARM_UPLOAD_PORT}
+# )
+
+# add_custom_target(
+#     "flash-${target_name}"
+
+#     DEPENDS "flash-${hex_file}"
+# )
