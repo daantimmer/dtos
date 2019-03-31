@@ -1,0 +1,8 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/.vs/Rtos/v15
+/.vs/Rtos/v16
+/build
+/cubemx/rtoscubemx

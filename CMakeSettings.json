@@ -1,0 +1,44 @@
+﻿{
+  "configurations": [
+    {
+      "name": "IoT-Debug",
+      "generator": "Ninja",
+      //"configurationType": "RelMinSize",
+      "configurationType": "Debug",
+      "inheritEnvironments": [ "gcc-arm" ],
+      "buildRoot": "${workspaceRoot}\\build\\${name}",
+      "installRoot": "${workspaceRoot}\\install\\${name}",
+      //"cmakeToolchain": "cmake/arm-none-eabi.7.3.1.toolchain.cmake",
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "-v",
+      "ctestCommandArgs": "",
+      "intelliSenseMode": "linux-gcc-arm",
+      "variables": [
+        {
+          "name": "CMAKE_TOOLCHAIN_FILE",
+          "value": "cmake/arm-none-eabi.7.3.1.toolchain.cmake"
+        }
+      ]
+    },
+    {
+      "name": "IoT-Release",
+      "generator": "Ninja",
+      //"configurationType": "RelMinSize",
+      "configurationType": "RelWithDebInfo",
+      "inheritEnvironments": [ "gcc-arm" ],
+      "buildRoot": "${workspaceRoot}\\build\\${name}",
+      "installRoot": "${workspaceRoot}\\install\\${name}",
+      //"cmakeToolchain": "cmake/arm-none-eabi.7.3.1.toolchain.cmake",
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "-v",
+      "ctestCommandArgs": "",
+      "intelliSenseMode": "linux-gcc-arm",
+      "variables": [
+        {
+          "name": "CMAKE_TOOLCHAIN_FILE",
+          "value": "cmake/arm-none-eabi.7.3.1.toolchain.cmake"
+        }
+      ]
+    }
+  ]
+}

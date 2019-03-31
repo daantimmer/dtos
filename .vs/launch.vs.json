@@ -1,0 +1,57 @@
+{
+  "version": "0.2.1",
+  "defaults": {},
+  "configurations": [
+    {
+      "type": "cppdbg",
+      "name": "rtos.elf",
+      "project": "CMakeLists.txt",
+      "projectTarget": "rtos.elf",
+      "cwd": "${workspaceRoot}",
+      "program": "${workspaceRoot}\\BUILD\\${cmake.name}\\rtos.elf",
+      "MIMode": "gdb",
+      "externalConsole": true,
+      "inheritEnvironments": [
+        "gcc_arm"
+      ],
+      "stopOnEntry": false,
+      "miDebuggerPath": "E:\\GNU Tools Arm Embedded\\7 2018-q2-update\\bin\\arm-none-eabi-gdb.exe",
+      "setupCommands": [
+        {
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        },
+        {
+          "text": "cd ${workspaceRoot}/BUILD/${cmake.name}"
+        },
+        {
+          "text": "file ${workspaceRootFolderName}.elf"
+        },
+        {
+          "text": "target remote :2331"
+        },
+        {
+          "text": "set mem inaccessible-by-default off"
+        },
+        {
+          "text": "monitor reset"
+        },
+        {
+          "text": "load"
+        },
+        {
+          "text": "cd ${workspaceRoot}"
+        }
+      ],
+      "targetArchitecture": "ARM",
+      "debugType": "native",
+      "showDisplayString": true,
+      "launchCompleteCommand": "None",
+      "filterStderr": true,
+      "filterStdout": true,
+
+      "debugServerPath": "B:\\Program Files (x86)\\SEGGER\\JLink_V644a\\JLinkGDBServerCL.exe",
+      "debugServerArgs": "-select USB -device STM32F103C8 -endian little -if SWD -speed auto -noir -LocalhostOnly"
+    }
+  ]
+}
