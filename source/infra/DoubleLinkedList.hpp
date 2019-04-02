@@ -21,18 +21,23 @@ struct DoubleLinkedList
             assert(obj != nullptr);
         }
 
+        T& Object() const
+        {
+            return object;
+        }
+
     private:
         Item* next = nullptr;
         Item* previous = nullptr;
         T& object;
     };
 
-    virtual std::size_t Size()
+    virtual std::size_t Size() const
     {
         return count;
     }
 
-    virtual bool Empty()
+    virtual bool Empty() const
     {
         return Size() == 0;
     }
@@ -102,8 +107,8 @@ struct DoubleLinkedList
                 previous->next = next;
                 next->previous = previous;
 
-                item->next = nullptr;
-                item->previous = nullptr;
+                item.next = nullptr;
+                item.previous = nullptr;
                 return;
             }
         }
@@ -127,24 +132,24 @@ struct DoubleLinkedList
         }
     }
 
-    virtual const T* PeekBack() const
+    virtual Item* PeekBack() const
     {
         if (Empty() == true)
         {
             return nullptr;
         }
 
-        return &back->object;
+        return back;
     }
 
-    virtual const T* PeekFront() const
+    virtual Item* PeekFront() const
     {
         if (Empty() == true)
         {
             return nullptr;
         }
 
-        return &front->object;
+        return front;
     }
 
 protected:

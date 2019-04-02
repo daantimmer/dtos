@@ -17,6 +17,9 @@ add_subdirectory(source/target/arm/stm32f1)
 add_executable (${ELF}
     "source/main.cpp"
     "source/interrupts.cpp"
+    "source/os/scheduler.cpp"
+    "source/os/task.cpp"
+    "source/os/utils.cpp"
 
     "source/startup.c"
     "source/target/arm/stm32f1/CMSIS/Device/ST/STM32F1xx/Source/Templates/system_stm32f1xx.c"
