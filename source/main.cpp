@@ -55,11 +55,15 @@ extern "C" int RealDeal()
     
     LL_GPIO_StructInit(&gpioConfig);
 
-    gpioConfig.Pin = LL_GPIO_PIN_13;
+    gpioConfig.Pin = LL_GPIO_PIN_13 | LL_GPIO_PIN_14 | LL_GPIO_PIN_15;
     gpioConfig.Mode = LL_GPIO_MODE_OUTPUT;
     gpioConfig.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
 
     LL_GPIO_Init(GPIOC, &gpioConfig);
+
+    gpioConfig.Pin = LL_GPIO_PIN_0;
+
+    LL_GPIO_Init(GPIOA, &gpioConfig);
 
     LL_SYSTICK_EnableIT();
     
