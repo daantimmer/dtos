@@ -110,7 +110,10 @@ extern "C"
     {
         DisableInterrupts();
 
-        scheduler_yield();
+        if (SchedulerTick() == true)
+        {
+            scheduler_yield();
+        }
 
         EnableInterrupts();
     }

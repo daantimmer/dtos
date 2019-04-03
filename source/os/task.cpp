@@ -12,10 +12,11 @@ static void TaskExitError()
     }
 }
 
-Task::Task(void (*entry)(), uint32_t* stackTop, size_t stackSize)
+Task::Task(void (*entry)(), uint32_t* stackTop, size_t stackSize, TaskDebugGpio gpioDebug)
     : stackPointer(stackTop + stackSize - 1)
     , stackTop(stackTop + 1)
     , stackSize(stackSize - 2)
+    , gpioDebug(gpioDebug)
 {
     *(this->stackTop - 1) = 0xCCCCCCCC;
     std::fill(this->stackTop, stackPointer, 0xDEADBEEF);

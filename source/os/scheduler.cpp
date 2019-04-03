@@ -58,7 +58,9 @@ static void task1Handler()
     while (1)
     {
         LL_GPIO_ResetOutputPin(GPIOC, LL_GPIO_PIN_13);
-        __WFE();
+
+        DelayTask();
+        //__WFE();
     }
 }
 
@@ -67,7 +69,9 @@ static void task2Handler()
     while (1)
     {
         LL_GPIO_SetOutputPin(GPIOC, LL_GPIO_PIN_13);
-        __WFE();
+
+        DelayTask();
+        //__WFE();
     }
 }
 
@@ -79,14 +83,13 @@ static void taskIdle()
     }
 }
 
-static Task task1{task1Handler, stackTask1.data(), stackTask1.size()};
-static Task task2{task2Handler, stackTask2.data(), stackTask2.size()};
+static Task task1{task1Handler, stackTask1.data(), stackTask1.size(), {GPIOC, LL_GPIO_PIN_14}};
+static Task task2{task2Handler, stackTask2.data(), stackTask2.size(), {GPIOC, LL_GPIO_PIN_15}};
 
-static Task idleTask{taskIdle, stackTask3.data(), stackTask3.size()};
+static Task idleTask{taskIdle, stackTask3.data(), stackTask3.size(), {GPIOA, LL_GPIO_PIN_0}};
 
 static DoubleLinkedList<Task>::Item task1Item{task1};
 static DoubleLinkedList<Task>::Item task2Item{task2};
-static DoubleLinkedList<Task>::Item idleTaskItem{idleTask};
 
 void scheduler_yield()
 {
@@ -96,13 +99,32 @@ void scheduler_yield()
     asm volatile("isb");
 }
 
+bool SchedulerTick()
+{
+    if (delayedTasks.Empty() == false)
+    {
+        auto item = delayedTasks.PeekFront();
+        delayedTasks.PopFront();
+
+        readyTasks.AddBack(*item);
+
+        return true;
+    }
+    else
+    {
+        return readyTasks.Empty() == false;
+    }
+}
+
 void startFirstTask()
 {
     readyTasks.AddBack(task1Item);
     readyTasks.AddBack(task2Item);
-    readyTasks.AddBack(idleTaskItem);
 
-    currentTaskControlBlock = &task1;
+    task1.llItem = &task1Item;
+    task2.llItem = &task2Item;
+
+    currentTaskControlBlock = &idleTask;
 
     asm volatile("cpsie i        \n"
                  "cpsie f        \n"
@@ -115,16 +137,39 @@ void startFirstTask()
 
 void TaskScheduler()
 {
+    if (currentTaskControlBlock->gpioDebug.port != nullptr)
+    {
+        LL_GPIO_ResetOutputPin((GPIO_TypeDef*)currentTaskControlBlock->gpioDebug.port,
+                               currentTaskControlBlock->gpioDebug.pin);
+    }
+
     if (readyTasks.Empty() == false)
     {
         auto nextTask = readyTasks.PeekFront();
 
-        if (nextTask != nullptr)
-        {
-            readyTasks.PopFront();
-            readyTasks.AddBack(*nextTask);
+        readyTasks.PopFront();
 
-            currentTaskControlBlock = &(nextTask->Object());
-        }
+        currentTaskControlBlock = &(nextTask->Object());
     }
+    else
+    {
+        currentTaskControlBlock = &idleTask;
+    }
+
+    if (currentTaskControlBlock->gpioDebug.port != nullptr)
+    {
+        LL_GPIO_SetOutputPin((GPIO_TypeDef*)currentTaskControlBlock->gpioDebug.port,
+                             currentTaskControlBlock->gpioDebug.pin);
+    }
+}
+
+void DelayTask()
+{
+    EnterCriticalSection();
+
+    delayedTasks.AddBack(*(currentTaskControlBlock->llItem));
+
+    scheduler_yield();
+
+    ExitCriticalSection();
 }
