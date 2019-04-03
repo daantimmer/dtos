@@ -118,8 +118,21 @@ struct DoubleLinkedList
     {
         if (Empty() == false)
         {
-            back = back->next;
-            back->previous = nullptr;
+            if (back == front)
+            {
+                back->next = nullptr;
+                back->previous = nullptr;
+
+                back = nullptr;
+                front = nullptr;
+            }
+            else
+            {
+                back = back->next;
+                back->previous = nullptr;
+            }
+
+            count--;
         }
     }
 
@@ -127,8 +140,21 @@ struct DoubleLinkedList
     {
         if (Empty() == false)
         {
-            front = front->previous;
-            front->next = nullptr;
+            if (back == front)
+            {
+                front->next = nullptr;
+                front->previous = nullptr;
+
+                back = nullptr;
+                front = nullptr;
+            }
+            else
+            {
+                front = front->previous;
+                front->next = nullptr;
+            }
+
+            count--;
         }
     }
 
