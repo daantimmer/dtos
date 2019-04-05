@@ -3,12 +3,14 @@
 
 #include "SingleLinkedList.hpp"
 
+#include <cassert>
+
 template<typename T>
 struct DoubleLinkedList
 {
     struct Item final
     {
-        friend DoubleLinkedList;
+        friend DoubleLinkedList<T>;
 
         Item(T& obj)
             : object(obj)
@@ -21,14 +23,32 @@ struct DoubleLinkedList
             assert(obj != nullptr);
         }
 
-        T& Object() const
+        operator T* () const
         {
-            return object;
+            return &object;
         }
 
-    private:
+        Item* GetNext() const
+        {
+            return next;
+        }
+
+        Item* GetPrevious() const
+        {
+            return previous;
+        }
+
+        DoubleLinkedList* GetList() const
+        {
+            return list;
+        }
+
+    protected:
         Item* next = nullptr;
         Item* previous = nullptr;
+
+        DoubleLinkedList* list = nullptr;
+
         T& object;
     };
 
@@ -57,6 +77,7 @@ struct DoubleLinkedList
             back->next->previous = back;
         }
 
+        item.list = this;
         count++;
     }
 
@@ -74,7 +95,43 @@ struct DoubleLinkedList
             front = &item;
             front->previous->next = front;
         }
+        item.list = this;
+        count++;
+    }
 
+    virtual void InsertInfront(Item& previous, Item& item)
+    {
+        auto next = previous.next;
+
+        previous.next = &item;
+        item.previous = &previous;
+
+        item.next = next;
+
+        if (next != nullptr)
+        {
+            next->previous = &item;
+        }
+
+        item.list = this;
+        count++;
+    }
+
+    virtual void InsertBehind(Item& next, Item& item)
+    {
+        auto previous = next.previous;
+
+        next.previous = &item;
+        item.next = &next;
+
+        item.previous = previous;
+
+        if (previous != nullptr)
+        {
+            previous->next = &item;
+        }
+
+        item.list = this;
         count++;
     }
 
@@ -82,34 +139,32 @@ struct DoubleLinkedList
     {
         if (Empty() == true)
         {
-            return;
+            /* return */
         }
-
-        if (&item == back)
+        else if (&item == back)
         {
             PopBack();
-            return;
         }
         else if (&item == front)
         {
             PopFront();
-            return;
         }
-
-        Item* iter = back;
-        while (iter != nullptr)
+        else
         {
-            if (iter == &item)
+            Item* iter = back;
+            while (iter != nullptr)
             {
-                Item* previous = item.previous;
-                Item* next = item.next;
+                if (iter == &item)
+                {
+                    Item* previous = item.previous;
+                    Item* next = item.next;
 
-                previous->next = next;
-                next->previous = previous;
+                    previous->next = next;
+                    next->previous = previous;
 
-                item.next = nullptr;
-                item.previous = nullptr;
-                return;
+                    ResetItem(item);
+                    return;
+                }
             }
         }
     }
@@ -118,11 +173,10 @@ struct DoubleLinkedList
     {
         if (Empty() == false)
         {
+            auto toBePopped = back;
+
             if (back == front)
             {
-                back->next = nullptr;
-                back->previous = nullptr;
-
                 back = nullptr;
                 front = nullptr;
             }
@@ -132,6 +186,8 @@ struct DoubleLinkedList
                 back->previous = nullptr;
             }
 
+            ResetItem(*toBePopped);
+
             count--;
         }
     }
@@ -140,11 +196,10 @@ struct DoubleLinkedList
     {
         if (Empty() == false)
         {
+            auto toBePopped = front;
+
             if (back == front)
             {
-                front->next = nullptr;
-                front->previous = nullptr;
-
                 back = nullptr;
                 front = nullptr;
             }
@@ -153,6 +208,8 @@ struct DoubleLinkedList
                 front = front->previous;
                 front->next = nullptr;
             }
+
+            ResetItem(*toBePopped);
 
             count--;
         }
@@ -183,4 +240,11 @@ protected:
     Item* front = nullptr;
 
     std::size_t count = 0;
+
+    void ResetItem(Item& item)
+    {
+        item.next = nullptr;
+        item.previous = nullptr;
+        item.list = nullptr;
+    }
 };

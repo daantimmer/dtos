@@ -149,7 +149,7 @@ void TaskScheduler()
 
         readyTasks.PopFront();
 
-        currentTaskControlBlock = &(nextTask->Object());
+        currentTaskControlBlock = *nextTask;
     }
     else
     {
