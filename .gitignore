@@ -6,3 +6,7 @@
 /.vs/Rtos/v16
 /build
 /cubemx/rtoscubemx
+/.vs/UnitTests/v15
+Debug
+Release
+/UnitTests/UnitTests.vcxproj.user
