@@ -3,7 +3,7 @@
     {
       "name": "IoT-Debug",
       "generator": "Ninja",
-      //"configurationType": "RelMinSize",
+      //"configurationType": "RelWithDebInfo",
       "configurationType": "Debug",
       "inheritEnvironments": [ "gcc-arm" ],
       "buildRoot": "${workspaceRoot}\\build\\${name}",
@@ -23,8 +23,7 @@
     {
       "name": "IoT-Release",
       "generator": "Ninja",
-      //"configurationType": "RelMinSize",
-      "configurationType": "RelWithDebInfo",
+      "configurationType": "MinSizeRel",
       "inheritEnvironments": [ "gcc-arm" ],
       "buildRoot": "${workspaceRoot}\\build\\${name}",
       "installRoot": "${workspaceRoot}\\install\\${name}",

@@ -6,6 +6,9 @@ cmake_minimum_required (VERSION 3.8)
 project(rtos)
 
 set(ELF ${PROJECT_NAME}.elf)
+set(MAP ${PROJECT_NAME}.map)
+set(HEX ${PROJECT_NAME}.hex)
+set(LST ${PROJECT_NAME}.lst)
 
 enable_language(ASM)
 
@@ -48,7 +51,7 @@ set_target_properties(
         C_STANDARD_REQUIRED YES
         C_EXTENSIONS NO
 
-        CXX_STANDARD 14
+        CXX_STANDARD 17
         CXX_STANDARD_REQUIRED YES
         CXX_EXTENSIONS NO
 
@@ -89,3 +92,45 @@ add_definitions(
 
 
 # TODO: Add tests and install targets if needed.
+# generate the lst file
+add_custom_command(
+    OUTPUT ${LST}
+
+    COMMAND
+        ${CMAKE_OBJDUMP} -h -S ${ELF} > ${LST}
+
+    DEPENDS ${ELF}
+)
+
+# create hex file
+add_custom_command(
+    OUTPUT ${HEX}
+
+    COMMAND
+        ${CMAKE_OBJCOPY} -j .text -j .data -O ihex ${ELF} ${HEX}
+
+    DEPENDS ${ELF}
+)
+
+add_custom_command(
+    OUTPUT "print-size-${ELF}"
+
+    COMMAND
+        ${ARM_SIZE} ${ELF}
+
+    DEPENDS ${ELF}
+)
+
+# build the intel hex file for the device
+add_custom_target(
+    ${PROJECT_NAME}
+    ALL
+    DEPENDS ${HEX} ${LST} "print-size-${ELF}"
+)
+
+set_target_properties(
+    ${PROJECT_NAME}
+
+    PROPERTIES
+        OUTPUT_NAME ${ELF}
+)
