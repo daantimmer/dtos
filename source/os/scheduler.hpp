@@ -10,11 +10,9 @@ extern "C"
     void TaskScheduler();
 }
 
-void EnterCriticalSection();
-void ExitCriticalSection();
-
 void scheduler_yield();
 bool SchedulerTick();
 void startFirstTask() __attribute__((naked));
 
-void DelayTask();
+void DelayTask(uint32_t ticks = 0);
+void DelayTask(Task& task, uint32_t ticks = 0);

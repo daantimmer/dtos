@@ -26,17 +26,17 @@ struct SingleLinkedList
         T& object;
     };
 
-    virtual std::size_t Size()
+    std::size_t Size()
     {
         return count;
     }
 
-    virtual bool Empty()
+    bool Empty()
     {
         return Size() == 0;
     }
 
-    virtual void AddBack(Item& item)
+    void AddBack(Item& item)
     {
         if (Empty() == true)
         {
@@ -51,7 +51,7 @@ struct SingleLinkedList
         count++;
     }
 
-    virtual void Remove(Item& item)
+    void Remove(Item& item)
     {
         if (Empty() == true)
         {
@@ -76,7 +76,7 @@ struct SingleLinkedList
         }
     }
 
-    virtual void PopBack()
+    void PopBack()
     {
         if (Empty() == false)
         {
@@ -84,7 +84,7 @@ struct SingleLinkedList
         }
     }
 
-    virtual const T* PeekBack() const
+    const T* PeekBack() const
     {
         if (Empty() == true)
         {

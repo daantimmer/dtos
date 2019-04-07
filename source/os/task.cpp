@@ -16,11 +16,15 @@ Task::Task(void (*entry)(), uint32_t* stackTop, size_t stackSize, TaskDebugGpio 
     : stackPointer(stackTop + stackSize - 1)
     , stackTop(stackTop + 1)
     , stackSize(stackSize - 2)
+    , queueItem(this)
+    , blockedItem(this)
+    , stackGuard_begin(this->stackTop - 1)
+    , stackGuard_end(this->stackPointer)
     , gpioDebug(gpioDebug)
 {
-    *(this->stackTop - 1) = 0xCCCCCCCC;
+    *stackGuard_begin = 0xCCCCCCCC;
     std::fill(this->stackTop, stackPointer, 0xDEADBEEF);
-    *(this->stackPointer) = 0xCDCDCDCD;
+    *stackGuard_end = 0xCDCDCDCD;
 
     stackPointer--;
     *stackPointer = 0x21'00'00'00UL; /* xPSR */
@@ -35,4 +39,9 @@ Task::Task(void (*entry)(), uint32_t* stackTop, size_t stackSize, TaskDebugGpio 
     *stackPointer = 0x0; /* R0 */
 
     stackPointer -= 8; /* R11, R10, R9, R8, R7, R6, R5 and R4. */
+}
+
+bool Task::StackSafe() const
+{
+    return (*stackGuard_begin == 0xCCCCCCCC) && (*stackGuard_end == 0xCDCDCDCD);
 }

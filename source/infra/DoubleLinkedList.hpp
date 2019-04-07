@@ -2,6 +2,7 @@
 #pragma once
 
 #include "SingleLinkedList.hpp"
+#include "os/criticalsection.hpp"
 
 #include <cassert>
 
@@ -28,6 +29,16 @@ struct DoubleLinkedList
             return &object;
         }
 
+        T& operator*()
+        {
+            return object;
+        }
+
+        T* operator->()
+        {
+            return &object;
+        }
+
         Item* GetNext() const
         {
             return next;
@@ -43,6 +54,19 @@ struct DoubleLinkedList
             return list;
         }
 
+		bool IsInAList() const
+		{
+            return list != nullptr;
+		}
+
+		void RemoveFromList()
+		{
+            if (IsInAList() == true)
+			{
+                list->Remove(*this);
+			}
+		}
+
     protected:
         Item* next = nullptr;
         Item* previous = nullptr;
@@ -52,19 +76,36 @@ struct DoubleLinkedList
         T& object;
     };
 
-    virtual std::size_t Size() const
+    std::size_t Size() const
     {
+        ScopedCriticalSection critical;
+
         return count;
     }
 
-    virtual bool Empty() const
+    bool Empty() const
     {
+        ScopedCriticalSection critical;
+
         return Size() == 0;
     }
 
-    virtual void AddBack(Item& item)
+    bool Contains(const Item& item)
     {
-        if (Empty() == true)
+        ScopedCriticalSection critical;
+
+        return item.list == this;
+    }
+
+    void AddBack(Item& item)
+    {
+        ScopedCriticalSection critical;
+        
+		if (Contains(item) == true)
+		{
+            return;
+		}
+        else if (Empty() == true)
         {
             InsertFirst(item);
         }
@@ -74,9 +115,15 @@ struct DoubleLinkedList
         }
     }
 
-    virtual void AddFront(Item& item)
+    void AddFront(Item& item)
     {
-        if (Empty() == true)
+        ScopedCriticalSection critical;
+
+        if (Contains(item) == true)
+        {
+            return;
+        }
+        else if (Empty() == true)
         {
             InsertFirst(item);
         }
@@ -86,8 +133,15 @@ struct DoubleLinkedList
         }
     }
 
-    virtual void InsertInfront(Item& previous, Item& item)
+    void InsertInfront(Item& previous, Item& item)
     {
+        ScopedCriticalSection critical;
+
+		if (Contains(item) == true)
+        {
+            return;
+        }
+
         auto next = previous.next;
 
         previous.next = &item;
@@ -109,8 +163,15 @@ struct DoubleLinkedList
         count++;
     }
 
-    virtual void InsertBehind(Item& next, Item& item)
+    void InsertBehind(Item& next, Item& item)
     {
+        ScopedCriticalSection critical;
+        
+		if (Contains(item) == true)
+        {
+            return;
+        }
+
         auto previous = next.previous;
 
         next.previous = &item;
@@ -132,9 +193,11 @@ struct DoubleLinkedList
         count++;
     }
 
-    virtual void Remove(Item& item)
+    void Remove(Item& item)
     {
-        if (Empty() == true)
+        ScopedCriticalSection critical;
+
+		if ((Empty() == true) || (Contains(item) == false))
         {
             /* return */
         }
@@ -152,8 +215,10 @@ struct DoubleLinkedList
         }
     }
 
-    virtual void PopBack()
+    void PopBack()
     {
+        ScopedCriticalSection critical;
+
         if (Empty() == false)
         {
             auto toBePopped = back;
@@ -175,8 +240,10 @@ struct DoubleLinkedList
         }
     }
 
-    virtual void PopFront()
+    void PopFront()
     {
+        ScopedCriticalSection critical;
+
         if (Empty() == false)
         {
             auto toBePopped = front;
@@ -198,8 +265,10 @@ struct DoubleLinkedList
         }
     }
 
-    virtual Item* PeekBack() const
+    Item* PeekBack() const
     {
+        ScopedCriticalSection critical;
+
         if (Empty() == true)
         {
             return nullptr;
@@ -208,8 +277,10 @@ struct DoubleLinkedList
         return back;
     }
 
-    virtual Item* PeekFront() const
+    Item* PeekFront() const
     {
+        ScopedCriticalSection critical;
+
         if (Empty() == true)
         {
             return nullptr;
@@ -240,7 +311,7 @@ protected:
         count = 1;
     }
 
-	void RemoveWithin(Item& item)
+    void RemoveWithin(Item& item)
     {
         Item* iter = back;
         while (iter != nullptr)
@@ -255,12 +326,12 @@ protected:
 
                 ResetItem(item);
 
-				count--;
+                count--;
 
                 return;
             }
 
-			iter = iter->next;
+            iter = iter->next;
         }
     }
 };

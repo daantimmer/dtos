@@ -17,6 +17,8 @@
 
 #include "infra/SingleLinkedList.hpp"
 #include "infra/DoubleLinkedList.hpp"
+#include "os/scheduler.hpp"
+#include "os/lockable.hpp"
 
 void SystemClock_Config()
 {

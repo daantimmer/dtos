@@ -23,6 +23,7 @@ add_executable (${ELF}
     "source/os/scheduler.cpp"
     "source/os/task.cpp"
     "source/os/utils.cpp"
+	"source/os/criticalsection.cpp"
 
     "source/startup.c"
     "source/target/arm/stm32f1/CMSIS/Device/ST/STM32F1xx/Source/Templates/system_stm32f1xx.c"

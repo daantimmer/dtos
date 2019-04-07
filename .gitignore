@@ -10,3 +10,4 @@
 Debug
 Release
 /UnitTests/UnitTests.vcxproj.user
+/packages

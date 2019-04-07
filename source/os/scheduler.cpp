@@ -2,7 +2,9 @@
 
 #include "scheduler.hpp"
 
+#include "criticalsection.hpp"
 #include "infra/DoubleLinkedList.hpp"
+#include "infra/SortedDoubleLinkedList.hpp"
 #include "stm32f103xb.h"
 #include "stm32f1xx_ll_gpio.h"
 #include "utils.hpp"
@@ -12,68 +14,21 @@
 #include <core_cm3.h>
 #include <cstdint>
 
-uint32_t criticalNestingCounter = 0;
-
-void EnterCriticalSection()
-{
-    DisableInterrupts();
-
-    criticalNestingCounter++;
-}
-void ExitCriticalSection()
-{
-    if (criticalNestingCounter > 0)
-    {
-        criticalNestingCounter--;
-
-        if (criticalNestingCounter == 0)
-        {
-            EnableInterrupts();
-        }
-    }
-    else
-    {
-        assert(false);
-    }
-}
+uint32_t systicks = 0;
 
 extern "C"
 {
     Task* volatile currentTaskControlBlock = nullptr;
 }
 
-static std::array<uint32_t, 32 + 2> stackTask1;
-static std::array<uint32_t, 32 + 2> stackTask2;
-static std::array<uint32_t, 32 + 2> stackTask3;
-
-static void task1Handler() __attribute__((naked));
-static void task2Handler() __attribute__((naked));
+auto delayedTaskCompare = [](auto base, auto other) { return other->tickDelay < base->tickDelay; };
 
 static DoubleLinkedList<Task> blockedTasks;
-static DoubleLinkedList<Task> delayedTasks;
+static SortedDoubleLinkedList<Task, decltype(delayedTaskCompare)> delayedTasks{delayedTaskCompare};
 static DoubleLinkedList<Task> readyTasks;
 
-static void task1Handler()
-{
-    while (1)
-    {
-        LL_GPIO_ResetOutputPin(GPIOC, LL_GPIO_PIN_13);
-
-        DelayTask();
-        //__WFE();
-    }
-}
-
-static void task2Handler()
-{
-    while (1)
-    {
-        LL_GPIO_SetOutputPin(GPIOC, LL_GPIO_PIN_13);
-
-        DelayTask();
-        //__WFE();
-    }
-}
+static void task1Handler();
+static void task2Handler();
 
 static void taskIdle()
 {
@@ -83,32 +38,63 @@ static void taskIdle()
     }
 }
 
-static Task task1{task1Handler, stackTask1.data(), stackTask1.size(), {GPIOC, LL_GPIO_PIN_14}};
-static Task task2{task2Handler, stackTask2.data(), stackTask2.size(), {GPIOC, LL_GPIO_PIN_15}};
+static Task::WithStack<128> task1{task1Handler, {GPIOC, LL_GPIO_PIN_14}};
+static Task::WithStack<128> task2{task2Handler, {GPIOC, LL_GPIO_PIN_15}};
 
-static Task idleTask{taskIdle, stackTask3.data(), stackTask3.size(), {GPIOA, LL_GPIO_PIN_0}};
+static Task::WithStack<32> idleTask{taskIdle, {GPIOA, LL_GPIO_PIN_0}};
 
-static DoubleLinkedList<Task>::Item task1Item{task1};
-static DoubleLinkedList<Task>::Item task2Item{task2};
+static void task1Handler()
+{
+    while (1)
+    {
+        LL_GPIO_ResetOutputPin(GPIOC, LL_GPIO_PIN_13);
+
+        DelayTask(task2);
+        DelayTask(9999);
+    }
+}
+
+static void task2Handler()
+{
+    while (1)
+    {
+        LL_GPIO_SetOutputPin(GPIOC, LL_GPIO_PIN_13);
+
+		DelayTask(task1);
+        DelayTask(9999);
+    }
+}
 
 void scheduler_yield()
 {
     SCB->ICSR |= SCB_ICSR_PENDSVSET_Msk;
 
-    asm volatile("dsb" ::: "memory");
     asm volatile("isb");
+    asm volatile("dsb" ::: "memory");
 }
 
 bool SchedulerTick()
 {
+    systicks++;
+
     if (delayedTasks.Empty() == false)
     {
+        bool mustSwitch = false;
+
         auto item = delayedTasks.PeekFront();
-        delayedTasks.PopFront();
 
-        readyTasks.AddBack(*item);
+        while ((item != nullptr) && (*item)->tickDelay < systicks)
+        {
+            delayedTasks.PopFront();
 
-        return true;
+            readyTasks.AddBack(*item);
+
+            item = delayedTasks.PeekFront();
+
+            mustSwitch = true;
+        }
+
+        return mustSwitch;
     }
     else
     {
@@ -118,11 +104,8 @@ bool SchedulerTick()
 
 void startFirstTask()
 {
-    readyTasks.AddBack(task1Item);
-    readyTasks.AddBack(task2Item);
-
-    task1.llItem = &task1Item;
-    task2.llItem = &task2Item;
+    readyTasks.AddBack(task1.queueItem);
+    readyTasks.AddBack(task2.queueItem);
 
     currentTaskControlBlock = &idleTask;
 
@@ -137,6 +120,11 @@ void startFirstTask()
 
 void TaskScheduler()
 {
+    if (currentTaskControlBlock->StackSafe() == false)
+    {
+        asm volatile("bkpt");
+    }
+
     if (currentTaskControlBlock->gpioDebug.port != nullptr)
     {
         LL_GPIO_ResetOutputPin((GPIO_TypeDef*)currentTaskControlBlock->gpioDebug.port,
@@ -156,6 +144,11 @@ void TaskScheduler()
         currentTaskControlBlock = &idleTask;
     }
 
+    if (currentTaskControlBlock->StackSafe() == false)
+    {
+        asm volatile("bkpt");
+    }
+
     if (currentTaskControlBlock->gpioDebug.port != nullptr)
     {
         LL_GPIO_SetOutputPin((GPIO_TypeDef*)currentTaskControlBlock->gpioDebug.port,
@@ -163,13 +156,30 @@ void TaskScheduler()
     }
 }
 
-void DelayTask()
+void DelayTask(uint32_t ticks)
 {
-    EnterCriticalSection();
-
-    delayedTasks.AddBack(*(currentTaskControlBlock->llItem));
+    ScopedCriticalSection critical;
+    
+    DelayTask(*currentTaskControlBlock, ticks);
 
     scheduler_yield();
+}
 
-    ExitCriticalSection();
+void DelayTask(Task& task, uint32_t ticks)
+{
+    ScopedCriticalSection critical;
+
+	if (blockedTasks.Contains(task.queueItem) == true)
+    {
+        return;
+    }
+
+    if (readyTasks.Contains(task.queueItem) == true)
+    {
+        readyTasks.Remove(task.queueItem);
+    }
+
+    task.tickDelay = systicks + ticks;
+
+    delayedTasks.Insert(task.queueItem);
 }

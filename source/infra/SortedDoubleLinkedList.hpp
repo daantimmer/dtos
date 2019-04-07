@@ -1,6 +1,7 @@
 #pragma once
 
 #include "DoubleLinkedList.hpp"
+#include "os/criticalsection.hpp"
 
 template<typename T, typename P>
 struct SortedDoubleLinkedList
@@ -15,7 +16,13 @@ struct SortedDoubleLinkedList
 
     void Insert(Item& item)
     {
-        Item* location = nullptr;
+        ScopedCriticalSection critical;
+        
+		if (doubleLinkedList.Contains(item) == true)
+		{
+            return;
+		}
+
         Item* iterator = doubleLinkedList.PeekFront();
 
         while (iterator != nullptr)
@@ -29,18 +36,29 @@ struct SortedDoubleLinkedList
             iterator = iterator->GetNext();
         }
 
-		doubleLinkedList.AddBack(item);
+        doubleLinkedList.AddBack(item);
     }
 
-	auto PeekFront()
-	{
-        return doubleLinkedList.PeekFront();
-	}
+    auto PeekFront()
+    {
+        ScopedCriticalSection critical;
 
-	auto PopFront()
-	{
-        return doubleLinkedList.PopFront();
-	}
+        return doubleLinkedList.PeekFront();
+    }
+
+    void PopFront()
+    {
+        ScopedCriticalSection critical;
+
+        doubleLinkedList.PopFront();
+    }
+
+    auto Empty() const
+    {
+        ScopedCriticalSection critical;
+
+        return doubleLinkedList.Empty();
+    }
 
 protected:
     DoubleLinkedList<T> doubleLinkedList;

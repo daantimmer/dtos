@@ -19,4 +19,7 @@ inline __attribute__((always_inline)) void DisableInterrupts()
 inline __attribute__((always_inline)) void EnableInterrupts(uint32_t maskValue = 0)
 {
     asm volatile("msr basepri, %0" ::"r"(maskValue) : "memory");
+
+    asm volatile("isb");
+    asm volatile("dsb" ::: "memory");
 }

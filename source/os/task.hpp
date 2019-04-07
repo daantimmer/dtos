@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <cstdlib> 
+#include <array>
 
 #include "infra/DoubleLinkedList.hpp"
 
@@ -10,20 +11,52 @@ struct Task;
 
 struct TaskDebugGpio
 {
-    void* port;
-    std::uint32_t pin;
+    void* port = nullptr;
+    std::uint32_t pin = 0;
 };
 
 struct Task
 {
-    Task(void (*entry)(), uint32_t* stackTop, size_t stackSize, TaskDebugGpio gpioDebug = {nullptr, 0});
+    Task(void (*entry)(), uint32_t* stackTop, size_t stackSize, TaskDebugGpio gpioDebug = {});
+
+	Task(const Task&) = delete;
+    Task(Task&&) = delete;
+
+    Task& operator=(const Task&) = delete;
+    Task& operator=(Task&&) = delete;
+
+	bool StackSafe() const;
+
+	template<uint32_t SIZE>
+    struct WithStack;
 
 protected:
-    uint32_t* stackPointer;
-    uint32_t* stackTop;
-    size_t stackSize;
+    uint32_t* stackPointer; /* Always as the first element. */
+    
+	uint32_t* const stackTop;
+    const size_t stackSize;
+
 
 public:
-    DoubleLinkedList<Task>::Item* llItem = nullptr;
-    TaskDebugGpio gpioDebug = {nullptr, 0};
+    DoubleLinkedList<Task>::Item queueItem;
+    DoubleLinkedList<Task>::Item blockedItem;
+
+	uint32_t* stackGuard_begin;
+    uint32_t* stackGuard_end;
+    
+	uint32_t tickDelay = 0;
+
+	const TaskDebugGpio gpioDebug = {};
+};
+
+template<uint32_t SIZE>
+struct Task::WithStack : Task
+{
+	WithStack(void (*entry)(), TaskDebugGpio gpioDebug = {})
+		: Task(entry, stack.data(), stack.size(), std::move(gpioDebug))
+	{
+	}
+
+protected:
+	std::array<uint32_t, SIZE> stack;
 };
