@@ -23,7 +23,7 @@ struct DoubleLinkedList
             assert(obj != nullptr);
         }
 
-        operator T* () const
+        operator T*() const
         {
             return &object;
         }
@@ -66,37 +66,24 @@ struct DoubleLinkedList
     {
         if (Empty() == true)
         {
-            back = &item;
-            front = &item;
+            InsertFirst(item);
         }
         else
         {
-            item.next = back;
-
-            back = &item;
-            back->next->previous = back;
+            InsertBehind(*back, item);
         }
-
-        item.list = this;
-        count++;
     }
 
     virtual void AddFront(Item& item)
     {
         if (Empty() == true)
         {
-            back = &item;
-            front = &item;
+            InsertFirst(item);
         }
         else
         {
-            item.previous = front;
-
-            front = &item;
-            front->previous->next = front;
+            InsertInfront(*front, item);
         }
-        item.list = this;
-        count++;
     }
 
     virtual void InsertInfront(Item& previous, Item& item)
@@ -111,6 +98,11 @@ struct DoubleLinkedList
         if (next != nullptr)
         {
             next->previous = &item;
+        }
+
+        if (front == &previous)
+        {
+            front = &item;
         }
 
         item.list = this;
@@ -129,6 +121,11 @@ struct DoubleLinkedList
         if (previous != nullptr)
         {
             previous->next = &item;
+        }
+
+        if (back == &next)
+        {
+            back = &item;
         }
 
         item.list = this;
@@ -151,21 +148,7 @@ struct DoubleLinkedList
         }
         else
         {
-            Item* iter = back;
-            while (iter != nullptr)
-            {
-                if (iter == &item)
-                {
-                    Item* previous = item.previous;
-                    Item* next = item.next;
-
-                    previous->next = next;
-                    next->previous = previous;
-
-                    ResetItem(item);
-                    return;
-                }
-            }
+            RemoveWithin(item);
         }
     }
 
@@ -246,5 +229,38 @@ protected:
         item.next = nullptr;
         item.previous = nullptr;
         item.list = nullptr;
+    }
+
+    void InsertFirst(Item& item)
+    {
+        back = &item;
+        front = &item;
+
+        item.list = this;
+        count = 1;
+    }
+
+	void RemoveWithin(Item& item)
+    {
+        Item* iter = back;
+        while (iter != nullptr)
+        {
+            if (iter == &item)
+            {
+                Item* previous = item.previous;
+                Item* next = item.next;
+
+                previous->next = next;
+                next->previous = previous;
+
+                ResetItem(item);
+
+				count--;
+
+                return;
+            }
+
+			iter = iter->next;
+        }
     }
 };
