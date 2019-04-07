@@ -7,6 +7,10 @@
     <ClCompile Include="TestSortedDoubleLinkedList.cpp">
       <Filter>tests</Filter>
     </ClCompile>
+    <ClCompile Include="harness\CriticalSectionHarness.cpp">
+      <Filter>harness</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -21,6 +25,9 @@
     <Filter Include="source\infra">
       <UniqueIdentifier>{aca3bda0-1489-4ba4-a9c6-4bf03bac308a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="harness">
+      <UniqueIdentifier>{45554aec-965b-448e-87c7-34ca95b95276}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\infra\DoubleLinkedList.hpp">
@@ -28,6 +35,9 @@
     </ClInclude>
     <ClInclude Include="..\source\infra\SortedDoubleLinkedList.hpp">
       <Filter>source\infra</Filter>
+    </ClInclude>
+    <ClInclude Include="harness\CriticalSectionHarness.hpp">
+      <Filter>harness</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

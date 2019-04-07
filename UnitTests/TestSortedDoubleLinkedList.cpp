@@ -1,5 +1,6 @@
 #include "gtest/gtest.h"
 #include <infra/SortedDoubleLinkedList.hpp>
+#include "harness/CriticalSectionHarness.hpp"
 
 auto predicate_smaller = [](DoubleLinkedList<uint32_t>::Item& currentItem, DoubleLinkedList<uint32_t>::Item& newItem) {
     return (*newItem < *currentItem);
@@ -9,6 +10,8 @@ using SortedSmallerDLL = SortedDoubleLinkedList<uint32_t, decltype(predicate_sma
 
 TEST(TestSortedDoubleLinkedList_Insert, TestName)
 {
+    CriticalSectionSpy criticalSpy;
+
     SortedSmallerDLL sortedList(predicate_smaller);
 
     uint32_t data1 = 1;
