@@ -1,6 +1,6 @@
 #pragma once
 
-#include "infra/DoubleLinkedList.hpp"
+#include "infra/List.hpp"
 #include "scheduler.hpp"
 #include "utils.hpp"
 
@@ -52,5 +52,5 @@ struct Lockable
     }
 
     void* lock = nullptr;
-    DoubleLinkedList<Task> blockedList;
+    List<Task> blockedList;
 };

@@ -1,17 +1,16 @@
 
 #pragma once
 
-#include "SingleLinkedList.hpp"
 #include "os/criticalsection.hpp"
 
 #include <cassert>
 
 template<typename T>
-struct DoubleLinkedList
+struct List
 {
     struct Item final
     {
-        friend DoubleLinkedList<T>;
+        friend List<T>;
 
         Item(T& obj)
             : object(obj)
@@ -49,7 +48,7 @@ struct DoubleLinkedList
             return previous;
         }
 
-        DoubleLinkedList* GetList() const
+        List* GetList() const
         {
             return list;
         }
@@ -71,7 +70,7 @@ struct DoubleLinkedList
         Item* next = nullptr;
         Item* previous = nullptr;
 
-        DoubleLinkedList* list = nullptr;
+        List* list = nullptr;
 
         T& object;
     };

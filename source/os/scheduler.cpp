@@ -3,8 +3,8 @@
 #include "scheduler.hpp"
 
 #include "criticalsection.hpp"
-#include "infra/DoubleLinkedList.hpp"
-#include "infra/SortedDoubleLinkedList.hpp"
+#include "infra/List.hpp"
+#include "infra/SortedList.hpp"
 #include "stm32f103xb.h"
 #include "stm32f1xx_ll_gpio.h"
 #include "utils.hpp"
@@ -23,9 +23,9 @@ extern "C"
 
 auto delayedTaskCompare = [](auto base, auto other) { return other->tickDelay < base->tickDelay; };
 
-static DoubleLinkedList<Task> blockedTasks;
-static SortedDoubleLinkedList<Task, decltype(delayedTaskCompare)> delayedTasks{delayedTaskCompare};
-static DoubleLinkedList<Task> readyTasks;
+static List<Task> blockedTasks;
+static SortedList<Task, decltype(delayedTaskCompare)> delayedTasks{delayedTaskCompare};
+static List<Task> readyTasks;
 
 static void task1Handler();
 static void task2Handler();

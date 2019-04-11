@@ -1,10 +1,10 @@
 #include "gtest/gtest.h"
-#include <infra/DoubleLinkedList.hpp>
+#include <infra/List.hpp>
 
 template<typename T>
-struct DoubleLinkedListCreator : DoubleLinkedList<T>
+struct ListCreator : List<T>
 {
-    DoubleLinkedListCreator(std::initializer_list<T>&& list)
+    ListCreator(std::initializer_list<T>&& list)
         : creatorDatas(list)
     {
         creatorItems.reserve(list.size());
@@ -17,13 +17,13 @@ struct DoubleLinkedListCreator : DoubleLinkedList<T>
     }
 
     std::vector<T> creatorDatas;
-    std::vector<DoubleLinkedListCreator::Item> creatorItems;
+    std::vector<ListCreator::Item> creatorItems;
 };
 
 template<typename T>
 struct AddBack
 {
-    AddBack(T data, DoubleLinkedList<T>& list)
+    AddBack(T data, List<T>& list)
         : data(data)
         , item(this->data)
     {
@@ -31,13 +31,13 @@ struct AddBack
     }
 
     T data;
-    typename DoubleLinkedList<T>::Item item;
+    typename List<T>::Item item;
 };
 
 template<typename T>
 struct AddFront
 {
-    AddFront(T data, DoubleLinkedList<T>& list)
+    AddFront(T data, List<T>& list)
         : data(data)
         , item(this->data)
     {
@@ -45,48 +45,48 @@ struct AddFront
     }
 
     T data;
-    typename DoubleLinkedList<T>::Item item;
+    typename List<T>::Item item;
 };
 
-TEST(TestDoubleLinkedListCreator, WhenCreatedWithSingleItem_ThenTheSizeIsOneAndFrontAndBackAreSameItem)
+TEST(TestListCreator, WhenCreatedWithSingleItem_ThenTheSizeIsOneAndFrontAndBackAreSameItem)
 {
-    DoubleLinkedListCreator<uint32_t> list{1};
+    ListCreator<uint32_t> list{1};
 
     EXPECT_EQ(1, list.Size());
     EXPECT_EQ(&list.creatorItems[0], list.PeekFront());
     EXPECT_EQ(&list.creatorItems[0], list.PeekBack());
 }
 
-TEST(TestDoubleLinkedListCreator, WhenCreatedWithMultipleItems_ThenTheSizeIsThreeAndFrontAndBackAreDifferntItems)
+TEST(TestListCreator, WhenCreatedWithMultipleItems_ThenTheSizeIsThreeAndFrontAndBackAreDifferntItems)
 {
-    DoubleLinkedListCreator<uint32_t> list{1, 2, 3};
+    ListCreator<uint32_t> list{1, 2, 3};
 
     EXPECT_EQ(3, list.Size());
     EXPECT_EQ(&list.creatorItems[0], list.PeekFront());
     EXPECT_EQ(&list.creatorItems[2], list.PeekBack());
 }
 
-TEST(TestDoubleLinkedList_Size, GivenMultipleSizedLists_WhenNothingChanges_ThenTheSizeShouldBeCorrect)
+TEST(TestList_Size, GivenMultipleSizedLists_WhenNothingChanges_ThenTheSizeShouldBeCorrect)
 {
-    DoubleLinkedListCreator<uint32_t> list_of_4{1, 2, 3, 4};
+    ListCreator<uint32_t> list_of_4{1, 2, 3, 4};
 
     EXPECT_EQ(4, list_of_4.Size());
 
-    DoubleLinkedListCreator<uint32_t> list_of_10{0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+    ListCreator<uint32_t> list_of_10{0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
 
     EXPECT_EQ(10, list_of_10.Size());
 }
 
-TEST(TestDoubleLinkedList_Empty, GivenAnEmptyList_WhenConstructed_ThenEmptyShouldReturnTrue)
+TEST(TestList_Empty, GivenAnEmptyList_WhenConstructed_ThenEmptyShouldReturnTrue)
 {
-    DoubleLinkedList<uint32_t> list;
+    List<uint32_t> list;
 
     EXPECT_TRUE(list.Empty());
 }
 
-TEST(TestDoubleLinkedList_Empty, GivenAnEmptyList_WhenValueAddedToBack_ThenEmptyShouldReturnFalse)
+TEST(TestList_Empty, GivenAnEmptyList_WhenValueAddedToBack_ThenEmptyShouldReturnFalse)
 {
-    DoubleLinkedList<uint32_t> list;
+    List<uint32_t> list;
 
     ASSERT_TRUE(list.Empty());
 
@@ -95,9 +95,9 @@ TEST(TestDoubleLinkedList_Empty, GivenAnEmptyList_WhenValueAddedToBack_ThenEmpty
     EXPECT_FALSE(list.Empty());
 }
 
-TEST(TestDoubleLinkedList_Empty, GivenAnEmptyList_WhenValueAddedToFront_ThenEmptyShouldReturnFalse)
+TEST(TestList_Empty, GivenAnEmptyList_WhenValueAddedToFront_ThenEmptyShouldReturnFalse)
 {
-    DoubleLinkedList<uint32_t> list;
+    List<uint32_t> list;
 
     ASSERT_TRUE(list.Empty());
 
@@ -106,9 +106,9 @@ TEST(TestDoubleLinkedList_Empty, GivenAnEmptyList_WhenValueAddedToFront_ThenEmpt
     EXPECT_FALSE(list.Empty());
 }
 
-TEST(TestDoubleLinkedList_Empty, GivenAnNonEmptyList_WhenAllValuesRemovedUsingPopBack_ThenEmptyShouldReturnTrue)
+TEST(TestList_Empty, GivenAnNonEmptyList_WhenAllValuesRemovedUsingPopBack_ThenEmptyShouldReturnTrue)
 {
-    DoubleLinkedListCreator<uint32_t> list{1, 2, 3};
+    ListCreator<uint32_t> list{1, 2, 3};
 
     ASSERT_FALSE(list.Empty());
 
@@ -122,9 +122,9 @@ TEST(TestDoubleLinkedList_Empty, GivenAnNonEmptyList_WhenAllValuesRemovedUsingPo
     EXPECT_TRUE(list.Empty());
 }
 
-TEST(TestDoubleLinkedList_Empty, GivenAnNonEmptyList_WhenAllValuesRemovedUsingPopFront_ThenEmptyShouldReturnTrue)
+TEST(TestList_Empty, GivenAnNonEmptyList_WhenAllValuesRemovedUsingPopFront_ThenEmptyShouldReturnTrue)
 {
-    DoubleLinkedListCreator<uint32_t> list{1, 2, 3};
+    ListCreator<uint32_t> list{1, 2, 3};
 
     ASSERT_FALSE(list.Empty());
 
@@ -138,10 +138,10 @@ TEST(TestDoubleLinkedList_Empty, GivenAnNonEmptyList_WhenAllValuesRemovedUsingPo
     EXPECT_TRUE(list.Empty());
 }
 
-TEST(TestDoubleLinkedList_AddBack,
+TEST(TestList_AddBack,
 	GivenAEmptyList_WhenItemAddedUsingAddBack_ThenItemsInternalsAreReset)
 {
-    DoubleLinkedList<uint32_t> list;
+    List<uint32_t> list;
 
 	AddBack<uint32_t> addBack(0, list);
 
@@ -150,10 +150,10 @@ TEST(TestDoubleLinkedList_AddBack,
     EXPECT_EQ(nullptr, addBack.item.GetPrevious());
 }
 
-TEST(TestDoubleLinkedList_AddBack,
+TEST(TestList_AddBack,
      GivenAListWithOneItem_WhenItemAddedUsingAddBack_ThenTheItemsInternalValuesAreSetCorrect)
 {
-    DoubleLinkedListCreator<uint32_t> list{1};
+    ListCreator<uint32_t> list{1};
 
     AddBack<uint32_t> addBack(3, list);
 
@@ -161,9 +161,9 @@ TEST(TestDoubleLinkedList_AddBack,
     EXPECT_EQ(nullptr, addBack.item.GetPrevious());
 }
 
-TEST(TestDoubleLinkedList_AddBack, GivenAnEmptyList_WhenItemAddedUsingAddBack_ThenTheItemsInternalValuesAreNullptr)
+TEST(TestList_AddBack, GivenAnEmptyList_WhenItemAddedUsingAddBack_ThenTheItemsInternalValuesAreNullptr)
 {
-    DoubleLinkedList<uint32_t> list;
+    List<uint32_t> list;
 
     AddBack<uint32_t> addBack_5(5, list);
 
@@ -171,9 +171,9 @@ TEST(TestDoubleLinkedList_AddBack, GivenAnEmptyList_WhenItemAddedUsingAddBack_Th
     EXPECT_EQ(nullptr, addBack_5.item.GetPrevious());
 }
 
-//TEST(TestDoubleLinkedList_AddBack, GivenAEmptyList_WhenItemAddedUsingAddBack_ThenItemsInternalsAreReset)
+//TEST(TestList_AddBack, GivenAEmptyList_WhenItemAddedUsingAddBack_ThenItemsInternalsAreReset)
 //{
-//    DoubleLinkedList<uint32_t> list;
+//    List<uint32_t> list;
 //
 //    AddBack<uint32_t> addBack(0, list);
 //
@@ -182,10 +182,10 @@ TEST(TestDoubleLinkedList_AddBack, GivenAnEmptyList_WhenItemAddedUsingAddBack_Th
 //    EXPECT_EQ(nullptr, addBack.item.GetPrevious());
 //}
 
-TEST(TestDoubleLinkedList_AddFront,
+TEST(TestList_AddFront,
      GivenAListWithOneItem_WhenItemAddedUsingAddFront_ThenTheItemsInternalValuesAreSetCorrect)
 {
-    DoubleLinkedListCreator<uint32_t> list{2};
+    ListCreator<uint32_t> list{2};
 
     AddFront<uint32_t> addFront(3, list);
 
@@ -193,9 +193,9 @@ TEST(TestDoubleLinkedList_AddFront,
     EXPECT_NE(nullptr, addFront.item.GetPrevious());
 }
 
-TEST(TestDoubleLinkedList_AddFront, GivenAnEmptyList_WhenItemAddedUsingAddFront_ThenTheItemsInternalValuesAreNullptr)
+TEST(TestList_AddFront, GivenAnEmptyList_WhenItemAddedUsingAddFront_ThenTheItemsInternalValuesAreNullptr)
 {
-    DoubleLinkedList<uint32_t> list;
+    List<uint32_t> list;
 
     AddFront<uint32_t> addFront_5(5, list);
 
@@ -203,10 +203,10 @@ TEST(TestDoubleLinkedList_AddFront, GivenAnEmptyList_WhenItemAddedUsingAddFront_
     EXPECT_EQ(nullptr, addFront_5.item.GetPrevious());
 }
 
-TEST(TestDoubleLinkedList_InsertInfront,
+TEST(TestList_InsertInfront,
      GivenAListWithThreeItems_WhenItemAddedIsInFrontAnotherItem_ThenTheItemIsInfrontTheOtherItem)
 {
-    DoubleLinkedList<uint32_t> list;
+    List<uint32_t> list;
 
     AddBack<uint32_t> addBack_1(3, list);
     AddBack<uint32_t> addBack_2(5, list);
@@ -231,9 +231,9 @@ TEST(TestDoubleLinkedList_InsertInfront,
     EXPECT_EQ(&item, addBack_2.item.GetNext());
 }
 
-TEST(TestDoubleLinkedList_InsertInfront, GivenAListWithASingleItem_WhenItemIsAddedInfront_ThenTheItemBecomesTheNewFront)
+TEST(TestList_InsertInfront, GivenAListWithASingleItem_WhenItemIsAddedInfront_ThenTheItemBecomesTheNewFront)
 {
-    DoubleLinkedListCreator<uint32_t> list{1};
+    ListCreator<uint32_t> list{1};
 
     auto currentFront = list.PeekFront();
     ASSERT_NE(nullptr, currentFront);
@@ -249,10 +249,10 @@ TEST(TestDoubleLinkedList_InsertInfront, GivenAListWithASingleItem_WhenItemIsAdd
     EXPECT_EQ(&item, newFront);
 }
 
-TEST(TestDoubleLinkedList_InsertBehind,
+TEST(TestList_InsertBehind,
      GivenAListWithThreeItems_WhenItemAddedIsBehindAnotherItem_ThenTheItemIsBehindTheOtherItem)
 {
-    DoubleLinkedList<uint32_t> list;
+    List<uint32_t> list;
 
     AddBack<uint32_t> addBack_1(3, list);
     AddBack<uint32_t> addBack_2(5, list);
@@ -273,9 +273,9 @@ TEST(TestDoubleLinkedList_InsertBehind,
     EXPECT_EQ(&item, addBack_3.item.GetNext());
 }
 
-TEST(TestDoubleLinkedList_InsertBehind, GivenAListWithASingleItem_WhenItemIsAddedBehind_ThenTheItemBecomesTheNewBack)
+TEST(TestList_InsertBehind, GivenAListWithASingleItem_WhenItemIsAddedBehind_ThenTheItemBecomesTheNewBack)
 {
-    DoubleLinkedListCreator<uint32_t> list{1};
+    ListCreator<uint32_t> list{1};
 
     auto currentBack = list.PeekBack();
     ASSERT_NE(nullptr, currentBack);
@@ -291,9 +291,9 @@ TEST(TestDoubleLinkedList_InsertBehind, GivenAListWithASingleItem_WhenItemIsAdde
     EXPECT_EQ(&item, newBack);
 }
 
-TEST(TestDoubleLinkedList_Remove, GivenAListWithASingleItem_WhenItemIsRemoved_ThenTheListIsEmpty)
+TEST(TestList_Remove, GivenAListWithASingleItem_WhenItemIsRemoved_ThenTheListIsEmpty)
 {
-    DoubleLinkedListCreator<uint32_t> list{1};
+    ListCreator<uint32_t> list{1};
 
     ASSERT_NE(nullptr, list.PeekBack());
 
@@ -303,10 +303,10 @@ TEST(TestDoubleLinkedList_Remove, GivenAListWithASingleItem_WhenItemIsRemoved_Th
     EXPECT_EQ(0, list.Size());
 }
 
-TEST(TestDoubleLinkedList_Remove,
+TEST(TestList_Remove,
      GivenAListWithMultipleItems_WhenItemIsRemovedFromFront_ThenTheSizeDecreasedByOneAndNotEmpty)
 {
-    DoubleLinkedListCreator<uint32_t> list{1, 2, 3};
+    ListCreator<uint32_t> list{1, 2, 3};
 
     ASSERT_FALSE(list.Empty());
     ASSERT_EQ(3, list.Size());
@@ -317,10 +317,10 @@ TEST(TestDoubleLinkedList_Remove,
     ASSERT_EQ(2, list.Size());
 }
 
-TEST(TestDoubleLinkedList_Remove,
+TEST(TestList_Remove,
      GivenAListWithMultipleItems_WhenItemIsRemovedFromBack_ThenTheSizeDecreasedByOneAndNotEmpty)
 {
-    DoubleLinkedListCreator<uint32_t> list{1, 2, 3};
+    ListCreator<uint32_t> list{1, 2, 3};
 
     ASSERT_FALSE(list.Empty());
     ASSERT_EQ(3, list.Size());
@@ -331,10 +331,10 @@ TEST(TestDoubleLinkedList_Remove,
     ASSERT_EQ(2, list.Size());
 }
 
-TEST(TestDoubleLinkedList_Remove,
+TEST(TestList_Remove,
      GivenAListWithMultipleItems_WhenItemIsRemovedFromMiddle_ThenTheSizeDecreasedByOneAndNotEmpty)
 {
-    DoubleLinkedListCreator<uint32_t> list{1, 2, 3};
+    ListCreator<uint32_t> list{1, 2, 3};
 
     ASSERT_FALSE(list.Empty());
     ASSERT_EQ(3, list.Size());
@@ -345,9 +345,9 @@ TEST(TestDoubleLinkedList_Remove,
     EXPECT_EQ(2, list.Size());
 }
 
-TEST(TestDoubleLinkedList_Remove, GivenAListWithMultipleItems_WhenItemIsRemovedFromFront_ThenTheFrontIsUpdated)
+TEST(TestList_Remove, GivenAListWithMultipleItems_WhenItemIsRemovedFromFront_ThenTheFrontIsUpdated)
 {
-    DoubleLinkedListCreator<uint32_t> list{1, 2, 3};
+    ListCreator<uint32_t> list{1, 2, 3};
 
     ASSERT_EQ(&list.creatorItems[0], list.PeekFront());
 
@@ -356,9 +356,9 @@ TEST(TestDoubleLinkedList_Remove, GivenAListWithMultipleItems_WhenItemIsRemovedF
     EXPECT_EQ(&list.creatorItems[1], list.PeekFront());
 }
 
-TEST(TestDoubleLinkedList_Remove, GivenAListWithMultipleItems_WhenItemIsRemovedFromBack_ThenTheBackisUpdated)
+TEST(TestList_Remove, GivenAListWithMultipleItems_WhenItemIsRemovedFromBack_ThenTheBackisUpdated)
 {
-    DoubleLinkedListCreator<uint32_t> list{1, 2, 3};
+    ListCreator<uint32_t> list{1, 2, 3};
 
     ASSERT_EQ(&list.creatorItems[2], list.PeekBack());
 
@@ -367,10 +367,10 @@ TEST(TestDoubleLinkedList_Remove, GivenAListWithMultipleItems_WhenItemIsRemovedF
     EXPECT_EQ(&list.creatorItems[1], list.PeekBack());
 }
 
-TEST(TestDoubleLinkedList_Remove,
+TEST(TestList_Remove,
      GivenAListWithMultipleItems_WhenItemIsRemovedFromMiddle_ThenTheFrontAndBackisNotUpdated)
 {
-    DoubleLinkedListCreator<uint32_t> list{1, 2, 3};
+    ListCreator<uint32_t> list{1, 2, 3};
 
     ASSERT_EQ(&list.creatorItems[0], list.PeekFront());
     ASSERT_EQ(&list.creatorItems[2], list.PeekBack());
@@ -381,18 +381,18 @@ TEST(TestDoubleLinkedList_Remove,
     EXPECT_EQ(&list.creatorItems[2], list.PeekBack());
 }
 
-TEST(TestDoubleLinkedList_PopBack, PopBack)
+TEST(TestList_PopBack, PopBack)
 {
 }
 
-TEST(TestDoubleLinkedList_PopFront, PopFront)
+TEST(TestList_PopFront, PopFront)
 {
 }
 
-TEST(TestDoubleLinkedList_PeekBack, PeekBack)
+TEST(TestList_PeekBack, PeekBack)
 {
 }
 
-TEST(TestDoubleLinkedList_PeekFront, PeekFront)
+TEST(TestList_PeekFront, PeekFront)
 {
 }

@@ -5,7 +5,7 @@
 #include <cstdlib> 
 #include <array>
 
-#include "infra/DoubleLinkedList.hpp"
+#include "infra/List.hpp"
 
 struct Task;
 
@@ -38,8 +38,8 @@ protected:
 
 
 public:
-    DoubleLinkedList<Task>::Item queueItem;
-    DoubleLinkedList<Task>::Item blockedItem;
+    List<Task>::Item queueItem;
+    List<Task>::Item blockedItem;
 
 	uint32_t* stackGuard_begin;
     uint32_t* stackGuard_end;

@@ -1,14 +1,14 @@
 #include "gtest/gtest.h"
-#include <infra/SortedDoubleLinkedList.hpp>
+#include <infra/SortedList.hpp>
 #include "harness/CriticalSectionHarness.hpp"
 
-auto predicate_smaller = [](DoubleLinkedList<uint32_t>::Item& currentItem, DoubleLinkedList<uint32_t>::Item& newItem) {
+auto predicate_smaller = [](List<uint32_t>::Item& currentItem, List<uint32_t>::Item& newItem) {
     return (*newItem < *currentItem);
 };
 
-using SortedSmallerDLL = SortedDoubleLinkedList<uint32_t, decltype(predicate_smaller)>;
+using SortedSmallerDLL = SortedList<uint32_t, decltype(predicate_smaller)>;
 
-TEST(TestSortedDoubleLinkedList_Insert, TestName)
+TEST(TestSortedList_Insert, TestName)
 {
     CriticalSectionSpy criticalSpy;
 

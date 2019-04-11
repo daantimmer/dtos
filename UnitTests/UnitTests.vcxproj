@@ -39,15 +39,15 @@
   <ItemGroup>
     <ClCompile Include="harness\CriticalSectionHarness.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="TestDoubleLinkedList.cpp" />
-    <ClCompile Include="TestSortedDoubleLinkedList.cpp" />
+    <ClCompile Include="TestList.cpp" />
+    <ClCompile Include="TestSortedList.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\source\infra\DoubleLinkedList.hpp" />
-    <ClInclude Include="..\source\infra\SortedDoubleLinkedList.hpp" />
+    <ClInclude Include="..\source\infra\List.hpp" />
+    <ClInclude Include="..\source\infra\SortedList.hpp" />
     <ClInclude Include="harness\CriticalSectionHarness.hpp" />
   </ItemGroup>
   <ItemDefinitionGroup />
