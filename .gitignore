@@ -1,13 +1,13 @@
-﻿################################################################################
-# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
-################################################################################
-
-/.vs/Rtos/v15
-/.vs/Rtos/v16
-/build
-/cubemx/rtoscubemx
-/.vs/UnitTests/v15
-Debug
-Release
-/UnitTests/UnitTests.vcxproj.user
-/packages
+﻿.vs/ProjectSettings.json
+.vs/Rtos/v15
+.vs/Rtos/v16
+.vs/slnx.sqlite
+.vs/UnitTests
+.vs/VSworkspaceState.json
+.vscode/
+build/
+cubemx/rtoscubemx
+Debug/
+packages/
+Release/
+UnitTests/UnitTests.vcxproj.user
