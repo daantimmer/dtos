@@ -15,7 +15,6 @@
 
 #include "interrupts.hpp"
 
-#include "infra/SingleLinkedList.hpp"
 #include "infra/List.hpp"
 #include "os/scheduler.hpp"
 #include "os/lockable.hpp"
