@@ -18,49 +18,49 @@ struct SortedList
     {
         ScopedCriticalSection critical;
         
-		if (List.Contains(item) == true)
+		if (list.Contains(item) == true)
 		{
             return;
 		}
 
-        Item* iterator = List.PeekFront();
+        Item* iterator = list.PeekFront();
 
         while (iterator != nullptr)
         {
             if (p(*iterator, item) == true)
             {
-                List.InsertInfront(*iterator, item);
+                list.InsertInfront(*iterator, item);
                 return;
             }
 
             iterator = iterator->GetNext();
         }
 
-        List.AddBack(item);
+        list.AddBack(item);
     }
 
     auto PeekFront()
     {
         ScopedCriticalSection critical;
 
-        return List.PeekFront();
+        return list.PeekFront();
     }
 
     void PopFront()
     {
         ScopedCriticalSection critical;
 
-        List.PopFront();
+        list.PopFront();
     }
 
     auto Empty() const
     {
         ScopedCriticalSection critical;
 
-        return List.Empty();
+        return list.Empty();
     }
 
 protected:
-    List<T> List;
+    List<T> list;
     P p;
 };
