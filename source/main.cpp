@@ -37,7 +37,7 @@ void SystemClock_Config()
     LL_RCC_ClocksTypeDef RCC_Clocks;
     LL_RCC_GetSystemClocksFreq(&RCC_Clocks);
 
-    LL_InitTick(RCC_Clocks.HCLK_Frequency, 20 );
+    LL_InitTick(RCC_Clocks.HCLK_Frequency, 1000 );
 }
 
 extern "C" int RealDeal()
