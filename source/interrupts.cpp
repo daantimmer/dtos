@@ -112,7 +112,7 @@ extern "C"
 
         if (SchedulerTick() == true)
         {
-            scheduler_yield();
+            YieldTask();
         }
 
         EnableInterrupts();

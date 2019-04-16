@@ -2,12 +2,13 @@
 
 #include "scheduler.hpp"
 
-#include "criticalsection.hpp"
 #include "infra/List.hpp"
 #include "infra/SortedList.hpp"
+#include "os/criticalsection.hpp"
+#include "os/mutex.hpp"
+#include "os/utils.hpp"
 #include "stm32f103xb.h"
 #include "stm32f1xx_ll_gpio.h"
-#include "utils.hpp"
 
 #include <array>
 #include <cassert>
@@ -21,11 +22,20 @@ extern "C"
     Task* volatile currentTaskControlBlock = nullptr;
 }
 
+void TriggerTaskSwitch()
+{
+    SCB->ICSR |= SCB_ICSR_PENDSVSET_Msk;
+
+    asm volatile("isb");
+    asm volatile("dsb" ::: "memory");
+};
+
 auto delayedTaskCompare = [](auto base, auto other) { return other->tickDelay < base->tickDelay; };
+auto readyTasksCompare = [](auto base, auto other) { return other->priority < base->priority; };
 
 static List<Task> blockedTasks;
 static SortedList<Task, decltype(delayedTaskCompare)> delayedTasks{delayedTaskCompare};
-static List<Task> readyTasks;
+static SortedList<Task, decltype(readyTasksCompare)> readyTasks{readyTasksCompare};
 
 static void task1Handler();
 static void task2Handler();
@@ -43,11 +53,17 @@ static Task::WithStack<128> task2{task2Handler, {GPIOC, LL_GPIO_PIN_15}};
 
 static Task::WithStack<32> idleTask{taskIdle, {GPIOA, LL_GPIO_PIN_0}};
 
+static Mutex::Resource mutexResource;
+
 static void task1Handler()
 {
+    static Mutex mutex(mutexResource);
+
     while (1)
     {
+        mutex.Acquire();
         LL_GPIO_ResetOutputPin(GPIOC, LL_GPIO_PIN_13);
+        mutex.Release();
 
         DelayTask(task2);
         DelayTask(9999);
@@ -56,21 +72,17 @@ static void task1Handler()
 
 static void task2Handler()
 {
+    static Mutex mutex(mutexResource);
+
     while (1)
     {
+        mutex.Acquire();
         LL_GPIO_SetOutputPin(GPIOC, LL_GPIO_PIN_13);
+        mutex.Release();
 
-		DelayTask(task1);
+        DelayTask(task1);
         DelayTask(9999);
     }
-}
-
-void scheduler_yield()
-{
-    SCB->ICSR |= SCB_ICSR_PENDSVSET_Msk;
-
-    asm volatile("isb");
-    asm volatile("dsb" ::: "memory");
 }
 
 bool SchedulerTick()
@@ -87,7 +99,7 @@ bool SchedulerTick()
         {
             delayedTasks.PopFront();
 
-            readyTasks.AddBack(*item);
+            readyTasks.Insert(*item);
 
             item = delayedTasks.PeekFront();
 
@@ -104,8 +116,8 @@ bool SchedulerTick()
 
 void startFirstTask()
 {
-    readyTasks.AddBack(task1.queueItem);
-    readyTasks.AddBack(task2.queueItem);
+    readyTasks.Insert(task1.queueItem);
+    readyTasks.Insert(task2.queueItem);
 
     currentTaskControlBlock = &idleTask;
 
@@ -156,20 +168,43 @@ void TaskScheduler()
     }
 }
 
+void YieldTask()
+{
+    ScopedCriticalSection critical;
+
+    readyTasks.Insert(currentTaskControlBlock->queueItem);
+
+    TriggerTaskSwitch();
+}
+
+void BlockTask()
+{
+    ScopedCriticalSection critical;
+
+    if (readyTasks.Contains(currentTaskControlBlock->queueItem) == true)
+    {
+        readyTasks.Remove(currentTaskControlBlock->queueItem);
+    }
+
+    blockedTasks.AddBack(currentTaskControlBlock->queueItem);
+
+    TriggerTaskSwitch();
+}
+
 void DelayTask(uint32_t ticks)
 {
     ScopedCriticalSection critical;
-    
+
     DelayTask(*currentTaskControlBlock, ticks);
 
-    scheduler_yield();
+    TriggerTaskSwitch();
 }
 
 void DelayTask(Task& task, uint32_t ticks)
 {
     ScopedCriticalSection critical;
 
-	if (blockedTasks.Contains(task.queueItem) == true)
+    if (blockedTasks.Contains(task.queueItem) == true)
     {
         return;
     }
