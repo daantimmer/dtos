@@ -4,10 +4,9 @@
 #include "os/criticalsection.hpp"
 
 template<typename T, typename P>
-struct SortedList
+struct SortedList : protected List<T>
 {
-    using TypeList = List<T>;
-    using Item = typename TypeList::Item;
+    using Item = typename List<T>::Item;
 
     SortedList(P p)
         : p(p)
@@ -17,50 +16,34 @@ struct SortedList
     void Insert(Item& item)
     {
         ScopedCriticalSection critical;
-        
-		if (list.Contains(item) == true)
-		{
-            return;
-		}
 
-        Item* iterator = list.PeekFront();
+        if (Contains(item) == true)
+        {
+            return;
+        }
+
+        Item* iterator = PeekFront();
 
         while (iterator != nullptr)
         {
             if (p(*iterator, item) == true)
             {
-                list.InsertInfront(*iterator, item);
+                this->InsertInfront(*iterator, item);
                 return;
             }
 
             iterator = iterator->GetNext();
         }
 
-        list.AddBack(item);
+        this->AddBack(item);
     }
 
-    auto PeekFront()
-    {
-        ScopedCriticalSection critical;
-
-        return list.PeekFront();
-    }
-
-    void PopFront()
-    {
-        ScopedCriticalSection critical;
-
-        list.PopFront();
-    }
-
-    auto Empty() const
-    {
-        ScopedCriticalSection critical;
-
-        return list.Empty();
-    }
+	using List<T>::Remove;
+    using List<T>::Contains;
+    using List<T>::Empty;
+    using List<T>::PeekFront;
+    using List<T>::PopFront;
 
 protected:
-    List<T> list;
     P p;
 };
