@@ -36,7 +36,6 @@ protected:
 	uint32_t* const stackTop;
     const size_t stackSize;
 
-
 public:
     List<Task>::Item queueItem;
     List<Task>::Item blockedItem;
@@ -45,6 +44,7 @@ public:
     uint32_t* stackGuard_end;
     
 	uint32_t tickDelay = 0;
+    uint32_t priority = UINT32_MAX;
 
 	const TaskDebugGpio gpioDebug = {};
 };
