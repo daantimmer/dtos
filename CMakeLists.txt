@@ -25,6 +25,9 @@ add_executable (${ELF}
     "source/os/utils.cpp"
 	"source/os/criticalsection.cpp"
 
+	"source/port/stm32f1xx/systemclock.cpp"
+	"source/port/stm32f1xx/systemtick.cpp"
+
     "source/startup.c"
     "source/target/arm/stm32f1/CMSIS/Device/ST/STM32F1xx/Source/Templates/system_stm32f1xx.c"
 )
@@ -35,7 +38,9 @@ target_include_directories(
     ${ELF}
     PRIVATE
         "source"
+		"source/port/stm32f1xx"
         "source/target/arm/stm32f1/CMSIS/Device/ST/STM32F1xx/Include"
+
         "${tools}\\bin\\../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/include/c++/7.3.1"
         "${tools}\\bin\\../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/include/c++/7.3.1/arm-none-eabi"
         "${tools}\\bin\\../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/include/c++/7.3.1/backward"
