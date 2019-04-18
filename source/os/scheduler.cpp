@@ -9,9 +9,11 @@
 #include "os/utils.hpp"
 #include "stm32f103xb.h"
 #include "stm32f1xx_ll_gpio.h"
+#include "systemtick.hpp"
 
 #include <array>
 #include <cassert>
+#include <chrono>
 #include <core_cm3.h>
 #include <cstdint>
 
@@ -65,8 +67,7 @@ static void task1Handler()
         LL_GPIO_ResetOutputPin(GPIOC, LL_GPIO_PIN_13);
         mutex.Release();
 
-        DelayTask(task2);
-        DelayTask(9999);
+        DelayTask(std::chrono::milliseconds{250});
     }
 }
 
@@ -74,14 +75,15 @@ static void task2Handler()
 {
     static Mutex mutex(mutexResource);
 
+	DelayTask(std::chrono::milliseconds{125});
+
     while (1)
     {
         mutex.Acquire();
         LL_GPIO_SetOutputPin(GPIOC, LL_GPIO_PIN_13);
         mutex.Release();
 
-        DelayTask(task1);
-        DelayTask(9999);
+        DelayTask(std::chrono::milliseconds{250});
     }
 }
 
@@ -189,6 +191,16 @@ void BlockTask()
     blockedTasks.AddBack(currentTaskControlBlock->queueItem);
 
     TriggerTaskSwitch();
+}
+
+void DelayTask(std::chrono::microseconds delay)
+{
+    DelayTask(std::chrono::duration_cast<systemtick::ticks>(delay).count());
+}
+
+void DelayTask(std::chrono::milliseconds delay)
+{
+    DelayTask(std::chrono::duration_cast<std::chrono::microseconds>(delay));
 }
 
 void DelayTask(uint32_t ticks)
