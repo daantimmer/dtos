@@ -1,0 +1,48 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="TestList.cpp">
+      <Filter>tests</Filter>
+    </ClCompile>
+    <ClCompile Include="TestSortedList.cpp">
+      <Filter>tests</Filter>
+    </ClCompile>
+    <ClCompile Include="harness\CriticalSectionHarness.cpp">
+      <Filter>harness</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="hal_stm32f103\tests\TestPin.cpp" />
+    <ClCompile Include="hal_stm32f103\doubles\PinMock.hpp" />
+    <ClCompile Include="hal_stm32f103\doubles\PinStub.hpp" />
+    <ClCompile Include="..\libs\hal_stm32f103\port\lib.cpp" />
+    <ClCompile Include="..\libs\hal_stm32f103\port\pin.cpp" />
+    <ClCompile Include="harness\target\stm32f1xx_ll_gpio.cpp" />
+    <ClCompile Include="TestFunction.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="source">
+      <UniqueIdentifier>{6a644ced-b6d5-4d6a-877b-242f2ed4bcb0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="tests">
+      <UniqueIdentifier>{a972a7ba-f91f-41cf-a77d-5c17a74e8d8d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\infra">
+      <UniqueIdentifier>{aca3bda0-1489-4ba4-a9c6-4bf03bac308a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="harness">
+      <UniqueIdentifier>{45554aec-965b-448e-87c7-34ca95b95276}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="harness\CriticalSectionHarness.hpp">
+      <Filter>harness</Filter>
+    </ClInclude>
+    <ClInclude Include="harness\target\stm32f1xx.h" />
+    <ClInclude Include="harness\target\stm32f1xx_ll_gpio.h" />
+    <ClInclude Include="harness\target\stm32f1xx_ll_gpio_spy.hpp" />
+    <ClInclude Include="..\src\infra\function.hpp" />
+  </ItemGroup>
+</Project>

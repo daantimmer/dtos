@@ -43,15 +43,14 @@
           "text": "cd ${workspaceRoot}"
         }
       ],
-      "targetArchitecture": "ARM",
+      "targetArchitecture": "arm",
       "debugType": "native",
       "showDisplayString": true,
       "launchCompleteCommand": "None",
       "filterStderr": true,
       "filterStdout": true,
-
       "debugServerPath": "B:\\Program Files (x86)\\SEGGER\\JLink_V644a\\JLinkGDBServerCL.exe",
-      "debugServerArgs": "-select USB -device STM32F103C8 -endian little -if SWD -speed auto -noir -LocalhostOnly"
+      "debugServerArgs": "-select USB -device STM32F103C8 -endian little -if SWD -speed auto -noir -LocalhostOnly",
     }
   ]
 }

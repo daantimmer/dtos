@@ -1,4 +1,4 @@
-﻿# CMakeList.txt : CMake project for rtos, include source and define
+﻿# CMakeList.txt : CMake project for rtos, include src and define
 # project specific logic here.
 #
 cmake_minimum_required (VERSION 3.8)
@@ -14,40 +14,52 @@ enable_language(ASM)
 
 set(STARTUP_FILE startup_stm32f103xb.c)
 
-add_subdirectory(source/target/arm/stm32f1)
 
-# Add source to this project's executable.
+# Add src to this project's executable.
 add_executable (${ELF}
-    "source/main.cpp"
-    "source/interrupts.cpp"
-    "source/os/scheduler.cpp"
-    "source/os/task.cpp"
-    "source/os/utils.cpp"
-	"source/os/criticalsection.cpp"
+    "src/main.cpp"
+	"src/interrupts.cpp"
+	"src/os/scheduler.cpp"
+	"src/os/task.cpp"
+	"src/os/utils.cpp"
+	"src/os/criticalsection.cpp"
+	"src/port/stm32f1xx/systemclock.cpp"
+	"src/port/stm32f1xx/systemtick.cpp"
 
-	"source/port/stm32f1xx/systemclock.cpp"
-	"source/port/stm32f1xx/systemtick.cpp"
-
-    "source/startup.c"
-    "source/target/arm/stm32f1/CMSIS/Device/ST/STM32F1xx/Source/Templates/system_stm32f1xx.c"
+	"src/startup.c"
 )
-
-target_link_libraries(${ELF} ll)
 
 target_include_directories(
     ${ELF}
     PRIVATE
-        "source"
-		"source/port/stm32f1xx"
-        "source/target/arm/stm32f1/CMSIS/Device/ST/STM32F1xx/Include"
-
-        "${tools}\\bin\\../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/include/c++/7.3.1"
-        "${tools}\\bin\\../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/include/c++/7.3.1/arm-none-eabi"
-        "${tools}\\bin\\../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/include/c++/7.3.1/backward"
-        "${tools}\\bin\\../lib/gcc/arm-none-eabi/7.3.1/include"
-        "${tools}\\bin\\../lib/gcc/arm-none-eabi/7.3.1/include-fixed"
-        "${tools}\\bin\\../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/include"
+        "src"
+		"src/port/stm32f1xx"
+#	SYSTEM PRIVATE
+#		"${tools}\\bin\\../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/include/c++/7.3.1"
+#		"${tools}\\bin\\../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/include/c++/7.3.1/arm-none-eabi"
+#		"${tools}\\bin\\../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/include/c++/7.3.1/backward"
+#		"${tools}\\bin\\../lib/gcc/arm-none-eabi/7.3.1/include"
+#		"${tools}\\bin\\../lib/gcc/arm-none-eabi/7.3.1/include-fixed"
+#		"${tools}\\bin\\../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/include"
 )
+
+add_compile_options(
+		-g3
+		-ffunction-sections
+		-fdata-sections
+		$<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>
+		$<$<COMPILE_LANGUAGE:CXX>:-fno-exceptions>)
+
+target_compile_options(${ELF}
+	PRIVATE
+		-Wall
+		-Wextra
+		-g3
+		$<$<COMPILE_LANGUAGE:C>:-Wstrict-prototypes>
+		-Warray-bounds
+		-Wno-unused-const-variable
+		$<$<COMPILE_LANGUAGE:CXX>:-Wno-register>)
+
 
 set_target_properties(
     ${ELF}
@@ -62,7 +74,7 @@ set_target_properties(
         CXX_EXTENSIONS NO
 
     LINK_FLAGS
-        "-T${PROJECT_SOURCE_DIR}/source/target/arm/stm32f1/CMSIS/Device/ST/STM32F1xx/Source/Templates/gcc/linker/STM32F103XB_FLASH.ld \
+        "-T${PROJECT_SOURCE_DIR}/libs/hal_stm32f103/target/arm/stm32f1/CMSIS/Device/ST/STM32F1xx/Source/Templates/gcc/linker/STM32F103XB_FLASH.ld \
          -mthumb \
          -g3 \
          -mtune=cortex-m3 \
@@ -72,30 +84,12 @@ set_target_properties(
          -Wl,--gc-sections \
          -Wl,-Map=${PROJECT_NAME}.map")
 
-target_compile_options(${ELF} PUBLIC
-    -Wall
-    -Wextra
-    -g3
-    -mthumb
-    -mtune=cortex-m3
-    -mcpu=cortex-m3
-    -mlittle-endian
-    -ffunction-sections
-    -fdata-sections
-    $<$<COMPILE_LANGUAGE:C>:-Wstrict-prototypes>
-    -Warray-bounds
-    -Wno-unused-const-variable
-    $<$<COMPILE_LANGUAGE:CXX>:-Wno-register>
-    -specs=nano.specs
-    -specs=nosys.specs
-    $<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>
-    $<$<COMPILE_LANGUAGE:CXX>:-fno-exceptions>)
+		 
+add_subdirectory(libs/hal_stm32f103)
 
-add_definitions(
-    -DSTM32F103xB
-)
-
-
+target_link_libraries(${ELF}
+	PUBLIC
+		hal_stm32f103)
 
 # TODO: Add tests and install targets if needed.
 # generate the lst file

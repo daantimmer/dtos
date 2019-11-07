@@ -47,7 +47,7 @@ ContinuationIndentWidth: '0'
 Cpp11BracedListStyle: 'true'
 DisableFormat: 'false'
 ExperimentalAutoDetectBinPacking: 'false'
-FixNamespaceComments: 'true'
+FixNamespaceComments: 'false'
 IncludeBlocks: Regroup
 IndentCaseLabels: 'false'
 IndentPPDirectives: None
@@ -56,7 +56,7 @@ IndentWrappedFunctionNames: 'true'
 KeepEmptyLinesAtTheStartOfBlocks: 'false'
 Language: Cpp
 MaxEmptyLinesToKeep: '1'
-NamespaceIndentation: None
+NamespaceIndentation: All
 PointerAlignment: Left
 ReflowComments: 'false'
 SortIncludes: 'true'
