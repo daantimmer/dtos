@@ -18,13 +18,21 @@ set(STARTUP_FILE startup_stm32f103xb.c)
 # Add src to this project's executable.
 add_executable (${ELF}
     "src/main.cpp"
+    "src/main.hpp"
 	"src/interrupts.cpp"
+	"src/interrupts.hpp"
 	"src/os/scheduler.cpp"
+	"src/os/scheduler.hpp"
 	"src/os/task.cpp"
+	"src/os/task.hpp"
 	"src/os/utils.cpp"
+	"src/os/utils.hpp"
 	"src/os/criticalsection.cpp"
+	"src/os/criticalsection.hpp"
 	"src/port/stm32f1xx/systemclock.cpp"
+	"src/port/stm32f1xx/systemclock.hpp"
 	"src/port/stm32f1xx/systemtick.cpp"
+	"src/port/stm32f1xx/systemtick.hpp"
 
 	"src/startup.c"
 )

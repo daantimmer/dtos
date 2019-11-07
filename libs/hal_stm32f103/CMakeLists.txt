@@ -4,10 +4,11 @@ cmake_minimum_required(VERSION 3.0)
 add_library(
     hal_stm32f103
 
-	port/lib.cpp
 	port/pin.cpp
+	port/pin.hpp
 
     target/arm/stm32f1/CMSIS/Device/ST/STM32F1xx/source/Templates/system_stm32f1xx.c
+    target/arm/stm32f1/CMSIS/Device/ST/STM32F1xx/Include/system_stm32f1xx.h
 )
 
 target_compile_options(hal_stm32f103
