@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include "os/criticalsection.hpp"
+#include "kernel/criticalsection.hpp"
 
 #include <cassert>
 

@@ -1,7 +1,7 @@
 
-#include "os/scheduler.hpp"
-#include "os/task.hpp"
-#include "os/utils.hpp"
+#include "kernel/scheduler.hpp"
+#include "kernel/task.hpp"
+#include "kernel/utils.hpp"
 #include "stm32f103xb.h"
 #include "stm32f1xx_ll_gpio.h"
 

@@ -4,9 +4,9 @@
 
 #include "infra/List.hpp"
 #include "infra/SortedList.hpp"
-#include "os/criticalsection.hpp"
-#include "os/mutex.hpp"
-#include "os/utils.hpp"
+#include "kernel/criticalsection.hpp"
+#include "kernel/mutex.hpp"
+#include "kernel/utils.hpp"
 #include "stm32f103xb.h"
 #include "stm32f1xx_ll_gpio.h"
 #include "systemtick.hpp"

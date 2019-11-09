@@ -1,7 +1,7 @@
 #pragma once
 
 #include "List.hpp"
-#include "os/criticalsection.hpp"
+#include "kernel/criticalsection.hpp"
 
 template<typename T, typename P>
 struct SortedList : protected List<T>

@@ -1,7 +1,7 @@
 #pragma once 
 
 #include <gmock/gmock.h>
-#include "os/criticalsection.hpp"
+#include "kernel/criticalsection.hpp"
 
 struct CriticalSectionSpy
 {
