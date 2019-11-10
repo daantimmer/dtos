@@ -5,6 +5,8 @@
 
 #include <core_cm3.h>
 
+constexpr auto RTOS_PORT_BASEPRI = 1;
+
 auto rtos::port::DisableInterrupts() -> InterruptMask
 {
     return DisableInterruptMasking();
@@ -12,20 +14,43 @@ auto rtos::port::DisableInterrupts() -> InterruptMask
 
 auto rtos::port::EnableInterruptMasking() -> InterruptMask
 {
-    const auto maskValue = __get_BASEPRI();
+    if constexpr (RTOS_PORT_BASEPRI >= 0)
+    {
+        const auto maskValue = __get_BASEPRI();
+        const auto basePriValue = RTOS_PORT_BASEPRI << (8 - __NVIC_PRIO_BITS);
 
-    __set_BASEPRI(0);
+        __set_BASEPRI(basePriValue);
 
-    return maskValue;
+        return maskValue;
+    }
+    else
+    {
+        const auto maskValue = __get_PRIMASK();
+
+        __disable_irq();
+
+        return maskValue;
+    }
 }
 
 auto rtos::port::DisableInterruptMasking() -> InterruptMask
 {
-    const auto maskValue = __get_BASEPRI();
+    if constexpr (RTOS_PORT_BASEPRI >= 0)
+    {
+        const auto maskValue = __get_BASEPRI();
 
-    __set_BASEPRI(0);
+        __set_BASEPRI(0);
 
-    return maskValue;
+        return maskValue;
+    }
+    else
+    {
+        const auto maskValue = __get_PRIMASK();
+
+        __enable_irq();
+
+        return maskValue;
+    }
 }
 
 auto rtos::port::EnableInterrupts(const InterruptMask maskValue) -> void
