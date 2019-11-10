@@ -1,25 +1,18 @@
 
 #pragma once
 
+#include "stm32f103xb.h"
+#include <core_cm3.h>
 #include <cstdint>
 
-inline __attribute__((always_inline)) void DisableInterrupts()
+inline std::uint32_t DisableInterrupts()
 {
-    uint32_t scratch;
-
-    asm volatile("mov %0, %1\n"
-                 "msr basepri, %0\n"
-                 "isb\n"
-                 "dsb\n"
-                 : "=r"(scratch)
-                 : "i"(1)
-                 : "memory");
+    const auto mask = __get_BASEPRI();
+    __set_BASEPRI(0);
+    return mask;
 }
 
-inline __attribute__((always_inline)) void EnableInterrupts(uint32_t maskValue = 0)
+inline void EnableInterrupts(uint32_t maskValue = 0)
 {
-    asm volatile("msr basepri, %0" ::"r"(maskValue) : "memory");
-
-    asm volatile("isb");
-    asm volatile("dsb" ::: "memory");
+    __set_BASEPRI(maskValue);
 }

@@ -1,7 +1,8 @@
 
+#include "kernel/InterruptMasking.hpp"
 #include "kernel/scheduler.hpp"
 #include "kernel/task.hpp"
-#include "kernel/utils.hpp"
+// #include "kernel/utils.hpp"
 #include "stm32f103xb.h"
 #include "stm32f1xx_ll_gpio.h"
 
@@ -108,14 +109,15 @@ extern "C"
 
     void SysTick_Handler()
     {
-        DisableInterrupts();
+        rtos::InterruptUnmasking interruptUnmasking;
+        // DisableInterrupts();
 
         if (SchedulerTick() == true)
         {
             YieldTask();
         }
 
-        EnableInterrupts();
+        // EnableInterrupts();
     }
 
     void WWDG_IRQHandler()

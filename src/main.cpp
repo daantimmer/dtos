@@ -3,9 +3,13 @@
 //
 
 #include "main.hpp"
+
+#include "elib/register.hpp"
 #include "infra/List.hpp"
 #include "interrupts.hpp"
 #include "kernel/lockable.hpp"
+#include "kernel/port/systemclock.hpp"
+#include "kernel/port/systemtick.hpp"
 #include "kernel/scheduler.hpp"
 #include "stm32f1xx.h"
 #include "stm32f1xx_ll_bus.h"
@@ -13,12 +17,8 @@
 #include "stm32f1xx_ll_gpio.h"
 #include "stm32f1xx_ll_rcc.h"
 #include "stm32f1xx_ll_utils.h"
-#include "systemclock.hpp"
-#include "systemtick.hpp"
 
 #include <cstdint>
-
-#include "elib/register.hpp"
 
 void SetupClocking()
 {

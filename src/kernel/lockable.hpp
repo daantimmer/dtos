@@ -1,8 +1,9 @@
 #pragma once
 
 #include "infra/List.hpp"
+#include "kernel/InterruptMasking.hpp"
 #include "scheduler.hpp"
-#include "utils.hpp"
+// #include "utils.hpp"
 
 #include <atomic>
 
@@ -10,7 +11,7 @@ struct Lockable
 {
     void Lock()
     {
-        DisableInterrupts();
+        rtos::port::DisableInterruptMasking();
 
         void* owner = lock;
 
@@ -18,37 +19,37 @@ struct Lockable
         {
             blockedList.AddBack(currentTaskControlBlock->blockedItem);
 
-            EnableInterrupts();
+            rtos::port::RestoreInterruptMasking();
 
             //blockTask();
 
-            DisableInterrupts();
+            rtos::port::DisableInterruptMasking();
             owner = lock;
         }
 
         lock = currentTaskControlBlock;
 
-        EnableInterrupts();
+        rtos::port::RestoreInterruptMasking();
     }
 
     void Unlock()
     {
-        DisableInterrupts();
+        rtos::port::DisableInterruptMasking();
 
         if (lock == currentTaskControlBlock)
         {
             lock = nullptr;
 
-			while (blockedList.Empty() == false)
-			{
+            while (blockedList.Empty() == false)
+            {
                 //auto task = blockedList.PeekFront();
                 blockedList.PopFront();
 
-				//unblockTask(task);
-			}
+                //unblockTask(task);
+            }
         }
 
-        EnableInterrupts();
+        rtos::port::RestoreInterruptMasking();
     }
 
     void* lock = nullptr;

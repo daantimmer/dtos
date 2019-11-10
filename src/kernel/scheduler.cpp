@@ -6,10 +6,9 @@
 #include "infra/SortedList.hpp"
 #include "kernel/criticalsection.hpp"
 #include "kernel/mutex.hpp"
-#include "kernel/utils.hpp"
+#include "kernel/port/systemtick.hpp"
 #include "stm32f103xb.h"
 #include "stm32f1xx_ll_gpio.h"
-#include "systemtick.hpp"
 
 #include <array>
 #include <cassert>
@@ -17,7 +16,7 @@
 #include <core_cm3.h>
 #include <cstdint>
 
-uint32_t systicks = 0;
+std::uint32_t systicks = 0;
 
 extern "C"
 {
@@ -71,7 +70,7 @@ static void task1Handler()
 
 static void task2Handler()
 {
-	DelayTask(std::chrono::milliseconds{125});
+    DelayTask(std::chrono::milliseconds{125});
 
     while (1)
     {

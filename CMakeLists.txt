@@ -17,38 +17,31 @@ set(STARTUP_FILE startup_stm32f103xb.c)
 
 # Add src to this project's executable.
 add_executable (${ELF}
-    "src/main.cpp"
-    "src/main.hpp"
 	"src/interrupts.cpp"
 	"src/interrupts.hpp"
+	"src/kernel/criticalsection.cpp"
+	"src/kernel/criticalsection.hpp"
+	"src/kernel/port/stm32f1xx/systemtick.cpp"
+	"src/kernel/port/systemclock.hpp"
+	"src/kernel/port/systemtick.hpp"
 	"src/kernel/scheduler.cpp"
 	"src/kernel/scheduler.hpp"
 	"src/kernel/task.cpp"
 	"src/kernel/task.hpp"
 	"src/kernel/utils.cpp"
 	"src/kernel/utils.hpp"
-	"src/kernel/criticalsection.cpp"
-	"src/kernel/criticalsection.hpp"
-	"src/port/stm32f1xx/systemclock.cpp"
-	"src/port/stm32f1xx/systemclock.hpp"
-	"src/port/stm32f1xx/systemtick.cpp"
-	"src/port/stm32f1xx/systemtick.hpp"
-
 	"src/startup.c"
+    "src/kernel/port/stm32f1xx/interruptMasking.cpp"
+    "src/kernel/port/stm32f1xx/systemclock.cpp"
+    "src/main.cpp"
+    "src/main.hpp"
 )
 
 target_include_directories(
     ${ELF}
     PRIVATE
         "src"
-		"src/port/stm32f1xx"
-#	SYSTEM PRIVATE
-#		"${tools}\\bin\\../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/include/c++/7.3.1"
-#		"${tools}\\bin\\../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/include/c++/7.3.1/arm-none-eabi"
-#		"${tools}\\bin\\../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/include/c++/7.3.1/backward"
-#		"${tools}\\bin\\../lib/gcc/arm-none-eabi/7.3.1/include"
-#		"${tools}\\bin\\../lib/gcc/arm-none-eabi/7.3.1/include-fixed"
-#		"${tools}\\bin\\../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/include"
+		"src/kernel/port/stm32f1xx"
 )
 
 add_compile_options(

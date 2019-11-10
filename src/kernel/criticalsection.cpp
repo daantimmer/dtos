@@ -1,16 +1,18 @@
 
 #include "criticalsection.hpp"
 
-#include "utils.hpp"
+#include "kernel/InterruptMasking.hpp"
+// #include "utils.hpp"
 
-#include <cstdint>
 #include <cassert>
+#include <cstdint>
 
 static volatile uint32_t criticalNestingCounter = 0;
 
 void EnterCriticalSection()
 {
-    DisableInterrupts();
+    // DisableInterrupts();
+    rtos::port::DisableInterruptMasking();
 
     criticalNestingCounter++;
 }
@@ -23,7 +25,8 @@ void ExitCriticalSection()
 
         if (criticalNestingCounter == 0)
         {
-            EnableInterrupts();
+            // EnableInterrupts();
+            rtos::port::RestoreInterruptMasking();
         }
     }
     else
