@@ -5,9 +5,10 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Cortex Debug",
+            "name": "Debug",
             "cwd": "${workspaceRoot}",
-            "executable": "./build/rtos.elf",
+            "executable": "${command:cmake.launchTargetPath}",
+            // "executable": "./build/rtos.elf",
             "request": "launch",
             "type": "cortex-debug",
             "servertype": "jlink",
