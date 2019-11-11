@@ -1,0 +1,16 @@
+[
+    {
+        "name": "gcc 9",
+        "compilers": {
+            "C": "arm-none-eabi-gcc.exe",
+            "CXX": "arm-none-eabi-g++.exe",
+            "ASM": "arm-none-eabi-g++.exe"
+        },
+        "cmakeSettings": {
+            "CMAKE_TRY_COMPILE_TARGET_TYPE": "STATIC_LIBRARY",
+            "CMAKE_SYSTEM_NAME": "Generic",
+            "CMAKE_SYSTEM_PROCESSOR": "arm",
+            "ARM_SIZE": "arm-none-eabi-size.exe"
+        }
+    }
+]
