@@ -5,7 +5,7 @@
 
 #include <core_cm3.h>
 
-constexpr auto RTOS_PORT_BASEPRI = 1;
+constexpr auto RTOS_PORT_BASEPRI = 0;
 
 auto rtos::port::DisableInterrupts() -> InterruptMask
 {
