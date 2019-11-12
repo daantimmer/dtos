@@ -45,3 +45,13 @@ bool Task::StackSafe() const
 {
     return (*stackGuard_begin == 0xCCCCCCCC) && (*stackGuard_end == 0xCDCDCDCD);
 }
+
+void* Task::GetStackPointer() const
+{
+    return stackPointer;
+}
+
+void Task::SetStackPointer(void* const stackPointer)
+{
+    this->stackPointer = reinterpret_cast<std::uint32_t*>(stackPointer);
+}

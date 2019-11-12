@@ -16,6 +16,13 @@ constexpr std::uint32_t THREAD_RETURN{0xFFFFFFFDul}; //Tells the handler to retu
 
 constexpr std::uint32_t MAX_SYSCALL_INTERRUPT_PRIORITY = 1;
 
+void* schedulerSwitchContextWrapper()
+{
+    // currentTaskControlBlock->SetStackPointer(ptr);
+    // TaskScheduler();
+    return currentTaskControlBlock->GetStackPointer();
+}
+
 extern "C"
 {
     void NMI_Handler()
@@ -54,18 +61,28 @@ extern "C"
         }
     }
 
+    // void __attribute__((naked)) SVC_Handler()
+    // {
+    //     asm volatile("ldr r3, currentTaskControlBlockSVC       \n"
+    //                  "ldr r1, [r3]                               \n"
+    //                  "ldr r0, [r1]                               \n"
+    //                  "ldmia r0!, {r4-r11}                        \n"
+    //                  "msr psp, r0                                \n"
+    //                  "isb                                        \n"
+    //                  "orr lr, #0xd                               \n"
+    //                  "bx lr                                      \n"
+    //                  ".align 4                                   \n"
+    //                  "currentTaskControlBlockSVC: .word currentTaskControlBlock");
+    // }
+
     void __attribute__((naked)) SVC_Handler()
     {
-        asm volatile("ldr r3, currentTaskControlBlockSVC       \n"
-                     "ldr r1, [r3]                               \n"
-                     "ldr r0, [r1]                               \n"
-                     "ldmia r0!, {r4-r11}                        \n"
-                     "msr psp, r0                                \n"
-                     "isb                                        \n"
-                     "orr lr, #0xd                               \n"
-                     "bx lr                                      \n"
-                     ".align 4                                   \n"
-                     "currentTaskControlBlockSVC: .word currentTaskControlBlock");
+        // asm volatile("bl %[schedulerSwitchContext]" ::[schedulerSwitchContext] "i"(schedulerSwitchContextWrapper));
+        // asm volatile("mov lr, r4");
+        // asm volatile("ldmia r0!, {r4-r11}");
+        // asm volatile("msr psp, r0");
+        // asm volatile("orr lr, #0xd");
+        asm volatile("bx lr");
     }
 
     void DebugMon_Handler()
@@ -75,6 +92,7 @@ extern "C"
             assert(0);
         }
     }
+#if false /* To Be used*/
 
     void __attribute__((naked)) PendSV_Handler()
     {
@@ -106,10 +124,11 @@ extern "C"
         ".align 4                                   \n"
         "currentTaskControlBlockPendSV: .word currentTaskControlBlock" ::"i"(MAX_SYSCALL_INTERRUPT_PRIORITY));
     }
+#endif
 
     void SysTick_Handler()
     {
-        rtos::InterruptUnmasking interruptUnmasking;
+        kernel::InterruptUnmasking interruptUnmasking;
         // DisableInterrupts();
 
         if (SchedulerTick() == true)

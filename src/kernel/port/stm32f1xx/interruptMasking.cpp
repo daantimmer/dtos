@@ -1,23 +1,22 @@
 
 #include "kernel/port/interruptMasking.hpp"
 
+#include "kernel/basepri.hpp"
 #include "stm32f103xb.h"
 
 #include <core_cm3.h>
 
-constexpr auto RTOS_PORT_BASEPRI = 0;
-
-auto rtos::port::DisableInterrupts() -> InterruptMask
+auto kernel::port::DisableInterrupts() -> InterruptMask
 {
     return DisableInterruptMasking();
 }
 
-auto rtos::port::EnableInterruptMasking() -> InterruptMask
+auto kernel::port::EnableInterruptMasking() -> InterruptMask
 {
-    if constexpr (RTOS_PORT_BASEPRI >= 0)
+    if constexpr (kernel::IsKernelPriorityHighest() == false)
     {
         const auto maskValue = __get_BASEPRI();
-        const auto basePriValue = RTOS_PORT_BASEPRI << (8 - __NVIC_PRIO_BITS);
+        constexpr auto basePriValue = kernel::GetBasePriorityRegisterValue();
 
         __set_BASEPRI(basePriValue);
 
@@ -33,9 +32,9 @@ auto rtos::port::EnableInterruptMasking() -> InterruptMask
     }
 }
 
-auto rtos::port::DisableInterruptMasking() -> InterruptMask
+auto kernel::port::DisableInterruptMasking() -> InterruptMask
 {
-    if constexpr (RTOS_PORT_BASEPRI >= 0)
+    if constexpr (kernel::IsKernelPriorityHighest() == false)
     {
         const auto maskValue = __get_BASEPRI();
 
@@ -53,12 +52,12 @@ auto rtos::port::DisableInterruptMasking() -> InterruptMask
     }
 }
 
-auto rtos::port::EnableInterrupts(const InterruptMask maskValue) -> void
+auto kernel::port::EnableInterrupts(const InterruptMask maskValue) -> void
 {
     RestoreInterruptMasking(maskValue);
 }
 
-auto rtos::port::RestoreInterruptMasking(const InterruptMask maskValue) -> void
+auto kernel::port::RestoreInterruptMasking(const InterruptMask maskValue) -> void
 {
     __set_BASEPRI(maskValue);
 }

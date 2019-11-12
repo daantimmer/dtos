@@ -3,7 +3,7 @@
 
 #include <cstdint>
 
-namespace rtos
+namespace kernel
 {
 namespace port
 {

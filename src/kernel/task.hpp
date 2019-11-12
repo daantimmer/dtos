@@ -1,11 +1,11 @@
 
 #pragma once
 
-#include <cstdint>
-#include <cstdlib> 
-#include <array>
-
 #include "infra/List.hpp"
+
+#include <array>
+#include <cstdint>
+#include <cstdlib>
 
 struct Task;
 
@@ -19,44 +19,48 @@ struct Task
 {
     Task(void (*entry)(), uint32_t* stackTop, size_t stackSize, TaskDebugGpio gpioDebug = {});
 
-	Task(const Task&) = delete;
+    Task(const Task&) = delete;
     Task(Task&&) = delete;
 
     Task& operator=(const Task&) = delete;
     Task& operator=(Task&&) = delete;
 
-	bool StackSafe() const;
+    bool StackSafe() const;
 
-	template<uint32_t SIZE>
+    template<uint32_t SIZE>
     struct WithStack;
+
+    void* GetStackPointer() const;
+    void SetStackPointer(void* const stackPointer);
 
 protected:
     uint32_t* stackPointer; /* Always as the first element. */
-    
-	uint32_t* const stackTop;
+    // void* stackPointer;     /* Always as the first element. */
+
+    uint32_t* const stackTop;
     const size_t stackSize;
 
 public:
     List<Task>::Item queueItem;
     List<Task>::Item blockedItem;
 
-	uint32_t* stackGuard_begin;
+    uint32_t* stackGuard_begin;
     uint32_t* stackGuard_end;
-    
-	uint32_t tickDelay = 0;
+
+    uint32_t tickDelay = 0;
     uint32_t priority = UINT32_MAX;
 
-	const TaskDebugGpio gpioDebug = {};
+    const TaskDebugGpio gpioDebug = {};
 };
 
 template<uint32_t SIZE>
 struct Task::WithStack : Task
 {
-	WithStack(void (*entry)(), TaskDebugGpio gpioDebug = {})
-		: Task(entry, stack.data(), stack.size(), std::move(gpioDebug))
-	{
-	}
+    WithStack(void (*entry)(), TaskDebugGpio gpioDebug = {})
+        : Task(entry, stack.data(), stack.size(), std::move(gpioDebug))
+    {
+    }
 
 protected:
-	std::array<uint32_t, SIZE> stack;
+    std::array<uint32_t, SIZE> stack;
 };

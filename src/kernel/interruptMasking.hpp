@@ -2,9 +2,9 @@
 
 #include "kernel/port/interruptMasking.hpp"
 
-namespace rtos
+namespace kernel
 {
-template<rtos::port::InterruptMask (&Function)()>
+template<kernel::port::InterruptMask (&Function)()>
 struct InterruptMaskingUnmasking
 {
 public:
@@ -15,7 +15,7 @@ public:
 
     ~InterruptMaskingUnmasking()
     {
-        rtos::port::RestoreInterruptMasking(interruptMask);
+        kernel::port::RestoreInterruptMasking(interruptMask);
     }
 
     InterruptMaskingUnmasking(const InterruptMaskingUnmasking&) = delete;
@@ -25,9 +25,9 @@ public:
     InterruptMaskingUnmasking& operator=(InterruptMaskingUnmasking&&) = delete;
 
 private:
-    rtos::port::InterruptMask interruptMask;
+    kernel::port::InterruptMask interruptMask;
 };
 
-using InterruptUnmasking = InterruptMaskingUnmasking<rtos::port::DisableInterruptMasking>;
-using InterruptMasking = InterruptMaskingUnmasking<rtos::port::EnableInterruptMasking>;
+using InterruptUnmasking = InterruptMaskingUnmasking<kernel::port::DisableInterruptMasking>;
+using InterruptMasking = InterruptMaskingUnmasking<kernel::port::EnableInterruptMasking>;
 }

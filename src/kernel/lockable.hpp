@@ -3,7 +3,6 @@
 #include "infra/List.hpp"
 #include "kernel/InterruptMasking.hpp"
 #include "scheduler.hpp"
-// #include "utils.hpp"
 
 #include <atomic>
 
@@ -11,7 +10,7 @@ struct Lockable
 {
     void Lock()
     {
-        rtos::port::DisableInterruptMasking();
+        kernel::port::DisableInterruptMasking();
 
         void* owner = lock;
 
@@ -19,22 +18,22 @@ struct Lockable
         {
             blockedList.AddBack(currentTaskControlBlock->blockedItem);
 
-            rtos::port::RestoreInterruptMasking();
+            kernel::port::RestoreInterruptMasking();
 
             //blockTask();
 
-            rtos::port::DisableInterruptMasking();
+            kernel::port::DisableInterruptMasking();
             owner = lock;
         }
 
         lock = currentTaskControlBlock;
 
-        rtos::port::RestoreInterruptMasking();
+        kernel::port::RestoreInterruptMasking();
     }
 
     void Unlock()
     {
-        rtos::port::DisableInterruptMasking();
+        kernel::port::DisableInterruptMasking();
 
         if (lock == currentTaskControlBlock)
         {
@@ -49,7 +48,7 @@ struct Lockable
             }
         }
 
-        rtos::port::RestoreInterruptMasking();
+        kernel::port::RestoreInterruptMasking();
     }
 
     void* lock = nullptr;

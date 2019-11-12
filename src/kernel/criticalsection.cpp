@@ -12,7 +12,7 @@ static volatile uint32_t criticalNestingCounter = 0;
 void EnterCriticalSection()
 {
     // DisableInterrupts();
-    rtos::port::DisableInterruptMasking();
+    kernel::port::DisableInterruptMasking();
 
     criticalNestingCounter++;
 }
@@ -26,7 +26,7 @@ void ExitCriticalSection()
         if (criticalNestingCounter == 0)
         {
             // EnableInterrupts();
-            rtos::port::RestoreInterruptMasking();
+            kernel::port::RestoreInterruptMasking();
         }
     }
     else
