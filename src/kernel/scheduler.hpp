@@ -2,17 +2,18 @@
 #pragma once
 
 #include "task.hpp"
+
 #include <chrono>
 
 extern "C"
 {
     extern Task* volatile currentTaskControlBlock;
-    
+
     void TaskScheduler();
 }
 
 bool SchedulerTick();
-void startFirstTask() __attribute__((naked));
+void startFirstTask() /*__attribute__((naked))*/;
 
 void YieldTask();
 void BlockTask();

@@ -16,7 +16,7 @@ constexpr std::uint32_t THREAD_RETURN{0xFFFFFFFDul}; //Tells the handler to retu
 
 constexpr std::uint32_t MAX_SYSCALL_INTERRUPT_PRIORITY = 1;
 
-void* schedulerSwitchContextWrapper()
+static void* schedulerSwitchContextWrapper()
 {
     // currentTaskControlBlock->SetStackPointer(ptr);
     // TaskScheduler();
@@ -77,11 +77,12 @@ extern "C"
 
     void __attribute__((naked)) SVC_Handler()
     {
-        // asm volatile("bl %[schedulerSwitchContext]" ::[schedulerSwitchContext] "i"(schedulerSwitchContextWrapper));
-        // asm volatile("mov lr, r4");
-        // asm volatile("ldmia r0!, {r4-r11}");
-        // asm volatile("msr psp, r0");
-        // asm volatile("orr lr, #0xd");
+        asm volatile("bl %[schedulerSwitchContext]" ::[schedulerSwitchContext] "i"(schedulerSwitchContextWrapper));
+        asm volatile("mov lr, r4");
+        asm volatile("ldmia r0!, {r4-r11}");
+        asm volatile("msr psp, r0");
+        asm volatile("orr lr, #0xd");
+        asm volatile("cpsie i");
         asm volatile("bx lr");
     }
 

@@ -123,8 +123,9 @@ void startFirstTask()
                  "dsb            \n"
                  "isb            \n"
                  "svc 0          \n"
-                 "nop            \n"
-                 "bx lr");
+                 "nop            \n");
+
+    // asm volatile("bx lr");
 }
 
 void TaskScheduler()
