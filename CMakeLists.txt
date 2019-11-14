@@ -25,14 +25,18 @@ add_executable (${ELF}
 	"src/kernel/port/systemclock.hpp"
     "src/kernel/port/systemtick.hpp"
     "src/kernel/port/stm32f1xx/pendSvHandler.cpp"
+    "src/kernel/port/stm32f1xx/stackframeinitialiser.cpp"
+    "src/kernel/port/stackframeinitialiser.hpp"
     "src/kernel/pendSvHandler.hpp"
 	"src/kernel/scheduler.cpp"
-	"src/kernel/scheduler.hpp"
+    "src/kernel/scheduler.hpp"
+    "src/kernel/kernel.cpp"
+    "src/kernel/kernel.hpp"
 	"src/kernel/task.cpp"
 	"src/kernel/task.hpp"
 	"src/kernel/utils.cpp"
 	"src/kernel/utils.hpp"
-	"src/startup.c"
+	"src/startup.cpp"
     "src/kernel/port/stm32f1xx/interruptMasking.cpp"
     "src/kernel/port/stm32f1xx/systemclock.cpp"
     "src/main.cpp"
@@ -47,7 +51,7 @@ target_include_directories(
 )
 
 add_compile_options(
-		-g3
+		-ggdb
 		-ffunction-sections
 		-fdata-sections
 		$<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>
@@ -56,8 +60,9 @@ add_compile_options(
 target_compile_options(${ELF}
 	PRIVATE
 		-Wall
-		-Wextra
-		-g3
+        -Wextra
+        -pedantic
+		-ggdb
 		$<$<COMPILE_LANGUAGE:C>:-Wstrict-prototypes>
 		-Warray-bounds
 		-Wno-unused-const-variable
@@ -79,7 +84,7 @@ set_target_properties(
     LINK_FLAGS
         "-T${PROJECT_SOURCE_DIR}/libs/hal_stm32f103/target/arm/stm32f1/CMSIS/Device/ST/STM32F1xx/Source/Templates/gcc/linker/STM32F103XB_FLASH.ld \
          -mthumb \
-         -g3 \
+         -ggdb \
          -mtune=cortex-m3 \
          -mcpu=cortex-m3 \
          -specs=nano.specs \

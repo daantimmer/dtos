@@ -15,7 +15,7 @@
 **
 **  Environment : Atollic TrueSTUDIO(R)
 **
-**  Distribution: The file is distributed “as is,” without any warranty
+**  Distribution: The file is distributed ï¿½as is,ï¿½ without any warranty
 **                of any kind.
 **
 **  (c)Copyright Atollic AB.
@@ -35,7 +35,9 @@ _estack = 0x20004FFF;    /* end of RAM */
 
 /* Generate a link error if heap and stack don't fit into RAM */
 _Min_Heap_Size = 0x0;      /* required amount of heap  */
-_Min_Stack_Size = 0x400; /* required amount of stack */
+__privelegedStack_size = 0x200; /* required amount of stack */
+__processStack_size = 0x200;
+
 
 /* Specify the memory areas */
 MEMORY
@@ -141,6 +143,29 @@ SECTIONS
     __bss_end__ = _ebss;
   } >RAM
 
+  .privelegedStack :
+  {
+    . = ALIGN(8);
+    __privelegedStack_start = .;
+
+    . += __privelegedStack_size;
+
+    . = ALIGN(8);
+    __privelegedStack_end = .;
+  } > RAM
+
+  .processStack :
+  {
+    . = ALIGN(8);
+    __processStack_start = .;
+
+    . += __processStack_size;
+
+    . = ALIGN(8);
+    __processStack_end = .;
+  } > RAM
+
+
   /* User_heap_stack section, used to check that there is enough RAM left */
   ._user_heap_stack :
   {
@@ -148,11 +173,8 @@ SECTIONS
     PROVIDE ( end = . );
     PROVIDE ( _end = . );
     . = . + _Min_Heap_Size;
-    . = . + _Min_Stack_Size;
     . = ALIGN(4);
   } >RAM
-
-  
 
   /* Remove information from the standard libraries */
   /DISCARD/ :

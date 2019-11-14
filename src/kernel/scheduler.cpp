@@ -20,7 +20,7 @@ std::uint32_t systicks = 0;
 
 extern "C"
 {
-    Task* volatile currentTaskControlBlock = nullptr;
+    RunnableTask* volatile currentTaskControlBlock = nullptr;
 }
 
 void TriggerTaskSwitch()
@@ -29,14 +29,14 @@ void TriggerTaskSwitch()
 
     asm volatile("isb");
     asm volatile("dsb" ::: "memory");
-};
+}
 
 auto delayedTaskCompare = [](auto base, auto other) { return other->tickDelay < base->tickDelay; };
 auto readyTasksCompare = [](auto base, auto other) { return other->priority < base->priority; };
 
-static List<Task> blockedTasks;
-static SortedList<Task, decltype(delayedTaskCompare)> delayedTasks{delayedTaskCompare};
-static SortedList<Task, decltype(readyTasksCompare)> readyTasks{readyTasksCompare};
+static List<RunnableTask> blockedTasks;
+static SortedList<RunnableTask, decltype(delayedTaskCompare)> delayedTasks {delayedTaskCompare};
+static SortedList<RunnableTask, decltype(readyTasksCompare)> readyTasks {readyTasksCompare};
 
 static void task1Handler();
 static void task2Handler();
@@ -49,10 +49,10 @@ static void taskIdle()
     }
 }
 
-static Task::WithStack<128> task1{task1Handler, {GPIOC, LL_GPIO_PIN_14}};
-static Task::WithStack<128> task2{task2Handler, {GPIOC, LL_GPIO_PIN_15}};
+static Task::WithStack<128> task1 {task1Handler, {GPIOC, LL_GPIO_PIN_14}};
+static Task::WithStack<128> task2 {task2Handler, {GPIOC, LL_GPIO_PIN_15}};
 
-static Task::WithStack<32> idleTask{taskIdle, {GPIOA, LL_GPIO_PIN_0}};
+static Task::WithStack<32> idleTask {taskIdle, {GPIOA, LL_GPIO_PIN_0}};
 
 static Mutex mutex;
 
@@ -64,13 +64,13 @@ static void task1Handler()
         LL_GPIO_ResetOutputPin(GPIOC, LL_GPIO_PIN_13);
         mutex.Unlock();
 
-        DelayTask(std::chrono::milliseconds{250});
+        DelayTask(std::chrono::milliseconds {250});
     }
 }
 
 static void task2Handler()
 {
-    DelayTask(std::chrono::milliseconds{125});
+    DelayTask(std::chrono::milliseconds {125});
 
     while (1)
     {
@@ -78,7 +78,7 @@ static void task2Handler()
         LL_GPIO_SetOutputPin(GPIOC, LL_GPIO_PIN_13);
         mutex.Unlock();
 
-        DelayTask(std::chrono::milliseconds{250});
+        DelayTask(std::chrono::milliseconds {250});
     }
 }
 
@@ -115,31 +115,21 @@ void startFirstTask()
 {
     readyTasks.Insert(task1.queueItem);
     readyTasks.Insert(task2.queueItem);
-
-    currentTaskControlBlock = &idleTask;
-
-    asm volatile("cpsie i        \n"
-                 "cpsie f        \n"
-                 "dsb            \n"
-                 "isb            \n"
-                 "svc 0          \n"
-                 "nop            \n");
-
-    // asm volatile("bx lr");
+    readyTasks.Insert(idleTask.queueItem);
 }
 
 void TaskScheduler()
 {
-    if (currentTaskControlBlock->StackSafe() == false)
-    {
-        asm volatile("bkpt");
-    }
+    // if (currentTaskControlBlock->StackSafe() == false)
+    // {
+    //     asm volatile("bkpt");
+    // }
 
-    if (currentTaskControlBlock->gpioDebug.port != nullptr)
-    {
-        LL_GPIO_ResetOutputPin((GPIO_TypeDef*)currentTaskControlBlock->gpioDebug.port,
-                               currentTaskControlBlock->gpioDebug.pin);
-    }
+    // if (currentTaskControlBlock->gpioDebug.port != nullptr)
+    // {
+    //     LL_GPIO_ResetOutputPin((GPIO_TypeDef*)currentTaskControlBlock->gpioDebug.port,
+    //                            currentTaskControlBlock->gpioDebug.pin);
+    // }
 
     if (readyTasks.Empty() == false)
     {
@@ -154,16 +144,16 @@ void TaskScheduler()
         currentTaskControlBlock = &idleTask;
     }
 
-    if (currentTaskControlBlock->StackSafe() == false)
-    {
-        asm volatile("bkpt");
-    }
+    // if (currentTaskControlBlock->StackSafe() == false)
+    // {
+    //     asm volatile("bkpt");
+    // }
 
-    if (currentTaskControlBlock->gpioDebug.port != nullptr)
-    {
-        LL_GPIO_SetOutputPin((GPIO_TypeDef*)currentTaskControlBlock->gpioDebug.port,
-                             currentTaskControlBlock->gpioDebug.pin);
-    }
+    // if (currentTaskControlBlock->gpioDebug.port != nullptr)
+    // {
+    //     LL_GPIO_SetOutputPin((GPIO_TypeDef*)currentTaskControlBlock->gpioDebug.port,
+    //                          currentTaskControlBlock->gpioDebug.pin);
+    // }
 }
 
 void YieldTask()
@@ -208,7 +198,7 @@ void DelayTask(uint32_t ticks)
     TriggerTaskSwitch();
 }
 
-void DelayTask(Task& task, uint32_t ticks)
+void DelayTask(RunnableTask& task, uint32_t ticks)
 {
     ScopedCriticalSection critical;
 

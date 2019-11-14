@@ -52,5 +52,5 @@ struct Lockable
     }
 
     void* lock = nullptr;
-    List<Task> blockedList;
+    List<RunnableTask> blockedList;
 };

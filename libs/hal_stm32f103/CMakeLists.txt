@@ -15,7 +15,7 @@ target_compile_options(hal_stm32f103
 	PRIVATE
 		-Wall
 		-Wextra
-		-g3
+		-ggdb
 		$<$<COMPILE_LANGUAGE:C>:-Wstrict-prototypes>
 		-Warray-bounds
 		-Wno-unused-const-variable

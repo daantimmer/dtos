@@ -7,7 +7,9 @@
 #include "elib/register.hpp"
 #include "infra/List.hpp"
 #include "interrupts.hpp"
+#include "kernel/kernel.hpp"
 #include "kernel/lockable.hpp"
+#include "kernel/mainthread.hpp"
 #include "kernel/port/systemclock.hpp"
 #include "kernel/port/systemtick.hpp"
 #include "kernel/scheduler.hpp"
@@ -53,6 +55,9 @@ extern "C" int RealDeal()
     LL_GPIO_Init(GPIOA, &gpioConfig);
 
     LL_SYSTICK_EnableIT();
+
+    kernel::MainThread mainThread {};
+    kernel::Kernel kernel {mainThread};
 
     startFirstTask();
 

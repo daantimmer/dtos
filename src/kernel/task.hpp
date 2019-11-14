@@ -15,7 +15,37 @@ struct TaskDebugGpio
     std::uint32_t pin = 0;
 };
 
-struct Task
+struct RunnableTask
+{
+    RunnableTask()
+        : queueItem(this)
+        , blockedItem(this)
+    {
+    }
+
+    virtual void Run() = 0;
+    virtual void* GetStackPointer() const = 0;
+    virtual void SetStackPointer(void* const stackPointer) = 0;
+
+    List<RunnableTask>::Item queueItem;
+    List<RunnableTask>::Item blockedItem;
+
+    uint32_t tickDelay = 0;
+    uint32_t priority = UINT32_MAX;
+};
+
+struct TaskStack : RunnableTask
+{
+    virtual void* GetStackPointer() const final;
+    virtual void SetStackPointer(void* const stackPointer) final;
+
+    TaskStack(std::uint32_t* stack);
+
+protected:
+    std::uint32_t* stackPointer; /* Always as the first element. */
+};
+
+struct Task : TaskStack
 {
     Task(void (*entry)(), uint32_t* stackTop, size_t stackSize, TaskDebugGpio gpioDebug = {});
 
@@ -30,25 +60,17 @@ struct Task
     template<uint32_t SIZE>
     struct WithStack;
 
-    void* GetStackPointer() const;
-    void SetStackPointer(void* const stackPointer);
+    virtual void Run() final;
 
 protected:
-    uint32_t* stackPointer; /* Always as the first element. */
-    // void* stackPointer;     /* Always as the first element. */
-
     uint32_t* const stackTop;
     const size_t stackSize;
 
-public:
-    List<Task>::Item queueItem;
-    List<Task>::Item blockedItem;
+    void (*entry)();
 
+public:
     uint32_t* stackGuard_begin;
     uint32_t* stackGuard_end;
-
-    uint32_t tickDelay = 0;
-    uint32_t priority = UINT32_MAX;
 
     const TaskDebugGpio gpioDebug = {};
 };
