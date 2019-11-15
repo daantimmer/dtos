@@ -2,7 +2,7 @@
 #pragma once
 
 #include "stm32f103xb.h"
-#include <core_cm3.h>
+
 #include <cstdint>
 
 inline std::uint32_t DisableInterrupts()

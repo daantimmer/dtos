@@ -4,7 +4,7 @@
 
 #include "main.hpp"
 
-#include "elib/register.hpp"
+#include "hal/port/peripherals.hpp"
 #include "infra/List.hpp"
 #include "interrupts.hpp"
 #include "kernel/kernel.hpp"
@@ -30,8 +30,6 @@ void SetupClocking()
 
 extern "C" int RealDeal()
 {
-    (elib::memory::Instance().data.regADC1)->JOFR2 = 5;
-
     SetupClocking();
 
     LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_ALL);
@@ -48,11 +46,11 @@ extern "C" int RealDeal()
     gpioConfig.Mode = LL_GPIO_MODE_OUTPUT;
     gpioConfig.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
 
-    LL_GPIO_Init(GPIOC, &gpioConfig);
+    LL_GPIO_Init(hal::GPIOC_Peripheral::Address(), &gpioConfig);
 
     gpioConfig.Pin = LL_GPIO_PIN_0;
 
-    LL_GPIO_Init(GPIOA, &gpioConfig);
+    LL_GPIO_Init(hal::GPIOA_Peripheral::Address(), &gpioConfig);
 
     LL_SYSTICK_EnableIT();
 
@@ -63,6 +61,7 @@ extern "C" int RealDeal()
 
     while (1)
     {
+        YieldTask();
     }
 
     return 0;

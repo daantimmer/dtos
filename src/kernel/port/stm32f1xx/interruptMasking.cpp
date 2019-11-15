@@ -4,8 +4,6 @@
 #include "kernel/basepri.hpp"
 #include "stm32f103xb.h"
 
-#include <core_cm3.h>
-
 auto kernel::port::DisableInterrupts() -> InterruptMask
 {
     return DisableInterruptMasking();

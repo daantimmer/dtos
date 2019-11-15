@@ -13,7 +13,6 @@
 #include <array>
 #include <cassert>
 #include <chrono>
-#include <core_cm3.h>
 #include <cstdint>
 
 std::uint32_t systicks = 0;
@@ -38,9 +37,6 @@ static List<RunnableTask> blockedTasks;
 static SortedList<RunnableTask, decltype(delayedTaskCompare)> delayedTasks {delayedTaskCompare};
 static SortedList<RunnableTask, decltype(readyTasksCompare)> readyTasks {readyTasksCompare};
 
-static void task1Handler();
-static void task2Handler();
-
 static void taskIdle()
 {
     while (1)
@@ -49,38 +45,30 @@ static void taskIdle()
     }
 }
 
-static Task::WithStack<128> task1 {task1Handler, {GPIOC, LL_GPIO_PIN_14}};
-static Task::WithStack<128> task2 {task2Handler, {GPIOC, LL_GPIO_PIN_15}};
-
-static Task::WithStack<32> idleTask {taskIdle, {GPIOA, LL_GPIO_PIN_0}};
-
-static Mutex mutex;
-
-static void task1Handler()
-{
+static auto task1Handler = []() {
     while (1)
     {
-        mutex.Lock();
         LL_GPIO_ResetOutputPin(GPIOC, LL_GPIO_PIN_13);
-        mutex.Unlock();
 
         DelayTask(std::chrono::milliseconds {250});
     }
-}
+};
 
-static void task2Handler()
-{
+static auto task2Handler = []() {
     DelayTask(std::chrono::milliseconds {125});
 
     while (1)
     {
-        mutex.Lock();
         LL_GPIO_SetOutputPin(GPIOC, LL_GPIO_PIN_13);
-        mutex.Unlock();
 
         DelayTask(std::chrono::milliseconds {250});
     }
-}
+};
+
+static Task::WithStack<128> task1 {task1Handler, {GPIOC, LL_GPIO_PIN_14}};
+static Task::WithStack<128> task2 {task2Handler, {GPIOC, LL_GPIO_PIN_15}};
+
+static Task::WithStack<32> idleTask {taskIdle, {GPIOA, LL_GPIO_PIN_0}};
 
 bool SchedulerTick()
 {

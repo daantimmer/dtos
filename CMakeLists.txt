@@ -1,7 +1,9 @@
 ﻿# CMakeList.txt : CMake project for rtos, include src and define
 # project specific logic here.
 #
-cmake_minimum_required (VERSION 3.8)
+cmake_minimum_required (VERSION 3.13.0)
+
+# set(CMAKE_CXX_CLANG_TIDY "clang-tidy;--checks=-clang-diagnostic*;-p=compile_commands.json")
 
 project(rtos)
 
@@ -14,59 +16,40 @@ enable_language(ASM)
 
 set(STARTUP_FILE startup_stm32f103xb.c)
 
-
 # Add src to this project's executable.
 add_executable (${ELF}
-	"src/interrupts.cpp"
-	"src/interrupts.hpp"
-	"src/kernel/criticalsection.cpp"
-	"src/kernel/criticalsection.hpp"
-	"src/kernel/port/stm32f1xx/systemtick.cpp"
-	"src/kernel/port/systemclock.hpp"
-    "src/kernel/port/systemtick.hpp"
-    "src/kernel/port/stm32f1xx/pendSvHandler.cpp"
-    "src/kernel/port/stm32f1xx/stackframeinitialiser.cpp"
-    "src/kernel/port/stackframeinitialiser.hpp"
-    "src/kernel/pendSvHandler.hpp"
-	"src/kernel/scheduler.cpp"
-    "src/kernel/scheduler.hpp"
-    "src/kernel/kernel.cpp"
-    "src/kernel/kernel.hpp"
-	"src/kernel/task.cpp"
-	"src/kernel/task.hpp"
-	"src/kernel/utils.cpp"
-	"src/kernel/utils.hpp"
-	"src/startup.cpp"
-    "src/kernel/port/stm32f1xx/interruptMasking.cpp"
-    "src/kernel/port/stm32f1xx/systemclock.cpp"
+    "src/interrupts.cpp"
+    "src/interrupts.hpp"
     "src/main.cpp"
     "src/main.hpp"
+    "src/startup.cpp"
 )
+
+add_subdirectory(src/kernel)
 
 target_include_directories(
     ${ELF}
     PRIVATE
         "src"
-		"src/kernel/port/stm32f1xx"
 )
 
 add_compile_options(
-		-ggdb
-		-ffunction-sections
-		-fdata-sections
-		$<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>
-		$<$<COMPILE_LANGUAGE:CXX>:-fno-exceptions>)
+        -ggdb
+        -ffunction-sections
+        -fdata-sections
+        $<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>
+        $<$<COMPILE_LANGUAGE:CXX>:-fno-exceptions>)
 
 target_compile_options(${ELF}
-	PRIVATE
-		-Wall
+    PRIVATE
+        -Wall
         -Wextra
         -pedantic
-		-ggdb
-		$<$<COMPILE_LANGUAGE:C>:-Wstrict-prototypes>
-		-Warray-bounds
-		-Wno-unused-const-variable
-		$<$<COMPILE_LANGUAGE:CXX>:-Wno-register>)
+        -ggdb
+        $<$<COMPILE_LANGUAGE:C>:-Wstrict-prototypes>
+        -Warray-bounds
+        -Wno-unused-const-variable
+        $<$<COMPILE_LANGUAGE:CXX>:-Wno-register>)
 
 
 set_target_properties(
@@ -92,12 +75,12 @@ set_target_properties(
          -Wl,--gc-sections \
          -Wl,-Map=${PROJECT_NAME}.map")
 
-		 
+         
 add_subdirectory(libs/hal_stm32f103)
 
 target_link_libraries(${ELF}
-	PUBLIC
-		hal_stm32f103)
+    PUBLIC
+        hal_stm32f103)
 
 # TODO: Add tests and install targets if needed.
 # generate the lst file
