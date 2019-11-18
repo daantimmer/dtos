@@ -34,8 +34,8 @@ auto delayedTaskCompare = [](auto base, auto other) { return other->tickDelay < 
 auto readyTasksCompare = [](auto base, auto other) { return other->priority < base->priority; };
 
 static List<RunnableTask> blockedTasks;
-static SortedList<RunnableTask, decltype(delayedTaskCompare)> delayedTasks {delayedTaskCompare};
-static SortedList<RunnableTask, decltype(readyTasksCompare)> readyTasks {readyTasksCompare};
+static SortedList<RunnableTask, decltype(delayedTaskCompare)> delayedTasks{delayedTaskCompare};
+static SortedList<RunnableTask, decltype(readyTasksCompare)> readyTasks{readyTasksCompare};
 
 static void taskIdle()
 {
@@ -50,25 +50,25 @@ static auto task1Handler = []() {
     {
         LL_GPIO_ResetOutputPin(GPIOC, LL_GPIO_PIN_13);
 
-        DelayTask(std::chrono::milliseconds {250});
+        DelayTask(std::chrono::milliseconds{250});
     }
 };
 
 static auto task2Handler = []() {
-    DelayTask(std::chrono::milliseconds {125});
+    DelayTask(std::chrono::milliseconds{125});
 
     while (1)
     {
         LL_GPIO_SetOutputPin(GPIOC, LL_GPIO_PIN_13);
 
-        DelayTask(std::chrono::milliseconds {250});
+        DelayTask(std::chrono::milliseconds{250});
     }
 };
 
-static Task::WithStack<128> task1 {task1Handler, {GPIOC, LL_GPIO_PIN_14}};
-static Task::WithStack<128> task2 {task2Handler, {GPIOC, LL_GPIO_PIN_15}};
+static Task::WithStack<128> task1{task1Handler, {GPIOC, LL_GPIO_PIN_14}};
+static Task::WithStack<128> task2{task2Handler, {GPIOC, LL_GPIO_PIN_15}};
 
-static Task::WithStack<32> idleTask {taskIdle, {GPIOA, LL_GPIO_PIN_0}};
+static Task::WithStack<32> idleTask{taskIdle, {GPIOA, LL_GPIO_PIN_0}};
 
 bool SchedulerTick()
 {
