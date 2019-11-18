@@ -9,7 +9,7 @@
         "cmakeSettings": {
             "CMAKE_TRY_COMPILE_TARGET_TYPE": "STATIC_LIBRARY",
             "CMAKE_SYSTEM_NAME": "Generic",
-            "CMAKE_SYSTEM_PROCESSOR": "arm",
+            "CMAKE_SYSTEM_PROCESSOR": "cortex-m",
             "ARM_SIZE": "arm-none-eabi-size.exe"
         },
         "preferredGenerator": {
