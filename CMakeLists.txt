@@ -31,6 +31,7 @@ target_include_directories(
     ${ELF}
     PRIVATE
         "src"
+        "libs/embeddedinfralib"
 )
 
 add_compile_options(
