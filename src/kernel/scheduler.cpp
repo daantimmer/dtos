@@ -5,8 +5,8 @@
 #include "infra/List.hpp"
 #include "infra/SortedList.hpp"
 #include "kernel/criticalsection.hpp"
-#include "kernel/mutex.hpp"
 #include "kernel/port/systemtick.hpp"
+#include "kernel/spinlock.hpp"
 #include "stm32f103xb.h"
 #include "stm32f1xx_ll_gpio.h"
 
