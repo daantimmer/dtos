@@ -2,60 +2,54 @@
 #pragma once
 
 #include "criticalsection.hpp"
-#include "scheduler.hpp"
 
-struct Mutex
+namespace kernel
 {
-	void Lock()
-	{
-		while (TryLock() == false)
-		{
-            BlockTask();
-		}
-	}
-
-	bool TryLock()
-	{
-        ScopedCriticalSection scopedCriticalSection;
-
-		if (isLocked == true)
-		{
-            return false;
-		}
-		else
-		{
-            isLocked = true;
-
-            return true;
-		}
-	}
-
-	void Unlock()
-	{
-        ScopedCriticalSection scopedCriticalSection;
-
-		isLocked = false;
-	}
-
-protected:
-    volatile bool isLocked;
-};
-
-struct ScopedLock
+struct SpinLock
 {
-    ScopedLock(Mutex& mutex)
-        : mutex(mutex)
+    SpinLock()
     {
-        mutex.Lock();
+        __sync_lock_release(&flag);
     }
 
-    ~ScopedLock()
+    void lock()
     {
-        mutex.Unlock();
+        Lock();
+    }
+
+    void try_lock()
+    {
+        TryLock();
+    }
+
+    void unlock()
+    {
+        return Unlock();
+    }
+
+    void Lock()
+    {
+        while (__sync_lock_test_and_set(&flag, 1u))
+        {
+            while (flag)
+            {
+            }
+        }
+    }
+
+    bool TryLock()
+    {
+        return __sync_lock_test_and_set(&flag, 1u) == 0u;
+    }
+
+    void Unlock()
+    {
+        __sync_lock_release(&flag);
     }
 
 protected:
-    Mutex& mutex;
+    volatile std::uint32_t flag{};
 };
 
-using TheBottleneck = Mutex;
+using TheBottleneck = SpinLock;
+}
