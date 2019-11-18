@@ -2,12 +2,14 @@
 #pragma once
 
 #include "infra/List.hpp"
+#include "infra/util/IntrusivePriorityQueue.hpp"
 
 #include <array>
 #include <cstdint>
 #include <cstdlib>
 
 struct Task;
+struct RunnableTask;
 
 struct TaskDebugGpio
 {
@@ -15,7 +17,7 @@ struct TaskDebugGpio
     std::uint32_t pin = 0;
 };
 
-struct RunnableTask
+struct RunnableTask : infra::IntrusivePriorityQueue<RunnableTask>::NodeType
 {
     RunnableTask()
         : queueItem(this)
@@ -29,6 +31,7 @@ struct RunnableTask
 
     List<RunnableTask>::Item queueItem;
     List<RunnableTask>::Item blockedItem;
+    void* blockedBy = nullptr;
 
     uint32_t tickDelay = 0;
     uint32_t priority = UINT32_MAX;

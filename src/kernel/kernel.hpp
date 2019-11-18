@@ -1,13 +1,28 @@
 #pragma once
 
+#include "infra/util/IntrusivePriorityQueue.hpp"
+#include "kernel/task.hpp"
+
 namespace kernel
 {
-    struct MainThread;
+struct MainThread;
 
-    struct Kernel
+using RunnableTask = ::RunnableTask;
+
+struct PriorityCompare
+{
+    bool operator()(const kernel::RunnableTask& lhs, const kernel::RunnableTask& rhs) const
     {
-        Kernel(MainThread&);
-    };
+        return lhs.priority < rhs.priority;
+    }
+};
 
-    Kernel& GetKernel();
+struct Kernel
+{
+    Kernel(MainThread&);
+
+    infra::IntrusivePriorityQueue<kernel::RunnableTask, PriorityCompare> priorityQueue;
+};
+
+Kernel& GetKernel();
 }
