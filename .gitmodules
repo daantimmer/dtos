@@ -1,3 +1,0 @@
-[submodule "libs/embeddedinfralib"]
-	path = libs/embeddedinfralib
-	url = https://github.com/philips-software/embeddedinfralib.git
