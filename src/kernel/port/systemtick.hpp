@@ -1,3 +1,4 @@
+#pragma once
 
 #include <chrono>
 #include <ratio>
@@ -10,5 +11,4 @@ using tickratio = std::ratio<1, tickfrequency>;
 using ticks = std::chrono::duration<std::int64_t, tickratio>;
 
 void Setup();
-
-} // namespace systemtick
+}

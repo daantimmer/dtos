@@ -2,20 +2,22 @@
 
 #include "scheduler.hpp"
 
-#include "infra/List.hpp"
-#include "infra/SortedList.hpp"
+// #include "infra/List.hpp"
+// #include "infra/SortedList.hpp"
+#include "elib/intrusivelist.hpp"
 #include "kernel/criticalsection.hpp"
+#include "kernel/kernel.hpp"
 #include "kernel/port/systemtick.hpp"
 #include "kernel/spinlock.hpp"
+#include "kernel/task.hpp"
 #include "stm32f103xb.h"
 #include "stm32f1xx_ll_gpio.h"
 
+#include <algorithm>
 #include <array>
 #include <cassert>
 #include <chrono>
 #include <cstdint>
-
-std::uint32_t systicks = 0;
 
 extern "C"
 {
@@ -30,80 +32,48 @@ void TriggerTaskSwitch()
     asm volatile("dsb" ::: "memory");
 }
 
-auto delayedTaskCompare = [](auto base, auto other) { return other->tickDelay < base->tickDelay; };
-auto readyTasksCompare = [](auto base, auto other) { return other->priority < base->priority; };
-
-static List<RunnableTask> blockedTasks;
-static SortedList<RunnableTask, decltype(delayedTaskCompare)> delayedTasks{delayedTaskCompare};
-static SortedList<RunnableTask, decltype(readyTasksCompare)> readyTasks{readyTasksCompare};
-
-static void taskIdle()
-{
-    while (1)
-    {
-        __WFE();
-    }
-}
-
-static auto task1Handler = []() {
-    while (1)
-    {
-        LL_GPIO_ResetOutputPin(GPIOC, LL_GPIO_PIN_13);
-
-        DelayTask(std::chrono::milliseconds{250});
-    }
-};
-
-static auto task2Handler = []() {
-    DelayTask(std::chrono::milliseconds{125});
-
-    while (1)
-    {
-        LL_GPIO_SetOutputPin(GPIOC, LL_GPIO_PIN_13);
-
-        DelayTask(std::chrono::milliseconds{250});
-    }
-};
-
-static Task::WithStack<128> task1{task1Handler, {GPIOC, LL_GPIO_PIN_14}};
-static Task::WithStack<128> task2{task2Handler, {GPIOC, LL_GPIO_PIN_15}};
-
-static Task::WithStack<32> idleTask{taskIdle, {GPIOA, LL_GPIO_PIN_0}};
-
 bool SchedulerTick()
 {
-    systicks++;
+    kernel::GetKernel().systicks++;
 
-    if (delayedTasks.Empty() == false)
+    if (kernel::GetKernel().delayedTasks.empty() == false)
     {
         bool mustSwitch = false;
 
-        auto item = delayedTasks.PeekFront();
+        auto iter = kernel::GetKernel().delayedTasks.begin();
+        const auto end = kernel::GetKernel().delayedTasks.end();
 
-        while ((item != nullptr) && (*item)->tickDelay < systicks)
+        for (; iter != end;)
         {
-            delayedTasks.PopFront();
+            if (auto& task = *iter; task.tickDelay <= kernel::GetKernel().systicks)
+            {
+                iter = kernel::GetKernel().delayedTasks.erase(iter);
 
-            readyTasks.Insert(*item);
+                kernel::GetKernel().readyTasks.insert(task);
 
-            item = delayedTasks.PeekFront();
+                if (task.interval != 0)
+                {
+                    task.tickDelay = kernel::GetKernel().systicks + task.interval;
+                }
+                else
+                {
+                    task.tickDelay = 0;
+                }
 
-            mustSwitch = true;
+                mustSwitch = true;
+            }
+            else
+            {
+                ++iter;
+            }
         }
 
         return mustSwitch;
     }
     else
     {
-        return readyTasks.Empty() == false;
+        return kernel::GetKernel().readyTasks.empty() == false;
     }
-}
-
-void startFirstTask()
-{
-    readyTasks.Insert(task1.queueItem);
-    readyTasks.Insert(task2.queueItem);
-    readyTasks.Insert(idleTask.queueItem);
 }
 
 void TaskScheduler()
@@ -119,17 +89,15 @@ void TaskScheduler()
     //                            currentTaskControlBlock->gpioDebug.pin);
     // }
 
-    if (readyTasks.Empty() == false)
+    if (kernel::GetKernel().readyTasks.empty() == false)
     {
-        auto nextTask = readyTasks.PeekFront();
+        // kernel::GetKernel().readyTasks.push_back(*currentTaskControlBlock);
 
-        readyTasks.PopFront();
-
-        currentTaskControlBlock = *nextTask;
+        currentTaskControlBlock = &*kernel::GetKernel().readyTasks.begin();
     }
     else
     {
-        currentTaskControlBlock = &idleTask;
+        currentTaskControlBlock = &kernel::GetKernel().GetIdleTask();
     }
 
     // if (currentTaskControlBlock->StackSafe() == false)
@@ -148,7 +116,7 @@ void YieldTask()
 {
     ScopedCriticalSection critical;
 
-    readyTasks.Insert(currentTaskControlBlock->queueItem);
+    kernel::GetKernel().readyTasks.insert(*currentTaskControlBlock);
 
     TriggerTaskSwitch();
 }
@@ -157,12 +125,7 @@ void BlockTask()
 {
     ScopedCriticalSection critical;
 
-    if (readyTasks.Contains(currentTaskControlBlock->queueItem) == true)
-    {
-        readyTasks.Remove(currentTaskControlBlock->queueItem);
-    }
-
-    blockedTasks.AddBack(currentTaskControlBlock->queueItem);
+    kernel::GetKernel().blockedTasks.insert(*currentTaskControlBlock);
 
     TriggerTaskSwitch();
 }
@@ -190,17 +153,7 @@ void DelayTask(RunnableTask& task, uint32_t ticks)
 {
     ScopedCriticalSection critical;
 
-    if (blockedTasks.Contains(task.queueItem) == true)
-    {
-        return;
-    }
+    task.tickDelay = kernel::GetKernel().systicks + ticks;
 
-    if (readyTasks.Contains(task.queueItem) == true)
-    {
-        readyTasks.Remove(task.queueItem);
-    }
-
-    task.tickDelay = systicks + ticks;
-
-    delayedTasks.Insert(task.queueItem);
+    kernel::GetKernel().delayedTasks.insert(task);
 }

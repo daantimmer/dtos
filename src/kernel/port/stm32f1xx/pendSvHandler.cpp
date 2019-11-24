@@ -5,6 +5,7 @@
 
 #include "kernel/basepri.hpp"
 #include "kernel/scheduler.hpp"
+#include "kernel/task.hpp"
 
 static void* schedulerSwitchContextWrapper(void* const ptr)
 {

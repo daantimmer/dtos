@@ -3,7 +3,7 @@
 #
 cmake_minimum_required (VERSION 3.13.0)
 
-# set(CMAKE_CXX_CLANG_TIDY "clang-tidy;--checks=-clang-diagnostic*;-p=compile_commands.json")
+# set(CMAKE_CXX_CLANG_TIDY "clang-tidy;--checks=*,-clang-diagnostic*,-hicpp*,-fuchsia*;-p=compile_commands.json")
 
 project(rtos)
 
@@ -25,20 +25,20 @@ add_executable (${ELF}
     "src/startup.cpp"
 )
 
+add_subdirectory(src/elib)
 add_subdirectory(src/kernel)
 
 target_include_directories(
     ${ELF}
     PRIVATE
         "src"
-        "libs/embeddedinfralib"
 )
 
 add_compile_options(
         -ggdb
         -ffunction-sections
         -fdata-sections
-        $<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>
+        # $<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>
         $<$<COMPILE_LANGUAGE:CXX>:-fno-exceptions>)
 
 target_compile_options(${ELF}

@@ -1,15 +1,17 @@
 
 #pragma once
 
+#include "elib/intrusivelist.hpp"
 #include "infra/List.hpp"
-#include "infra/util/IntrusivePriorityQueue.hpp"
+#include "kernel/getkernel.hpp"
+#include "kernel/port/systemtick.hpp"
 
 #include <array>
+#include <chrono>
 #include <cstdint>
 #include <cstdlib>
 
 struct Task;
-struct RunnableTask;
 
 struct TaskDebugGpio
 {
@@ -17,11 +19,13 @@ struct TaskDebugGpio
     std::uint32_t pin = 0;
 };
 
-struct RunnableTask : infra::IntrusivePriorityQueue<RunnableTask>::NodeType
+struct TaskListItem
+{
+};
+
+struct RunnableTask : TaskListItem
 {
     RunnableTask()
-        : queueItem(this)
-        , blockedItem(this)
     {
     }
 
@@ -29,12 +33,34 @@ struct RunnableTask : infra::IntrusivePriorityQueue<RunnableTask>::NodeType
     virtual void* GetStackPointer() const = 0;
     virtual void SetStackPointer(void* const stackPointer) = 0;
 
-    List<RunnableTask>::Item queueItem;
-    List<RunnableTask>::Item blockedItem;
+    elib::IntrusiveListNode queueItem{};
+    elib::IntrusiveListNode blockedItem{};
+    // List<RunnableTask>::Item queueItem;
+    // List<RunnableTask>::Item blockedItem;
+
     void* blockedBy = nullptr;
 
+    template<class Function>
+    void RepeatEvery(std::chrono::milliseconds interval, Function function)
+    {
+        PrepareDelay(std::chrono::duration_cast<systemtick::ticks>(interval).count());
+
+        while (true)
+        {
+            function();
+
+            Delay();
+        }
+    }
+
     uint32_t tickDelay = 0;
+    uint32_t interval = 0;
+
     uint32_t priority = UINT32_MAX;
+
+protected:
+    void PrepareDelay(std::uint32_t interval);
+    void Delay();
 };
 
 struct TaskStack : RunnableTask
@@ -50,7 +76,7 @@ protected:
 
 struct Task : TaskStack
 {
-    Task(void (*entry)(), uint32_t* stackTop, size_t stackSize, TaskDebugGpio gpioDebug = {});
+    Task(void (*entry)(Task& task), uint32_t* stackTop, size_t stackSize, TaskDebugGpio gpioDebug = {});
 
     Task(const Task&) = delete;
     Task(Task&&) = delete;
@@ -69,7 +95,7 @@ protected:
     uint32_t* const stackTop;
     const size_t stackSize;
 
-    void (*entry)();
+    void (*entry)(Task& task);
 
 public:
     uint32_t* stackGuard_begin;
@@ -81,7 +107,7 @@ public:
 template<uint32_t SIZE>
 struct Task::WithStack : Task
 {
-    WithStack(void (*entry)(), TaskDebugGpio gpioDebug = {})
+    WithStack(void (*entry)(Task& task), TaskDebugGpio gpioDebug = {})
         : Task(entry, stack.data(), stack.size(), std::move(gpioDebug))
     {
     }

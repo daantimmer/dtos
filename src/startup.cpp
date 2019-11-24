@@ -16,8 +16,14 @@
  *******************************************************************************
  */
 
-#include "assert.h"
 #include "stm32f1xx.h"
+
+#include <algorithm>
+#include <cassert>
+#include <cstddef>
+#include <cstdint>
+
+extern auto RealDeal() -> int; /*!< The entry point for the application.    */
 
 extern "C"
 {
@@ -26,7 +32,7 @@ extern "C"
     /*----------Stack Configuration-----------------------------------------------*/
     // #define STACK_SIZE       0x00000400      /*!< The Stack size suggest using even number     */
     // __attribute__((section(".co_stack")))
-    // unsigned long pulStack[STACK_SIZE];
+    // std::uint32_t pulStack[STACK_SIZE];
 
     /*----------Declaration of the default fault handlers-------------------------*/
     /* System exception vector handler */
@@ -85,19 +91,18 @@ extern "C"
     void __attribute__((weak)) USBWakeUp_IRQHandler(void);
 
     /*----------Symbols defined in linker script----------------------------------*/
-    extern unsigned long _sidata; /*!< Start address for the initialization
+    extern std::uint32_t _sidata; /*!< Start address for the initialization
                                         values of the .data section.            */
-    extern unsigned long _sdata;  /*!< Start address for the .data section     */
-    extern unsigned long _edata;  /*!< End address for the .data section       */
-    extern unsigned long _sbss;   /*!< Start address for the .bss section      */
-    extern unsigned long _ebss;   /*!< End address for the .bss section        */
+    extern std::uint32_t _sdata;  /*!< Start address for the .data section     */
+    extern std::uint32_t _edata;  /*!< End address for the .data section       */
+    extern std::uint32_t _sbss;   /*!< Start address for the .bss section      */
+    extern std::uint32_t _ebss;   /*!< End address for the .bss section        */
     // extern void _eram;               /*!< End address for ram                     */
 
     /*----------Function prototypes-----------------------------------------------*/
-    extern int RealDeal(void);         /*!< The entry point for the application.    */
-    extern void SystemInit(void);      /*!< Setup the microcontroller system(CMSIS) */
-    void Default_Reset_Handler(void);  /*!< Default reset handler                */
-    static void Default_Handler(void); /*!< Default exception handler            */
+    // extern void SystemInit(void);      /*!< Setup the microcontroller system(CMSIS) */
+    void Default_Reset_Handler();  /*!< Default reset handler                */
+    static void Default_Handler(); /*!< Default exception handler            */
 
     using ExceptionVector = void (*)();
 
@@ -110,7 +115,7 @@ extern "C"
     */
     // __attribute__((used, section(".isr_vector")))
     // void (*const g_pfnVectors[])(void) =
-    const ExceptionVector g_pfnVectors[] __attribute__((used, section(".isr_vector"), used)) {
+    const ExceptionVector g_pfnVectors[] __attribute__((used, section(".isr_vector"), used)){
     /*----------Core Exceptions-------------------------------------------------*/
     // (void*)& pulStack[STACK_SIZE],     /*!< The initial stack pointer         */
     reinterpret_cast<ExceptionVector>(__privelegedStack_end),
@@ -201,28 +206,11 @@ extern "C"
         asm volatile("msr control, r0");
         asm volatile("isb");
 
-        /* Initialize data and bss */
-        unsigned long *pulSrc, *pulDest;
-
         /* Copy the data segment initializers from flash to SRAM */
-        pulSrc = &_sidata;
+        std::copy(&_sidata, &_sidata + (&_edata - &_sdata), &_sdata);
 
-        for (pulDest = &_sdata; pulDest < &_edata;)
-        {
-            *(pulDest++) = *(pulSrc++);
-        }
-
-        /* Zero fill the bss segment.  This is done with inline assembly since this
-        will clear the value of pulDest if it is not kept in a register. */
-        __asm("  ldr     r0, =_sbss\n"
-              "  ldr     r1, =_ebss\n"
-              "  mov     r2, #0\n"
-              "  .thumb_func\n"
-              "zero_loop:\n"
-              "    cmp     r0, r1\n"
-              "    it      lt\n"
-              "    strlt   r2, [r0], #4\n"
-              "    blt     zero_loop");
+        /* Zero fill the bss segment. */
+        std::fill(&_sbss, &_ebss, 0);
 
         __libc_init_array();
 

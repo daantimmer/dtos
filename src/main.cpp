@@ -22,13 +22,28 @@
 
 #include <cstdint>
 
+namespace
+{
 void SetupClocking()
 {
     SystemClock_Setup();
     systemtick::Setup();
 }
 
-extern "C" int RealDeal()
+auto task1Handler = [](Task&) {
+    kernel::GetKernel().CurrentTask().RepeatEvery(std::chrono::milliseconds{250},
+                                                  []() { LL_GPIO_ResetOutputPin(GPIOC, LL_GPIO_PIN_13); });
+};
+
+auto task2Handler = [](Task&) {
+    DelayTask(std::chrono::milliseconds{125});
+
+    kernel::GetKernel().CurrentTask().RepeatEvery(std::chrono::milliseconds{250},
+                                                  []() { LL_GPIO_SetOutputPin(GPIOC, LL_GPIO_PIN_13); });
+};
+}
+
+auto RealDeal() -> int
 {
     SetupClocking();
 
@@ -54,14 +69,21 @@ extern "C" int RealDeal()
 
     LL_SYSTICK_EnableIT();
 
-    kernel::MainThread mainThread {};
-    kernel::Kernel kernel {mainThread};
+    kernel::MainThread mainThread{};
+    kernel::Kernel kernel{mainThread};
 
-    startFirstTask();
+    Task::WithStack<128> task1{task1Handler, {GPIOC, LL_GPIO_PIN_14}};
+    Task::WithStack<128> task2{task2Handler, {GPIOC, LL_GPIO_PIN_15}};
+
+    task1.priority = 0;
+    task2.priority = 0;
+
+    kernel::GetKernel().readyTasks.insert(task1);
+    kernel::GetKernel().readyTasks.insert(task2);
 
     while (1)
     {
-        YieldTask();
+        // YieldTask();
     }
 
     return 0;

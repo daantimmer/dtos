@@ -1,7 +1,9 @@
 
 #include "task.hpp"
 
+#include "kernel/kernel.hpp"
 #include "kernel/port/stackframeinitialiser.hpp"
+#include "kernel/scheduler.hpp"
 
 #include <algorithm>
 #include <cassert>
@@ -13,6 +15,18 @@
 //         assert(false);
 //     }
 // }
+
+void RunnableTask::PrepareDelay(std::uint32_t interval)
+{
+    this->interval = interval;
+    tickDelay = kernel::GetKernel().systicks + this->interval;
+}
+
+void RunnableTask::Delay()
+{
+    kernel::GetKernel().delayedTasks.insert(*this);
+    TriggerTaskSwitch();
+}
 
 TaskStack::TaskStack(std::uint32_t* stack)
     : stackPointer(stack)
@@ -29,8 +43,8 @@ void TaskStack::SetStackPointer(void* const stackPointer)
     this->stackPointer = reinterpret_cast<std::uint32_t*>(stackPointer);
 }
 
-Task::Task(void (*entry)(), uint32_t* stackTop, size_t stackSize, TaskDebugGpio gpioDebug)
-    : TaskStack {stackTop + 1}
+Task::Task(void (*entry)(Task& task), uint32_t* stackTop, size_t stackSize, TaskDebugGpio gpioDebug)
+    : TaskStack{stackTop + 1}
     , stackTop(stackTop + 1)
     , stackSize(stackSize - 2)
     , entry(entry)
@@ -49,7 +63,7 @@ Task::Task(void (*entry)(), uint32_t* stackTop, size_t stackSize, TaskDebugGpio 
 
 void Task::Run()
 {
-    entry();
+    entry(*this);
 }
 
 bool Task::StackSafe() const

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "elib/intrusivelist.hpp"
 #include "infra/List.hpp"
 #include "kernel/InterruptMasking.hpp"
 #include "scheduler.hpp"
@@ -16,7 +17,7 @@ struct Lockable
 
         while (owner != nullptr)
         {
-            blockedList.AddBack(currentTaskControlBlock->blockedItem);
+            blockedList.push_back(*currentTaskControlBlock);
 
             kernel::port::RestoreInterruptMasking();
 
@@ -39,10 +40,10 @@ struct Lockable
         {
             lock = nullptr;
 
-            while (blockedList.Empty() == false)
+            while (blockedList.empty() == false)
             {
                 //auto task = blockedList.PeekFront();
-                blockedList.PopFront();
+                blockedList.pop_front();
 
                 //unblockTask(task);
             }
@@ -52,5 +53,5 @@ struct Lockable
     }
 
     void* lock = nullptr;
-    List<RunnableTask> blockedList;
+    elib::IntrusiveList<RunnableTask, &RunnableTask::blockedItem, RunnableTask> blockedList;
 };

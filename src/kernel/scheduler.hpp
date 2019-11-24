@@ -1,9 +1,9 @@
 
 #pragma once
 
-#include "task.hpp"
-
 #include <chrono>
+
+struct RunnableTask;
 
 extern "C"
 {
@@ -12,8 +12,8 @@ extern "C"
     void TaskScheduler();
 }
 
+void TriggerTaskSwitch();
 bool SchedulerTick();
-void startFirstTask() /*__attribute__((naked))*/;
 
 void YieldTask();
 void BlockTask();

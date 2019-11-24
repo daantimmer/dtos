@@ -4,6 +4,7 @@
 #include "kernel/criticalsection.hpp"
 
 #include <cassert>
+#include <cstddef>
 
 template<typename T>
 struct List
@@ -53,18 +54,18 @@ struct List
             return list;
         }
 
-		bool IsInAList() const
-		{
+        bool IsInAList() const
+        {
             return list != nullptr;
-		}
+        }
 
-		void RemoveFromList()
-		{
+        void RemoveFromList()
+        {
             if (IsInAList() == true)
-			{
+            {
                 list->Remove(*this);
-			}
-		}
+            }
+        }
 
     protected:
         Item* next = nullptr;
@@ -99,11 +100,11 @@ struct List
     void AddBack(Item& item)
     {
         ScopedCriticalSection critical;
-        
-		if (Contains(item) == true)
-		{
+
+        if (Contains(item) == true)
+        {
             return;
-		}
+        }
         else if (Empty() == true)
         {
             InsertFirst(item);
@@ -136,7 +137,7 @@ struct List
     {
         ScopedCriticalSection critical;
 
-		if (Contains(item) == true)
+        if (Contains(item) == true)
         {
             return;
         }
@@ -165,8 +166,8 @@ struct List
     void InsertBehind(Item& next, Item& item)
     {
         ScopedCriticalSection critical;
-        
-		if (Contains(item) == true)
+
+        if (Contains(item) == true)
         {
             return;
         }
@@ -196,7 +197,7 @@ struct List
     {
         ScopedCriticalSection critical;
 
-		if ((Empty() == true) || (Contains(item) == false))
+        if ((Empty() == true) || (Contains(item) == false))
         {
             /* return */
         }

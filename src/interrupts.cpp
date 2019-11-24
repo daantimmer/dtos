@@ -134,7 +134,8 @@ extern "C"
 
         if (SchedulerTick() == true)
         {
-            YieldTask();
+            TriggerTaskSwitch();
+            // YieldTask();
         }
 
         // EnableInterrupts();
