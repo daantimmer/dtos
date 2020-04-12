@@ -1,7 +1,7 @@
 ﻿# CMakeList.txt : CMake project for rtos, include src and define
 # project specific logic here.
 #
-cmake_minimum_required (VERSION 3.13.0)
+cmake_minimum_required (VERSION 3.15.0)
 
 # set(CMAKE_CXX_CLANG_TIDY "clang-tidy;--checks=*,-clang-diagnostic*,-hicpp*,-fuchsia*;-p=compile_commands.json")
 
@@ -15,6 +15,7 @@ set(LST ${PROJECT_NAME}.lst)
 enable_language(ASM)
 
 set(STARTUP_FILE startup_stm32f103xb.c)
+# set(CMAKE_CXX_CLANG_TIDY clang-tidy -checks=-clang-diagnostic-*,bugprone-*,cert-*,clang-analyzer-*,cppcoreguidelines-*,google-*,-google-readability-*,misc-*,modernize-*,performance-*,portability-* --extra-arg=-D__GNUC__ --extra-arg=-DSTM32F103xB)
 
 # Add src to this project's executable.
 add_executable (${ELF}
