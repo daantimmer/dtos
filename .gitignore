@@ -59,3 +59,5 @@ UnitTests/UnitTests.vcxproj.user
 .vs/tests/v16/ipch/AutoPCH/d819ad13cc95644/TESTSORTEDLIST.ipch
 .vs/tests/v16/ipch/AutoPCH/ec245260a7f0ec12/STM32F1XX_LL_GPIO_SPY.ipch
 .vs/tests/v16/ipch/AutoPCH/f0e5e8c1563d927d/MAIN.ipch
+.vs/CMake Overview
+.vs/cmake.db
