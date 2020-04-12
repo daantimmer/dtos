@@ -1,6 +1,5 @@
 
 #include "kernel/port/interruptMasking.hpp"
-
 #include "kernel/basepri.hpp"
 #include "stm32f103xb.h"
 
@@ -11,7 +10,7 @@ auto kernel::port::DisableInterrupts() -> InterruptMask
 
 auto kernel::port::EnableInterruptMasking() -> InterruptMask
 {
-    if constexpr (kernel::IsKernelPriorityHighest() == false)
+    if constexpr (!kernel::IsKernelPriorityHighest())
     {
         const auto maskValue = __get_BASEPRI();
         constexpr auto basePriValue = kernel::GetBasePriorityRegisterValue();
@@ -32,7 +31,7 @@ auto kernel::port::EnableInterruptMasking() -> InterruptMask
 
 auto kernel::port::DisableInterruptMasking() -> InterruptMask
 {
-    if constexpr (kernel::IsKernelPriorityHighest() == false)
+    if constexpr (!kernel::IsKernelPriorityHighest())
     {
         const auto maskValue = __get_BASEPRI();
 

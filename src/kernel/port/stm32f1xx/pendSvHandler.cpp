@@ -2,12 +2,11 @@
 // #if false /* To Be used*/
 
 #include "kernel/pendSvHandler.hpp"
-
 #include "kernel/basepri.hpp"
 #include "kernel/scheduler.hpp"
 #include "kernel/task.hpp"
 
-static void* schedulerSwitchContextWrapper(void* const ptr)
+static auto schedulerSwitchContextWrapper(void* const ptr) -> void*
 {
     currentTaskControlBlock->SetStackPointer(ptr);
     TaskScheduler();
@@ -16,7 +15,7 @@ static void* schedulerSwitchContextWrapper(void* const ptr)
 
 extern "C" __attribute__((naked)) void PendSV_Handler()
 {
-    if constexpr (kernel::IsKernelPriorityHighest() == false)
+    if constexpr (!kernel::IsKernelPriorityHighest())
     {
         asm volatile("mov r0, %[basePriority]" ::[basePriority] "i"(kernel::GetBasePriorityRegisterValue()));
         asm volatile("msr basepri, r0");
@@ -40,7 +39,7 @@ extern "C" __attribute__((naked)) void PendSV_Handler()
         asm volatile("msr psp, r0");
     }
 
-    if constexpr (kernel::IsKernelPriorityHighest() == false)
+    if constexpr (!kernel::IsKernelPriorityHighest())
     {
         asm volatile("mov r0, #0");
         asm volatile("msr basepri, r0");

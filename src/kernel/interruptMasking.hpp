@@ -4,30 +4,29 @@
 
 namespace kernel
 {
-template<kernel::port::InterruptMask (&Function)()>
-struct InterruptMaskingUnmasking
-{
-public:
-    InterruptMaskingUnmasking()
-        : interruptMask{Function()}
+    template <kernel::port::InterruptMask (&Function)()>
+    struct InterruptMaskingUnmasking
     {
-    }
+    public:
+        InterruptMaskingUnmasking()
+            : interruptMask{Function()}
+        {}
 
-    ~InterruptMaskingUnmasking()
-    {
-        kernel::port::RestoreInterruptMasking(interruptMask);
-    }
+        ~InterruptMaskingUnmasking()
+        {
+            kernel::port::RestoreInterruptMasking(interruptMask);
+        }
 
-    InterruptMaskingUnmasking(const InterruptMaskingUnmasking&) = delete;
-    InterruptMaskingUnmasking(InterruptMaskingUnmasking&&) = delete;
+        InterruptMaskingUnmasking(const InterruptMaskingUnmasking&) = delete;
+        InterruptMaskingUnmasking(InterruptMaskingUnmasking&&) = delete;
 
-    InterruptMaskingUnmasking& operator=(const InterruptMaskingUnmasking&) = delete;
-    InterruptMaskingUnmasking& operator=(InterruptMaskingUnmasking&&) = delete;
+        auto operator=(const InterruptMaskingUnmasking&) & -> InterruptMaskingUnmasking& = delete;
+        auto operator=(InterruptMaskingUnmasking&&) && -> InterruptMaskingUnmasking& = delete;
 
-private:
-    kernel::port::InterruptMask interruptMask;
-};
+    private:
+        kernel::port::InterruptMask interruptMask;
+    };
 
-using InterruptUnmasking = InterruptMaskingUnmasking<kernel::port::DisableInterruptMasking>;
-using InterruptMasking = InterruptMaskingUnmasking<kernel::port::EnableInterruptMasking>;
+    using InterruptUnmasking = InterruptMaskingUnmasking<kernel::port::DisableInterruptMasking>;
+    using InterruptMasking = InterruptMaskingUnmasking<kernel::port::EnableInterruptMasking>;
 }

@@ -1,41 +1,40 @@
 #pragma once
 
-namespace kernel
-{
-namespace port
-{
-using wr = void*;
+#include <cstdint>
 
-struct SoftwareStackFrame
+namespace kernel::port
 {
-    wr r4;
-    wr r5;
-    wr r6;
-    wr r7;
-    wr r8;
-    wr r9;
-    wr r10;
-    wr r11;
-};
+    using wr = void*;
 
-struct ExceptionStackFrame
-{
-    constexpr static uintptr_t defaultXpsr {0x01000000};
+    struct SoftwareStackFrame
+    {
+        wr r4;
+        wr r5;
+        wr r6;
+        wr r7;
+        wr r8;
+        wr r9;
+        wr r10;
+        wr r11;
+    };
 
-    wr r0;
-    wr r1;
-    wr r2;
-    wr r3;
-    wr r12;
-    wr lr;
-    wr pc;
-    wr xpsr;
-};
+    struct ExceptionStackFrame
+    {
+        constexpr static std::uintptr_t defaultXpsr{0x01000000};
 
-struct StackFrame
-{
-    SoftwareStackFrame softwareStackFrame;
-    ExceptionStackFrame exceptionStackFrame;
-};
-}
+        wr r0;
+        wr r1;
+        wr r2;
+        wr r3;
+        wr r12;
+        wr lr;
+        wr pc;
+        wr xpsr;
+    };
+
+    struct StackFrame
+    {
+        SoftwareStackFrame softwareStackFrame;
+        ExceptionStackFrame exceptionStackFrame;
+    };
 }
