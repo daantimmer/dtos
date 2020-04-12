@@ -32,6 +32,7 @@ target_include_directories(
     ${ELF}
     PRIVATE
         "src"
+        "src/foonathan" 
 )
 
 add_compile_options(

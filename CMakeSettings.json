@@ -1,0 +1,32 @@
+﻿{
+  "configurations": [
+    {
+      "name": "arm-gcc-9-debug",
+      "generator": "Ninja",
+      "configurationType": "Debug",
+      "inheritEnvironments": [ "gcc-arm" ],
+      "buildRoot": "${projectDir}\\build\\${name}",
+      "installRoot": "${projectDir}\\out\\install\\${name}",
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "-v",
+      "ctestCommandArgs": "",
+      "cmakeToolchain": "${projectDir}\\cmake\\gcc-arm-none-eabi-9.toolchain",
+      "variables": [],
+      "intelliSenseMode": "linux-gcc-arm"
+    },
+    {
+      "name": "arm-gcc-9-minsizerel",
+      "generator": "Ninja",
+      "configurationType": "MinSizeRel",
+      "buildRoot": "${projectDir}\\build\\${name}",
+      "installRoot": "${projectDir}\\out\\install\\${name}",
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "-v",
+      "ctestCommandArgs": "",
+      "cmakeToolchain": "${projectDir}\\cmake\\gcc-arm-none-eabi-9.toolchain",
+      "inheritEnvironments": [ "gcc-arm" ],
+      "variables": [],
+      "intelliSenseMode": "linux-gcc-arm"
+    }
+  ]
+}
