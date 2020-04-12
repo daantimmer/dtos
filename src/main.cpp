@@ -28,17 +28,21 @@ namespace
         systemtick::Setup();
     }
 
-    auto task1Handler = [](Task&) {
-        kernel::GetKernel().CurrentTask().RepeatEvery(std::chrono::milliseconds{250},
-                                                      []() { LL_GPIO_ResetOutputPin(GPIOC, LL_GPIO_PIN_13); });
+    auto task1Handler = [](Task& task) { //NOLINT
+        task.RepeatEvery(std::chrono::milliseconds{250}, []() { LL_GPIO_ResetOutputPin(GPIOC, LL_GPIO_PIN_13); });
     };
 
-    auto task2Handler = [](Task&) {
+    auto task2Handler = [](Task& task) { //NOLINT
         DelayTask(std::chrono::milliseconds{125});
 
-        kernel::GetKernel().CurrentTask().RepeatEvery(std::chrono::milliseconds{250},
-                                                      []() { LL_GPIO_SetOutputPin(GPIOC, LL_GPIO_PIN_13); });
+        task.RepeatEvery(std::chrono::milliseconds{250}, []() { LL_GPIO_SetOutputPin(GPIOC, LL_GPIO_PIN_13); });
     };
+
+    kernel::MainThread mainThread{};
+
+    constexpr auto defaultstacksize = 128u;
+    Task::WithStack<defaultstacksize> task1{task1Handler, {GPIOC, LL_GPIO_PIN_14}};
+    Task::WithStack<defaultstacksize> task2{task2Handler, {GPIOC, LL_GPIO_PIN_15}};
 }
 
 auto main() -> int
@@ -67,11 +71,7 @@ auto main() -> int
 
     LL_SYSTICK_EnableIT();
 
-    kernel::MainThread mainThread{};
     kernel::Kernel kernel{mainThread};
-
-    Task::WithStack<128> task1{task1Handler, {GPIOC, LL_GPIO_PIN_14}};
-    Task::WithStack<128> task2{task2Handler, {GPIOC, LL_GPIO_PIN_15}};
 
     task1.priority = 0;
     task2.priority = 0;
@@ -79,7 +79,7 @@ auto main() -> int
     kernel::GetKernel().readyTasks.insert(task1);
     kernel::GetKernel().readyTasks.insert(task2);
 
-    while (1)
+    while (true)
     {
         // YieldTask();
     }
