@@ -24,6 +24,12 @@
 
 extern auto main() -> int; /*!< The entry point for the application.    */
 
+#ifdef IDE
+#define __attribute__(param)
+#define used
+#define weak
+#endif
+
 extern "C"
 {
     void __libc_init_array(void);
@@ -105,16 +111,18 @@ extern "C"
 
     using ExceptionVector = void (*)();
 
-    extern const char __privelegedStack_end[];
+    extern std::uint32_t __processStack_start[];
+    extern std::uint32_t __processStack_end[];
+
+    extern const char* __privelegedStack_end[];
 
     /**
      *@brief The minimal vector table for a Cortex M3.  Note that the proper constructs
     *       must be placed on this to ensure that it ends up at physical address
     *       0x00000000.
     */
-    // __attribute__((used, section(".isr_vector")))
-    // void (*const g_pfnVectors[])(void) =
-    const ExceptionVector g_pfnVectors[] __attribute__((used, section(".isr_vector"), used)){
+    //NOLINTNEXTLINE
+    const std::array<ExceptionVector, 67> g_pfnVectors __attribute__((used, section(".isr_vector"), used)){
         /*----------Core Exceptions-------------------------------------------------*/
         // (void*)& pulStack[STACK_SIZE],     /*!< The initial stack pointer         */
         reinterpret_cast<ExceptionVector>(__privelegedStack_end),
@@ -199,6 +207,8 @@ extern "C"
      */
     void Default_Reset_Handler(void)
     {
+        std::fill(&__processStack_start[0], &__processStack_end[0], 0xEF'BE'AD'DE);
+
         asm volatile("ldr r0, =__processStack_end");
         asm volatile("msr psp, r0");
         asm volatile("movs r0, %[consrolSpselMask]" ::[consrolSpselMask] "i"(CONTROL_SPSEL_Msk));
@@ -288,10 +298,10 @@ extern "C"
         * @param  None
         * @retval None
         */
-    static void Default_Handler(void)
+    static void Default_Handler()
     {
         /* Go into an infinite loop. */
-        while (1)
+        while (true)
         {
             assert(0);
         }
