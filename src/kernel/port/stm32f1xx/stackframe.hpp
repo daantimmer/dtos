@@ -20,7 +20,7 @@ namespace kernel::port
 
     struct ExceptionStackFrame
     {
-        constexpr static std::uintptr_t defaultXpsr{0x01000000};
+        static constexpr std::uintptr_t defaultXpsr{0x01'00'00'00};
 
         wr r0;
         wr r1;

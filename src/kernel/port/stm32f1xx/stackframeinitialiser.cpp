@@ -1,37 +1,46 @@
 #include "kernel/port/stackframeinitialiser.hpp"
-
 #include "kernel/port/stm32f1xx/stackframe.hpp"
 #include "kernel/task.hpp"
+#include <type_traits>
 
 static void ThreadRunner(RunnableTask* runnable)
 {
     runnable->Run();
 }
 
-kernel::Status<std::uint32_t*> kernel::port::InitialiseStack(void* entry, std::uint32_t* stack, std::size_t size)
+kernel::Status<std::uint32_t*> kernel::port::InitialiseStack(void* entry, std::uint32_t* stack, StackSize_t size)
 {
-    const auto stackFrame = reinterpret_cast<kernel::port::StackFrame*>(stack + size) - 1;
+    const auto stackSize = type_safe::get(size);
+    const auto stackFrame = reinterpret_cast<kernel::port::StackFrame*>(stack + stackSize) - 1;
 
-    stackFrame->softwareStackFrame.r4 = reinterpret_cast<kernel::port::wr>(0x44444444);
-    stackFrame->softwareStackFrame.r5 = reinterpret_cast<kernel::port::wr>(0x55555555);
-    stackFrame->softwareStackFrame.r6 = reinterpret_cast<kernel::port::wr>(0x66666666);
-    stackFrame->softwareStackFrame.r7 = reinterpret_cast<kernel::port::wr>(0x77777777);
-    stackFrame->softwareStackFrame.r8 = reinterpret_cast<kernel::port::wr>(0x88888888);
-    stackFrame->softwareStackFrame.r9 = reinterpret_cast<kernel::port::wr>(0x99999999);
-    stackFrame->softwareStackFrame.r10 = reinterpret_cast<kernel::port::wr>(0xaaaaaaaa);
-    stackFrame->softwareStackFrame.r11 = reinterpret_cast<kernel::port::wr>(0xbbbbbbbb);
+    constexpr auto initwr = [](kernel::port::wr& reg, auto data) {
+        if constexpr (std::is_same_v<std::nullptr_t, decltype(data)>)
+        {
+            reg = data;
+        }
+        else
+        {
+            reg = reinterpret_cast<kernel::port::wr>(data);
+        }
+    };
 
-    stackFrame->exceptionStackFrame.r0 = reinterpret_cast<kernel::port::wr>(entry);
-    stackFrame->exceptionStackFrame.r1 = reinterpret_cast<kernel::port::wr>(0x11111111);
-    stackFrame->exceptionStackFrame.r2 = reinterpret_cast<kernel::port::wr>(0x22222222);
-    stackFrame->exceptionStackFrame.r3 = reinterpret_cast<kernel::port::wr>(0x33333333);
-    stackFrame->exceptionStackFrame.r12 = reinterpret_cast<kernel::port::wr>(0xcccccccc);
-    stackFrame->exceptionStackFrame.lr = nullptr;
-    stackFrame->exceptionStackFrame.pc = reinterpret_cast<kernel::port::wr>(&ThreadRunner);
-    stackFrame->exceptionStackFrame.xpsr
-    = reinterpret_cast<kernel::port::wr>(kernel::port::ExceptionStackFrame::defaultXpsr);
+    initwr(stackFrame->softwareStackFrame.r4, 0x44'44'44'44);
+    initwr(stackFrame->softwareStackFrame.r5, 0x55'55'55'55);
+    initwr(stackFrame->softwareStackFrame.r6, 0x66'66'66'66);
+    initwr(stackFrame->softwareStackFrame.r7, 0x77'77'77'77);
+    initwr(stackFrame->softwareStackFrame.r8, 0x88'88'88'88);
+    initwr(stackFrame->softwareStackFrame.r9, 0x99'99'99'99);
+    initwr(stackFrame->softwareStackFrame.r10, 0xaa'aa'aa'aa);
+    initwr(stackFrame->softwareStackFrame.r11, 0xbb'bb'bb'bb);
 
-    stackFrame->exceptionStackFrame.xpsr = reinterpret_cast<kernel::port::wr>(0x01'00'00'00UL);
+    initwr(stackFrame->exceptionStackFrame.r0, entry);
+    initwr(stackFrame->exceptionStackFrame.r1, 0x11111111);
+    initwr(stackFrame->exceptionStackFrame.r2, 0x22222222);
+    initwr(stackFrame->exceptionStackFrame.r3, 0x33333333);
+    initwr(stackFrame->exceptionStackFrame.r12, 0xcccccccc);
+    initwr(stackFrame->exceptionStackFrame.lr, nullptr);
+    initwr(stackFrame->exceptionStackFrame.pc, &ThreadRunner);
+    initwr(stackFrame->exceptionStackFrame.xpsr, kernel::port::ExceptionStackFrame::defaultXpsr);
 
     return {StatusCode::OK, reinterpret_cast<std::uint32_t*>(stackFrame)};
 }

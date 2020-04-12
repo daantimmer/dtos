@@ -2,42 +2,41 @@
 
 #include "elib/intrusivelist.hpp"
 #include "elib/sortedintrusivelist.hpp"
+#include "kernel/systicks_t.hpp"
 #include "kernel/task.hpp"
 
 namespace kernel
 {
-struct MainThread;
+    struct MainThread;
 
-using RunnableTask = ::RunnableTask;
+    using RunnableTask = ::RunnableTask;
 
-struct RunnableCompare
-{
-    bool operator()(const kernel::RunnableTask& lhs, const kernel::RunnableTask& rhs) const
+    struct RunnableCompare
     {
-        return lhs.priority > rhs.priority;
-    }
-};
+        auto operator()(const kernel::RunnableTask& lhs, const kernel::RunnableTask& rhs) const -> bool
+        {
+            return lhs.priority > rhs.priority;
+        }
+    };
 
-struct Kernel
-{
-    Kernel(MainThread&);
+    using RunnableTaskList = elib::SortedIntrusiveList<RunnableCompare,
+                                                       kernel::RunnableTask,
+                                                       &kernel::RunnableTask::queueItem,
+                                                       kernel::RunnableTask>;
 
-    RunnableTask& CurrentTask() const;
+    struct Kernel
+    {
+        Kernel(MainThread&);
 
-    RunnableTask& GetIdleTask() const;
+        auto CurrentTask() const -> RunnableTask&;
+        auto GetIdleTask() const -> RunnableTask&;
 
-    std::uint32_t systicks = 0;
+        SysTicks_t systicks{std::uint32_t{0u}};
 
-    elib::
-    SortedIntrusiveList<RunnableCompare, kernel::RunnableTask, &kernel::RunnableTask::queueItem, kernel::RunnableTask>
-    delayedTasks;
-    elib::
-    SortedIntrusiveList<RunnableCompare, kernel::RunnableTask, &kernel::RunnableTask::queueItem, kernel::RunnableTask>
-    readyTasks;
-    elib::
-    SortedIntrusiveList<RunnableCompare, kernel::RunnableTask, &kernel::RunnableTask::queueItem, kernel::RunnableTask>
-    blockedTasks;
+        RunnableTaskList delayedTasks;
+        RunnableTaskList readyTasks;
+        RunnableTaskList blockedTasks;
 
-    mutable Task::WithStack<32> idleTask;
-};
+        mutable Task::WithStack<32> idleTask;
+    };
 }

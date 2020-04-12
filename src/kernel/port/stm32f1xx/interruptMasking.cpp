@@ -3,11 +3,6 @@
 #include "kernel/basepri.hpp"
 #include "stm32f103xb.h"
 
-auto kernel::port::DisableInterrupts() -> InterruptMask
-{
-    return DisableInterruptMasking();
-}
-
 auto kernel::port::EnableInterruptMasking() -> InterruptMask
 {
     if constexpr (!kernel::IsKernelPriorityHighest())
@@ -17,7 +12,7 @@ auto kernel::port::EnableInterruptMasking() -> InterruptMask
 
         __set_BASEPRI(basePriValue);
 
-        return maskValue;
+        return InterruptMask{maskValue};
     }
     else
     {
@@ -25,7 +20,7 @@ auto kernel::port::EnableInterruptMasking() -> InterruptMask
 
         __disable_irq();
 
-        return maskValue;
+        return InterruptMask{maskValue};
     }
 }
 
@@ -37,7 +32,7 @@ auto kernel::port::DisableInterruptMasking() -> InterruptMask
 
         __set_BASEPRI(0);
 
-        return maskValue;
+        return InterruptMask{maskValue};
     }
     else
     {
@@ -45,16 +40,16 @@ auto kernel::port::DisableInterruptMasking() -> InterruptMask
 
         __enable_irq();
 
-        return maskValue;
+        return InterruptMask{maskValue};
     }
 }
 
-auto kernel::port::EnableInterrupts(const InterruptMask maskValue) -> void
+auto kernel::port::RestoreInterruptMasking() -> void
 {
-    RestoreInterruptMasking(maskValue);
+    RestoreInterruptMasking(InterruptMask{std::uint32_t{0}});
 }
 
 auto kernel::port::RestoreInterruptMasking(const InterruptMask maskValue) -> void
 {
-    __set_BASEPRI(maskValue);
+    __set_BASEPRI(static_cast<std::uint32_t>(maskValue));
 }

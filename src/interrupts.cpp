@@ -132,15 +132,11 @@ extern "C"
     void SysTick_Handler()
     {
         kernel::InterruptUnmasking interruptUnmasking;
-        // DisableInterrupts();
 
-        if (SchedulerTick() == true)
+        if (SchedulerTick())
         {
             TriggerTaskSwitch();
-            // YieldTask();
         }
-
-        // EnableInterrupts();
     }
 
     void WWDG_IRQHandler()

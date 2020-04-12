@@ -2,6 +2,7 @@
 #pragma once
 
 #include <chrono>
+#include <cstdint>
 
 struct RunnableTask;
 
@@ -13,12 +14,12 @@ extern "C"
 }
 
 void TriggerTaskSwitch();
-bool SchedulerTick();
+auto SchedulerTick() -> bool;
 
 void YieldTask();
 void BlockTask();
 
 void DelayTask(std::chrono::microseconds delay);
 void DelayTask(std::chrono::milliseconds delay);
-void DelayTask(uint32_t ticks = 0);
-void DelayTask(RunnableTask& task, uint32_t ticks = 0);
+void DelayTask(std::uint32_t ticks = 0);
+void DelayTask(RunnableTask& task, std::uint32_t ticks = 0);

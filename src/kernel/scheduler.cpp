@@ -12,7 +12,6 @@
 #include "kernel/task.hpp"
 #include "stm32f103xb.h"
 #include "stm32f1xx_ll_gpio.h"
-
 #include <algorithm>
 #include <array>
 #include <cassert>
@@ -32,7 +31,7 @@ void TriggerTaskSwitch()
     asm volatile("dsb" ::: "memory");
 }
 
-bool SchedulerTick()
+auto SchedulerTick() -> bool
 {
     kernel::GetKernel().systicks++;
 
@@ -45,7 +44,7 @@ bool SchedulerTick()
 
         for (; iter != end;)
         {
-            if (auto& task = *iter; task.tickDelay <= kernel::GetKernel().systicks)
+            if (auto& task = *iter; task.tickDelay <= static_cast<std::uint32_t>(kernel::GetKernel().systicks))
             {
                 iter = kernel::GetKernel().delayedTasks.erase(iter);
 
@@ -53,7 +52,7 @@ bool SchedulerTick()
 
                 if (task.interval != 0)
                 {
-                    task.tickDelay = kernel::GetKernel().systicks + task.interval;
+                    task.tickDelay = static_cast<std::uint32_t>(kernel::GetKernel().systicks) + task.interval;
                 }
                 else
                 {
@@ -89,7 +88,7 @@ void TaskScheduler()
     //                            currentTaskControlBlock->gpioDebug.pin);
     // }
 
-    if (kernel::GetKernel().readyTasks.empty() == false)
+    if (!kernel::GetKernel().readyTasks.empty())
     {
         // kernel::GetKernel().readyTasks.push_back(*currentTaskControlBlock);
 
@@ -140,7 +139,7 @@ void DelayTask(std::chrono::milliseconds delay)
     DelayTask(std::chrono::duration_cast<std::chrono::microseconds>(delay));
 }
 
-void DelayTask(uint32_t ticks)
+void DelayTask(std::uint32_t ticks)
 {
     ScopedCriticalSection critical;
 
@@ -149,11 +148,11 @@ void DelayTask(uint32_t ticks)
     TriggerTaskSwitch();
 }
 
-void DelayTask(RunnableTask& task, uint32_t ticks)
+void DelayTask(RunnableTask& task, std::uint32_t ticks)
 {
     ScopedCriticalSection critical;
 
-    task.tickDelay = kernel::GetKernel().systicks + ticks;
+    task.tickDelay = static_cast<std::uint32_t>(kernel::GetKernel().systicks) + ticks;
 
     kernel::GetKernel().delayedTasks.insert(task);
 }

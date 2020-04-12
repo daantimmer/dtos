@@ -1,36 +1,32 @@
 
 #include "criticalsection.hpp"
-
 #include "kernel/InterruptMasking.hpp"
-// #include "utils.hpp"
-
+#include "stm32f1xx.h"
 #include <cassert>
 #include <cstdint>
 
-static volatile uint32_t criticalNestingCounter = 0;
+static volatile auto criticalNestingCounter = 0u;
 
 void EnterCriticalSection()
 {
-    // DisableInterrupts();
     kernel::port::DisableInterruptMasking();
 
-    criticalNestingCounter++;
+    ++criticalNestingCounter;
 }
 
 void ExitCriticalSection()
 {
     if (criticalNestingCounter > 0)
     {
-        criticalNestingCounter--;
+        --criticalNestingCounter;
 
         if (criticalNestingCounter == 0)
         {
-            // EnableInterrupts();
             kernel::port::RestoreInterruptMasking();
         }
     }
     else
     {
-        assert(false);
+        __BKPT();
     }
 }
