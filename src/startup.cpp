@@ -17,13 +17,12 @@
  */
 
 #include "stm32f1xx.h"
-
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
 
-extern auto RealDeal() -> int; /*!< The entry point for the application.    */
+extern auto main() -> int; /*!< The entry point for the application.    */
 
 extern "C"
 {
@@ -93,15 +92,15 @@ extern "C"
     /*----------Symbols defined in linker script----------------------------------*/
     extern std::uint32_t _sidata; /*!< Start address for the initialization
                                         values of the .data section.            */
-    extern std::uint32_t _sdata;  /*!< Start address for the .data section     */
-    extern std::uint32_t _edata;  /*!< End address for the .data section       */
-    extern std::uint32_t _sbss;   /*!< Start address for the .bss section      */
-    extern std::uint32_t _ebss;   /*!< End address for the .bss section        */
+    extern std::uint32_t _sdata; /*!< Start address for the .data section     */
+    extern std::uint32_t _edata; /*!< End address for the .data section       */
+    extern std::uint32_t _sbss; /*!< Start address for the .bss section      */
+    extern std::uint32_t _ebss; /*!< End address for the .bss section        */
     // extern void _eram;               /*!< End address for ram                     */
 
     /*----------Function prototypes-----------------------------------------------*/
     // extern void SystemInit(void);      /*!< Setup the microcontroller system(CMSIS) */
-    void Default_Reset_Handler();  /*!< Default reset handler                */
+    void Default_Reset_Handler(); /*!< Default reset handler                */
     static void Default_Handler(); /*!< Default exception handler            */
 
     using ExceptionVector = void (*)();
@@ -116,78 +115,78 @@ extern "C"
     // __attribute__((used, section(".isr_vector")))
     // void (*const g_pfnVectors[])(void) =
     const ExceptionVector g_pfnVectors[] __attribute__((used, section(".isr_vector"), used)){
-    /*----------Core Exceptions-------------------------------------------------*/
-    // (void*)& pulStack[STACK_SIZE],     /*!< The initial stack pointer         */
-    reinterpret_cast<ExceptionVector>(__privelegedStack_end),
-    Reset_Handler,      /*!< Reset Handler                            */
-    NMI_Handler,        /*!< NMI Handler                              */
-    HardFault_Handler,  /*!< Hard Fault Handler                       */
-    MemManage_Handler,  /*!< MPU Fault Handler                        */
-    BusFault_Handler,   /*!< Bus Fault Handler                        */
-    UsageFault_Handler, /*!< Usage Fault Handler                      */
-    0,
-    0,
-    0,
-    0,                /*!< Reserved                                 */
-    SVC_Handler,      /*!< SVCall Handler                           */
-    DebugMon_Handler, /*!< Debug Monitor Handler                    */
-    0,                /*!< Reserved                                 */
-    PendSV_Handler,   /*!< PendSV Handler                           */
-    SysTick_Handler,  /*!< SysTick Handler                          */
+        /*----------Core Exceptions-------------------------------------------------*/
+        // (void*)& pulStack[STACK_SIZE],     /*!< The initial stack pointer         */
+        reinterpret_cast<ExceptionVector>(__privelegedStack_end),
+        Reset_Handler, /*!< Reset Handler                            */
+        NMI_Handler, /*!< NMI Handler                              */
+        HardFault_Handler, /*!< Hard Fault Handler                       */
+        MemManage_Handler, /*!< MPU Fault Handler                        */
+        BusFault_Handler, /*!< Bus Fault Handler                        */
+        UsageFault_Handler, /*!< Usage Fault Handler                      */
+        0,
+        0,
+        0,
+        0, /*!< Reserved                                 */
+        SVC_Handler, /*!< SVCall Handler                           */
+        DebugMon_Handler, /*!< Debug Monitor Handler                    */
+        0, /*!< Reserved                                 */
+        PendSV_Handler, /*!< PendSV Handler                           */
+        SysTick_Handler, /*!< SysTick Handler                          */
 
-    /*----------External Exceptions---------------------------------------------*/
-    WWDG_IRQHandler,            /*!<  0: Window Watchdog                      */
-    PVD_IRQHandler,             /*!<  1: PVD through EXTI Line detect         */
-    TAMPER_IRQHandler,          /*!<  2: Tamper                               */
-    RTC_IRQHandler,             /*!<  3: RTC                                  */
-    FLASH_IRQHandler,           /*!<  4: Flash                                */
-    RCC_IRQHandler,             /*!<  5: RCC                                  */
-    EXTI0_IRQHandler,           /*!<  6: EXTI Line 0                          */
-    EXTI1_IRQHandler,           /*!<  7: EXTI Line 1                          */
-    EXTI2_IRQHandler,           /*!<  8: EXTI Line 2                          */
-    EXTI3_IRQHandler,           /*!<  9: EXTI Line 3                          */
-    EXTI4_IRQHandler,           /*!< 10: EXTI Line 4                          */
-    DMA1_Channel1_IRQHandler,   /*!< 11: DMA1 Channel 1                       */
-    DMA1_Channel2_IRQHandler,   /*!< 12: DMA1 Channel 2                       */
-    DMA1_Channel3_IRQHandler,   /*!< 13: DMA1 Channel 3                       */
-    DMA1_Channel4_IRQHandler,   /*!< 14: DMA1 Channel 4                       */
-    DMA1_Channel5_IRQHandler,   /*!< 15: DMA1 Channel 5                       */
-    DMA1_Channel6_IRQHandler,   /*!< 16: DMA1 Channel 6                       */
-    DMA1_Channel7_IRQHandler,   /*!< 17: DMA1 Channel 7                       */
-    ADC1_2_IRQHandler,          /*!< 18: ADC1 & ADC2                          */
-    USB_HP_CAN1_TX_IRQHandler,  /*!< 19: USB High Priority or CAN1 TX         */
-    USB_LP_CAN1_RX0_IRQHandler, /*!< 20: USB Low  Priority or CAN1 RX0        */
-    CAN1_RX1_IRQHandler,        /*!< 21: CAN1 RX1                             */
-    CAN1_SCE_IRQHandler,        /*!< 22: CAN1 SCE                             */
-    EXTI9_5_IRQHandler,         /*!< 23: EXTI Line 9..5                       */
-    TIM1_BRK_IRQHandler,        /*!< 24: TIM1 Break                           */
-    TIM1_UP_IRQHandler,         /*!< 25: TIM1 Update                          */
-    TIM1_TRG_COM_IRQHandler,    /*!< 26: TIM1 Trigger and Commutation         */
-    TIM1_CC_IRQHandler,         /*!< 27: TIM1 Capture Compare                 */
-    TIM2_IRQHandler,            /*!< 28: TIM2                                 */
-    TIM3_IRQHandler,            /*!< 29: TIM3                                 */
-    TIM4_IRQHandler,            /*!< 30: TIM4                                 */
-    I2C1_EV_IRQHandler,         /*!< 31: I2C1 Event                           */
-    I2C1_ER_IRQHandler,         /*!< 32: I2C1 Error                           */
-    I2C2_EV_IRQHandler,         /*!< 33: I2C2 Event                           */
-    I2C2_ER_IRQHandler,         /*!< 34: I2C2 Error                           */
-    SPI1_IRQHandler,            /*!< 35: SPI1                                 */
-    SPI2_IRQHandler,            /*!< 36: SPI2                                 */
-    USART1_IRQHandler,          /*!< 37: USART1                               */
-    USART2_IRQHandler,          /*!< 38: USART2                               */
-    USART3_IRQHandler,          /*!< 39: USART3                               */
-    EXTI15_10_IRQHandler,       /*!< 40: EXTI Line 15..10                     */
-    RTCAlarm_IRQHandler,        /*!< 41: RTC Alarm through EXTI Line          */
-    USBWakeUp_IRQHandler,       /*!< 42: USB Wakeup from suspend              */
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0, /*!< Reserved                                 */
-    reinterpret_cast<void (*)()>(0xF108F85F),
-    // (void*)0xF108F85F            /*!< Boot in RAM mode                         */
+        /*----------External Exceptions---------------------------------------------*/
+        WWDG_IRQHandler, /*!<  0: Window Watchdog                      */
+        PVD_IRQHandler, /*!<  1: PVD through EXTI Line detect         */
+        TAMPER_IRQHandler, /*!<  2: Tamper                               */
+        RTC_IRQHandler, /*!<  3: RTC                                  */
+        FLASH_IRQHandler, /*!<  4: Flash                                */
+        RCC_IRQHandler, /*!<  5: RCC                                  */
+        EXTI0_IRQHandler, /*!<  6: EXTI Line 0                          */
+        EXTI1_IRQHandler, /*!<  7: EXTI Line 1                          */
+        EXTI2_IRQHandler, /*!<  8: EXTI Line 2                          */
+        EXTI3_IRQHandler, /*!<  9: EXTI Line 3                          */
+        EXTI4_IRQHandler, /*!< 10: EXTI Line 4                          */
+        DMA1_Channel1_IRQHandler, /*!< 11: DMA1 Channel 1                       */
+        DMA1_Channel2_IRQHandler, /*!< 12: DMA1 Channel 2                       */
+        DMA1_Channel3_IRQHandler, /*!< 13: DMA1 Channel 3                       */
+        DMA1_Channel4_IRQHandler, /*!< 14: DMA1 Channel 4                       */
+        DMA1_Channel5_IRQHandler, /*!< 15: DMA1 Channel 5                       */
+        DMA1_Channel6_IRQHandler, /*!< 16: DMA1 Channel 6                       */
+        DMA1_Channel7_IRQHandler, /*!< 17: DMA1 Channel 7                       */
+        ADC1_2_IRQHandler, /*!< 18: ADC1 & ADC2                          */
+        USB_HP_CAN1_TX_IRQHandler, /*!< 19: USB High Priority or CAN1 TX         */
+        USB_LP_CAN1_RX0_IRQHandler, /*!< 20: USB Low  Priority or CAN1 RX0        */
+        CAN1_RX1_IRQHandler, /*!< 21: CAN1 RX1                             */
+        CAN1_SCE_IRQHandler, /*!< 22: CAN1 SCE                             */
+        EXTI9_5_IRQHandler, /*!< 23: EXTI Line 9..5                       */
+        TIM1_BRK_IRQHandler, /*!< 24: TIM1 Break                           */
+        TIM1_UP_IRQHandler, /*!< 25: TIM1 Update                          */
+        TIM1_TRG_COM_IRQHandler, /*!< 26: TIM1 Trigger and Commutation         */
+        TIM1_CC_IRQHandler, /*!< 27: TIM1 Capture Compare                 */
+        TIM2_IRQHandler, /*!< 28: TIM2                                 */
+        TIM3_IRQHandler, /*!< 29: TIM3                                 */
+        TIM4_IRQHandler, /*!< 30: TIM4                                 */
+        I2C1_EV_IRQHandler, /*!< 31: I2C1 Event                           */
+        I2C1_ER_IRQHandler, /*!< 32: I2C1 Error                           */
+        I2C2_EV_IRQHandler, /*!< 33: I2C2 Event                           */
+        I2C2_ER_IRQHandler, /*!< 34: I2C2 Error                           */
+        SPI1_IRQHandler, /*!< 35: SPI1                                 */
+        SPI2_IRQHandler, /*!< 36: SPI2                                 */
+        USART1_IRQHandler, /*!< 37: USART1                               */
+        USART2_IRQHandler, /*!< 38: USART2                               */
+        USART3_IRQHandler, /*!< 39: USART3                               */
+        EXTI15_10_IRQHandler, /*!< 40: EXTI Line 15..10                     */
+        RTCAlarm_IRQHandler, /*!< 41: RTC Alarm through EXTI Line          */
+        USBWakeUp_IRQHandler, /*!< 42: USB Wakeup from suspend              */
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0, /*!< Reserved                                 */
+        reinterpret_cast<void (*)()>(0xF108F85F),
+        // (void*)0xF108F85F            /*!< Boot in RAM mode                         */
     };
 
     /**
@@ -220,7 +219,7 @@ extern "C"
         SystemCoreClockUpdate();
 
         /* Call the application's entry point.*/
-        RealDeal();
+        main();
     }
 
 /**

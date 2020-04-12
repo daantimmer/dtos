@@ -3,7 +3,6 @@
 //
 
 #include "main.hpp"
-
 #include "hal/port/peripherals.hpp"
 #include "infra/List.hpp"
 #include "interrupts.hpp"
@@ -19,31 +18,30 @@
 #include "stm32f1xx_ll_gpio.h"
 #include "stm32f1xx_ll_rcc.h"
 #include "stm32f1xx_ll_utils.h"
-
 #include <cstdint>
 
 namespace
 {
-void SetupClocking()
-{
-    SystemClock_Setup();
-    systemtick::Setup();
+    void SetupClocking()
+    {
+        SystemClock_Setup();
+        systemtick::Setup();
+    }
+
+    auto task1Handler = [](Task&) {
+        kernel::GetKernel().CurrentTask().RepeatEvery(std::chrono::milliseconds{250},
+                                                      []() { LL_GPIO_ResetOutputPin(GPIOC, LL_GPIO_PIN_13); });
+    };
+
+    auto task2Handler = [](Task&) {
+        DelayTask(std::chrono::milliseconds{125});
+
+        kernel::GetKernel().CurrentTask().RepeatEvery(std::chrono::milliseconds{250},
+                                                      []() { LL_GPIO_SetOutputPin(GPIOC, LL_GPIO_PIN_13); });
+    };
 }
 
-auto task1Handler = [](Task&) {
-    kernel::GetKernel().CurrentTask().RepeatEvery(std::chrono::milliseconds{250},
-                                                  []() { LL_GPIO_ResetOutputPin(GPIOC, LL_GPIO_PIN_13); });
-};
-
-auto task2Handler = [](Task&) {
-    DelayTask(std::chrono::milliseconds{125});
-
-    kernel::GetKernel().CurrentTask().RepeatEvery(std::chrono::milliseconds{250},
-                                                  []() { LL_GPIO_SetOutputPin(GPIOC, LL_GPIO_PIN_13); });
-};
-}
-
-auto RealDeal() -> int
+auto main() -> int
 {
     SetupClocking();
 
