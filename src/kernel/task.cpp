@@ -1,10 +1,8 @@
 
 #include "task.hpp"
-
 #include "kernel/kernel.hpp"
 #include "kernel/port/stackframeinitialiser.hpp"
 #include "kernel/scheduler.hpp"
-
 #include <algorithm>
 #include <cassert>
 
@@ -30,8 +28,7 @@ void RunnableTask::Delay()
 
 TaskStack::TaskStack(std::uint32_t* stack)
     : stackPointer(stack)
-{
-}
+{}
 
 void* TaskStack::GetStackPointer() const
 {
@@ -51,11 +48,11 @@ Task::Task(void (*entry)(Task& task), uint32_t* stackTop, size_t stackSize, Task
     // , queueItem(this)
     // , blockedItem(this)
     , stackGuard_begin(this->stackTop - 1)
-    , stackGuard_end(this->stackPointer)
+    , stackGuard_end(stackGuard_begin + stackSize)
     , gpioDebug(gpioDebug)
 {
+    std::fill(stackGuard_begin, stackGuard_end, 0xDEADBEEF);
     *stackGuard_begin = 0xCCCCCCCC;
-    std::fill(this->stackTop, stackPointer, 0xDEADBEEF);
     *stackGuard_end = 0xCDCDCDCD;
 
     std::tie(std::ignore, stackPointer) = kernel::port::InitialiseStack(this, this->stackTop, this->stackSize);
