@@ -15,6 +15,7 @@ static auto schedulerSwitchContextWrapper(void* const ptr) -> void*
 
 extern "C" __attribute__((naked)) void PendSV_Handler()
 {
+#ifndef CLANG_TIDY
     if constexpr (!kernel::IsKernelPriorityHighest())
     {
         asm volatile("mov r0, %[basePriority]" ::[basePriority] "i"(kernel::GetBasePriorityRegisterValue()));
@@ -51,6 +52,7 @@ extern "C" __attribute__((naked)) void PendSV_Handler()
 
     asm volatile("bx lr");
     asm volatile(".ltorg");
+#endif
 }
 
 // #endif

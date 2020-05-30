@@ -3,7 +3,7 @@
 #
 cmake_minimum_required (VERSION 3.15.0)
 
-# set(CMAKE_CXX_CLANG_TIDY "clang-tidy;--checks=*,-clang-diagnostic*,-hicpp*,-fuchsia*;-p=compile_commands.json")
+set(CMAKE_CXX_CLANG_TIDY "clang-tidy;-p=compile_commands.json;--extra-arg=-D__GNUC__;--extra-arg=-DSTM32F103xB;--extra-arg=-DCLANG_TIDY")
 
 project(rtos)
 
@@ -15,7 +15,6 @@ set(LST ${PROJECT_NAME}.lst)
 enable_language(ASM)
 
 set(STARTUP_FILE startup_stm32f103xb.c)
-# set(CMAKE_CXX_CLANG_TIDY clang-tidy -checks=-clang-diagnostic-*,bugprone-*,cert-*,clang-analyzer-*,cppcoreguidelines-*,google-*,-google-readability-*,misc-*,modernize-*,performance-*,portability-* --extra-arg=-D__GNUC__ --extra-arg=-DSTM32F103xB)
 
 # Add src to this project's executable.
 add_executable (${ELF}
@@ -71,7 +70,6 @@ set_target_properties(
         "-T${PROJECT_SOURCE_DIR}/libs/hal_stm32f103/target/arm/stm32f1/CMSIS/Device/ST/STM32F1xx/Source/Templates/gcc/linker/STM32F103XB_FLASH.ld \
          -mthumb \
          -ggdb \
-         -mtune=cortex-m3 \
          -mcpu=cortex-m3 \
          -specs=nano.specs \
          -specs=nosys.specs \

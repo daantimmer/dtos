@@ -1,0 +1,2 @@
+---
+Checks: '*,-clang-diagnostic*,-hicpp*,-fuchsia*,-cppcoreguidelines-pro-type-reinterpret-cast,-cppcoreguidelines-avoid-magic-numbers'

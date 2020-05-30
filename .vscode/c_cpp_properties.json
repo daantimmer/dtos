@@ -19,10 +19,10 @@
             ],
             "cStandard": "c11",
             "cppStandard": "c++17",
-            "intelliSenseMode": "gcc-x64",
+            "intelliSenseMode": "gcc-arm",
             "configurationProvider": "ms-vscode.cmake-tools",
             "compileCommands": "${workspaceFolder}/build/compile_commands.json",
-            "compilerPath": "e:/git/toolchains/gcc-arm-none-eabi-9-2019-q4-major-win32/bin/arm-none-eabi-g++.exe"
+            "compilerPath": "E:\\git\\toolchains\\gcc-arm-none-eabi-9-2019-q4-major-win32\\bin\\arm-none-eabi-g++.exe"
         }
     ],
     "version": 4
