@@ -74,7 +74,10 @@ protected:
 
 struct Task: TaskStack
 {
-    Task(void (*entry)(Task& task), uint32_t* stackTop, kernel::StackSize_t stackSize, TaskDebugGpio gpioDebug = {});
+    Task(void (*entry)(const Task& task),
+         uint32_t* stackTop,
+         kernel::StackSize_t stackSize,
+         TaskDebugGpio gpioDebug = {});
 
     Task(const Task&) = delete;
     Task(Task&&) = delete;
@@ -93,7 +96,7 @@ protected:
     std::uint32_t* const stackTop;
     const kernel::StackSize_t stackSize;
 
-    void (*entry)(Task& task);
+    void (*entry)(const Task& task);
 
 public:
     std::uint32_t* stackGuard_begin;
@@ -105,7 +108,7 @@ public:
 template <std::size_t SIZE>
 struct Task::WithStack: Task
 {
-    WithStack(void (*entry)(Task& task), TaskDebugGpio gpioDebug = {})
+    WithStack(void (*entry)(const Task& task), TaskDebugGpio gpioDebug = {})
         : Task(entry, stack.data(), kernel::StackSize_t{SIZE}, std::move(gpioDebug))
     {}
 

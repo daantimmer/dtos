@@ -10,8 +10,8 @@
 #include <cassert>
 #include <cstdint>
 
-constexpr std::uint32_t MAIN_RETURN{0xFFFFFFF9ul}; //Tells the handler to return using the MSP
-constexpr std::uint32_t THREAD_RETURN{0xFFFFFFFDul}; //Tells the handler to return using the PSP
+constexpr std::uint32_t MAIN_RETURN{0xFFFFFFF9UL}; //Tells the handler to return using the MSP
+constexpr std::uint32_t THREAD_RETURN{0xFFFFFFFDUL}; //Tells the handler to return using the PSP
 
 constexpr std::uint32_t MAX_SYSCALL_INTERRUPT_PRIORITY = 1;
 

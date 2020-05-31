@@ -119,10 +119,9 @@ extern "C"
 
     /**
      *@brief The minimal vector table for a Cortex M3.  Note that the proper constructs
-    *       must be placed on this to ensure that it ends up at physical address
-    *       0x00000000.
-    */
-    //NOLINTNEXTLINE
+     *       must be placed on this to ensure that it ends up at physical address
+     *       0x00000000.
+     */
     const std::array<ExceptionVector, 67> g_pfnVectors __attribute__((used, section(".isr_vector"), used)){
         /*----------Core Exceptions-------------------------------------------------*/
         // (void*)& pulStack[STACK_SIZE],     /*!< The initial stack pointer         */
@@ -217,7 +216,9 @@ extern "C"
         asm volatile("isb");
 
         /* Copy the data segment initializers from flash to SRAM */
-        std::copy(&_sidata, &_sidata + (&_edata - &_sdata), &_sdata);
+        std::copy(&_sidata,
+                  &_sidata + (&_edata - &_sdata), // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                  &_sdata);
 
         /* Zero fill the bss segment. */
         std::fill(&_sbss, &_ebss, 0);
@@ -230,14 +231,17 @@ extern "C"
         SystemCoreClockUpdate();
 
         /* Call the application's entry point.*/
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
         main();
+#pragma GCC diagnostic pop
     }
 
 /**
-     *@brief Provide weak aliases for each Exception handler to the Default_Handler.
-    *       As they are weak aliases, any function with the same name will override
-    *       this definition.
-    */
+ *@brief Provide weak aliases for each Exception handler to the Default_Handler.
+ *       As they are weak aliases, any function with the same name will override
+ *       this definition.
+ */
 #pragma weak Reset_Handler = Default_Reset_Handler
 #pragma weak NMI_Handler = Default_Handler
 #pragma weak HardFault_Handler = Default_Handler
@@ -293,18 +297,18 @@ extern "C"
 #pragma weak USBWakeUp_IRQHandler = Default_Handler
 
     /**
-        * @brief  This is the code that gets called when the processor receives an
-        *         unexpected interrupt.  This simply enters an infinite loop,
-        *         preserving the system state for examination by a debugger.
-        * @param  None
-        * @retval None
-        */
+     * @brief  This is the code that gets called when the processor receives an
+     *         unexpected interrupt.  This simply enters an infinite loop,
+     *         preserving the system state for examination by a debugger.
+     * @param  None
+     * @retval None
+     */
     static void Default_Handler()
     {
         /* Go into an infinite loop. */
         while (true)
         {
-            assert(0);
+            __BKPT();
         }
     }
 }

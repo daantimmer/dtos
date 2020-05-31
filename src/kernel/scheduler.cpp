@@ -25,6 +25,8 @@ extern "C"
 
 void TriggerTaskSwitch()
 {
+    // Ignore 'do not use c-style cast' warning. Can't be avoided here
+    // NOLINTNEXTLINE
     SCB->ICSR |= SCB_ICSR_PENDSVSET_Msk;
 
     asm volatile("isb");
@@ -35,7 +37,7 @@ auto SchedulerTick() -> bool
 {
     kernel::GetKernel().systicks++;
 
-    if (kernel::GetKernel().delayedTasks.empty() == false)
+    if (!kernel::GetKernel().delayedTasks.empty())
     {
         bool mustSwitch = false;
 
@@ -46,7 +48,7 @@ auto SchedulerTick() -> bool
         {
             if (auto& task = *iter; task.tickDelay <= static_cast<std::uint32_t>(kernel::GetKernel().systicks))
             {
-                iter = kernel::GetKernel().delayedTasks.erase(iter);
+                iter = kernel::RunnableTaskList::erase(iter);
 
                 kernel::GetKernel().readyTasks.insert(task);
 
@@ -69,10 +71,8 @@ auto SchedulerTick() -> bool
 
         return mustSwitch;
     }
-    else
-    {
-        return kernel::GetKernel().readyTasks.empty() == false;
-    }
+
+    return !kernel::GetKernel().readyTasks.empty();
 }
 
 void TaskScheduler()

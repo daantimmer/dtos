@@ -28,7 +28,7 @@ namespace kernel
     {
         Kernel(MainThread&);
 
-        auto CurrentTask() const -> RunnableTask&;
+        static auto CurrentTask() -> RunnableTask&;
         auto GetIdleTask() const -> RunnableTask&;
 
         SysTicks_t systicks{std::uint32_t{0u}};

@@ -28,21 +28,31 @@ namespace
         systemtick::Setup();
     }
 
-    auto task1Handler = [](Task& task) { //NOLINT
-        task.RepeatEvery(std::chrono::milliseconds{250}, []() { LL_GPIO_ResetOutputPin(GPIOC, LL_GPIO_PIN_13); });
+    auto task1Handler = [](const Task&) //NOLINT
+    {
+        while (true)
+        {
+            LL_GPIO_ResetOutputPin(GPIOC, LL_GPIO_PIN_13); //NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
+            DelayTask(std::chrono::milliseconds{250});
+        }
     };
 
-    auto task2Handler = [](Task& task) { //NOLINT
+    auto task2Handler = [](const Task&) { //NOLINT
         DelayTask(std::chrono::milliseconds{125});
-
-        task.RepeatEvery(std::chrono::milliseconds{250}, []() { LL_GPIO_SetOutputPin(GPIOC, LL_GPIO_PIN_13); });
+        while (true)
+        {
+            LL_GPIO_SetOutputPin(GPIOC, LL_GPIO_PIN_13); //NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
+            DelayTask(std::chrono::milliseconds{250});
+        }
     };
 
     kernel::MainThread mainThread{};
 
-    constexpr auto defaultstacksize = 128u;
-    Task::WithStack<defaultstacksize> task1{task1Handler, {GPIOC, LL_GPIO_PIN_14}};
-    Task::WithStack<defaultstacksize> task2{task2Handler, {GPIOC, LL_GPIO_PIN_15}};
+    constexpr auto defaultstacksize = 128U;
+    Task::WithStack<defaultstacksize> task1{task1Handler,
+                                            {GPIOC, LL_GPIO_PIN_14}}; //NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
+    Task::WithStack<defaultstacksize> task2{task2Handler,
+                                            {GPIOC, LL_GPIO_PIN_15}}; //NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
 }
 
 auto main() -> int

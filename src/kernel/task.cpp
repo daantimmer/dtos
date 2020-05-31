@@ -40,15 +40,15 @@ void TaskStack::SetStackPointer(void* const stackPointer)
     this->stackPointer = reinterpret_cast<std::uint32_t*>(stackPointer);
 }
 
-Task::Task(void (*entry)(Task& task), uint32_t* stackTop, kernel::StackSize_t stackSize, TaskDebugGpio gpioDebug)
-    : TaskStack{stackTop + 1}
-    , stackTop(stackTop + 1)
+Task::Task(void (*entry)(const Task& task), uint32_t* stackTop, kernel::StackSize_t stackSize, TaskDebugGpio gpioDebug)
+    : TaskStack{stackTop + 1} // NOLINT
+    , stackTop(stackTop + 1) // NOLINT
     , stackSize(kernel::StackSize_t{static_cast<std::size_t>(stackSize) - 2})
     , entry(entry)
     // , queueItem(this)
     // , blockedItem(this)
-    , stackGuard_begin(this->stackTop - 1)
-    , stackGuard_end(stackGuard_begin + static_cast<std::size_t>(stackSize))
+    , stackGuard_begin(this->stackTop - 1) // NOLINT
+    , stackGuard_end(stackGuard_begin + static_cast<std::size_t>(stackSize)) // NOLINT
     , gpioDebug(gpioDebug)
 {
     std::fill(stackGuard_begin, stackGuard_end, 0xDEADBEEF);

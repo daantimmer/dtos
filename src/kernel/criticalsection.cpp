@@ -5,7 +5,7 @@
 #include <cassert>
 #include <cstdint>
 
-static volatile auto criticalNestingCounter = 0u;
+static volatile auto criticalNestingCounter = 0U;
 
 void EnterCriticalSection()
 {

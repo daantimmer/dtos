@@ -4,7 +4,9 @@
       "name": "arm-gcc-9-debug",
       "generator": "Ninja",
       "configurationType": "Debug",
-      "inheritEnvironments": [ "gcc-arm" ],
+      "inheritEnvironments": [
+        "gcc-arm"
+      ],
       "buildRoot": "${projectDir}\\build\\${name}",
       "installRoot": "${projectDir}\\out\\install\\${name}",
       "cmakeCommandArgs": "",
@@ -23,8 +25,10 @@
       "cmakeCommandArgs": "",
       "buildCommandArgs": "-v",
       "ctestCommandArgs": "",
+      "inheritEnvironments": [
+        "gcc-arm"
+      ],
       "cmakeToolchain": "${projectDir}\\cmake\\gcc-arm-none-eabi-9.toolchain",
-      "inheritEnvironments": [ "gcc-arm" ],
       "variables": [],
       "intelliSenseMode": "linux-gcc-arm"
     }

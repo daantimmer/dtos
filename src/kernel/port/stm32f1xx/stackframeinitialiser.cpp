@@ -8,10 +8,13 @@ static void ThreadRunner(RunnableTask* runnable)
     runnable->Run();
 }
 
-kernel::Status<std::uint32_t*> kernel::port::InitialiseStack(void* entry, std::uint32_t* stack, StackSize_t size)
+auto kernel::port::InitialiseStack(void* entry, std::uint32_t* stack, StackSize_t size)
+    -> kernel::Status<std::uint32_t*>
 {
-    const auto stackSize = type_safe::get(size);
-    const auto stackFrame = reinterpret_cast<kernel::port::StackFrame*>(stack + stackSize) - 1;
+    auto const stackSize = type_safe::get(size);
+    // Ignore 'do not use pointer arithmetic' warning
+    // NOLINTNEXTLINE
+    auto* const stackFrame = reinterpret_cast<kernel::port::StackFrame*>(stack + stackSize) - 1;
 
     constexpr auto castwr = [](auto data) {
         if constexpr (std::is_same_v<std::nullptr_t, decltype(data)>)

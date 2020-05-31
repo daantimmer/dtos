@@ -1,5 +1,4 @@
 #include "kernel/kernel.hpp"
-
 #include "kernel/getkernel.hpp"
 #include "kernel/mainthread.hpp"
 #include "kernel/scheduler.hpp"
@@ -8,19 +7,19 @@
 
 namespace
 {
-kernel::Kernel* kernelInstance = nullptr;
+    kernel::Kernel* kernelInstance = nullptr;
 
-void taskIdle(Task&)
-{
-    while (1)
+    void taskIdle(const Task& /*unused*/)
     {
-        __WFE();
+        while (true)
+        {
+            __WFE();
+        }
     }
-}
 }
 
 kernel::Kernel::Kernel(MainThread& mainThread)
-    : idleTask{taskIdle, {GPIOA, LL_GPIO_PIN_0}}
+    : idleTask{taskIdle, {GPIOA, LL_GPIO_PIN_0}} //NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
 {
     currentTaskControlBlock = &mainThread;
 
@@ -31,17 +30,17 @@ kernel::Kernel::Kernel(MainThread& mainThread)
     readyTasks.insert(idleTask);
 }
 
-RunnableTask& kernel::Kernel::CurrentTask() const
+auto kernel::Kernel::CurrentTask() -> RunnableTask&
 {
     return *currentTaskControlBlock;
 }
 
-RunnableTask& kernel::Kernel::GetIdleTask() const
+auto kernel::Kernel::GetIdleTask() const -> RunnableTask&
 {
     return idleTask;
 }
 
-kernel::Kernel& kernel::GetKernel()
+auto kernel::GetKernel() -> kernel::Kernel&
 {
     return *kernelInstance;
 }
