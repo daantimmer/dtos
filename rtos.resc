@@ -1,0 +1,15 @@
+$bin?=@build\rtos.elf
+
+mach create
+# machine LoadPlatformDescription @platforms/cpus/stm32f103.repl
+machine LoadPlatformDescription @rtos.repl
+# sysbus.cpu LogFunctionNames True "PendSV_Handler SVC_Handler SysTick_Handler TriggerTaskSwitch"
+sysbus LogPeripheralAccess sysbus.gpioPortC
+# logFile @build\rtos.trace.log
+
+macro reset
+"""
+    sysbus LoadELF $bin
+"""
+
+runMacro $reset
