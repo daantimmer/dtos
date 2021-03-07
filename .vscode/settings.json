@@ -1,0 +1,26 @@
+{
+    "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
+    "C_Cpp.intelliSenseEngine": "Default",
+    "C_Cpp.default.intelliSenseMode": "gcc-arm",
+    "files.associations": {
+        "xutility": "cpp",
+        "unordered_map": "cpp",
+        "xstddef": "cpp",
+        "*.tcc": "cpp",
+        "deque": "cpp",
+        "string": "cpp",
+        "vector": "cpp",
+        "sstream": "cpp",
+        "ostream": "cpp",
+        "reent.h": "c",
+        "list": "cpp",
+        "unordered_set": "cpp"
+    },
+    "C/C++ Include Guard.Comment Style": "None",
+    "C/C++ Include Guard.Macro Type": "Filepath",
+    "C/C++ Include Guard.Remove Extension": false,
+    "C/C++ Include Guard.Path Depth": 1,
+    "cmake.buildDirectory": "${workspaceFolder}/build/",
+    "cmakeExplorer.buildDir": "build",
+    "testMate.cpp.test.executables": "build/**/test_*.exe"
+}

@@ -1,0 +1,11 @@
+{
+    "configurations": [
+        {
+            "name": "cmake",
+            "configurationProvider": "ms-vscode.cmake-tools",
+            "compileCommands": "${workspaceFolder}/build/compile_commands.json",
+            "intelliSenseMode": "gcc-arm"
+        }
+    ],
+    "version": 4
+}

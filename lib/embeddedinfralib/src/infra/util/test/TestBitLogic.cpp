@@ -1,0 +1,54 @@
+#include "infra/util/BitLogic.hpp"
+#include <gtest/gtest.h>
+
+TEST(BitLogicTest, Bit)
+{
+    EXPECT_EQ(32u, infra::Bit<uint32_t>(5));
+}
+
+TEST(BitLogicTest, SetBit)
+{
+    uint32_t x = 1;
+    infra::SetBit(x, 5);
+    EXPECT_EQ(33u, x);
+}
+
+TEST(BitLogicTest, ClearBit)
+{
+    uint32_t x = 33;
+    infra::ClearBit(x, 5);
+    EXPECT_EQ(1u, x);
+}
+
+TEST(BitLogicTest, ReplaceBit_bool)
+{
+    uint32_t x = 1;
+    infra::ReplaceBit(x, true, 5);
+    EXPECT_EQ(33u, x);
+}
+
+TEST(BitLogicTest, ReplaceBit_value)
+{
+    uint32_t x = 1;
+    infra::ReplaceBit(x, static_cast<uint32_t>(1), 5);
+    EXPECT_EQ(33u, x);
+}
+
+TEST(BitLogicTest, ReplaceBits)
+{
+    uint32_t x = 1;
+    infra::ReplaceBits(x, 2, 2, 0);
+    EXPECT_EQ(2u, x);
+}
+
+TEST(BitLogicTest, IsBitSet)
+{
+    uint32_t x = 32;
+    EXPECT_TRUE(infra::IsBitSet(x, 5));
+}
+
+TEST(BitLogicTest, GetBits)
+{
+    uint32_t x = 2;
+    EXPECT_EQ(2u, infra::GetBits(x, 1, 1));
+}
