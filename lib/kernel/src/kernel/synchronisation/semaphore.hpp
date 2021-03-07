@@ -9,7 +9,7 @@ namespace kernel
 {
     struct Semaphore
     {
-        Semaphore(std::size_t initialCounters);
+        Semaphore(std::size_t initialCounters = 0);
 
         void Release(std::size_t count = 1);
 
