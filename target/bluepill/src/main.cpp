@@ -12,6 +12,7 @@
 #include "kernel/port/systemtick.hpp"
 #include "kernel/scheduler.hpp"
 #include "kernel/synchronisation/mutex.hpp"
+#include "kernel/synchronisation/semaphore.hpp"
 #include "stm32f1xx.h"
 #include "stm32f1xx_ll_bus.h"
 #include "stm32f1xx_ll_cortex.h"
@@ -31,8 +32,7 @@ namespace
     auto task1Handler = [](const kernel::Task&, void* param) // NOLINT
     {
         int cntr = 10;
-        auto& mutex = *static_cast<kernel::Mutex*>(param);
-        mutex.Lock();
+        auto& semaphore = *static_cast<kernel::Semaphore*>(param);
         while (true)
         {
             LL_GPIO_ResetOutputPin(GPIOC, LL_GPIO_PIN_13); // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
@@ -43,18 +43,16 @@ namespace
                 --cntr;
                 if (cntr == 0)
                 {
-                    mutex.Unlock();
+                    semaphore.Release();
                 }
             }
         }
     };
 
     auto task2Handler = [](const kernel::Task&, void* param) { // NOLINT
-        auto& mutex = *static_cast<kernel::Mutex*>(param);
+        auto& semaphore = *static_cast<kernel::Semaphore*>(param);
 
-        DelayTask(std::chrono::milliseconds{1});
-
-        mutex.Lock();
+        semaphore.Acquire();
 
         DelayTask(std::chrono::milliseconds{125});
 
@@ -66,14 +64,14 @@ namespace
     };
 
     kernel::MainThread mainThread{};
-    kernel::Mutex mutex{};
+    kernel::Semaphore semaphore{};
 
     constexpr auto defaultstacksize = 256U;
     kernel::Task::WithStack<defaultstacksize> task1{task1Handler,
-                                                    &mutex}; // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
+                                                    &semaphore}; // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
 
     kernel::Task::WithStack<defaultstacksize> task2{task2Handler,
-                                                    &mutex}; // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
+                                                    &semaphore}; // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
 }
 
 auto main() -> int
