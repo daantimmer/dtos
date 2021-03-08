@@ -38,3 +38,6 @@ add_source( PRIVATE
         TestUnit.cpp
         TestVariant.cpp
 )
+
+add_subdirectory(ext)
+add_subdirectory(test_helper)

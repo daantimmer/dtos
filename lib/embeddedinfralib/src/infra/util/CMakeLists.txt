@@ -59,7 +59,3 @@ add_source( PUBLIC
 )
 
 add_subdirectory(ext)
-
-
-add_subdirectory(test)
-add_subdirectory(test_helper)

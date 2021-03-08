@@ -1,7 +1,7 @@
 #ifndef CONTAINER_HEAP_HPP
 #define CONTAINER_HEAP_HPP
 
-#include "infra/util/variant.hpp"
+#include "infra/util/Variant.hpp"
 #include "kernel/getkernel.hpp"
 #include "kernel/interruptMasking.hpp"
 #include "kernel/scheduler.hpp"
@@ -64,7 +64,7 @@ namespace kernel
         , Heap<T>
     {
         WithSize()
-            : Heap(Storage<Heap<T>::value_type, Size>::buffer)
+            : Heap{Storage<Heap<T>::value_type, Size>::buffer}
         {}
     };
 
@@ -77,6 +77,11 @@ namespace kernel
 
     void HeapControlBlock::InternalUnblock()
     {
+        if (blockList.empty())
+        {
+            return;
+        }
+
         auto& scheduler = kernel::GetScheduler();
         auto& task = *blockList.front().task;
 
@@ -86,10 +91,10 @@ namespace kernel
     template <class T>
     template <size_t Size>
     Heap<T>::Heap(std::array<value_type, Size>& buffer)
-        : begin{buffer.begin()}
-        , end{buffer.end()}
+        : begin{&buffer[0]}
+        , end{(&buffer[Size - 1]) + 1}
     {
-        std::iota(begin, end, 1u);
+        std::iota(begin, end, static_cast<std::size_t>(1u));
     }
 
     template <class T>
@@ -110,7 +115,7 @@ namespace kernel
             if (ret == kernel::StatusCode::Busy)
             {
                 T* tptr = nullptr;
-                ret = InternalBlock([this, &tptr](auto&, kernel::UnblockReason reason) {
+                ret = InternalBlock([this, &tptr](auto&, kernel::UnblockReason /*reason*/) {
                     auto retFromOther = InternalTryClaim();
                     if (retFromOther.template Is<std::reference_wrapper<T>>())
                     {

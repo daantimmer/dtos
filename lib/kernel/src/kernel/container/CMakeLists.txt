@@ -1,6 +1,6 @@
 
 add_source(
     PUBLIC
-        FW
+        SRC
             "heap.hpp"
 )

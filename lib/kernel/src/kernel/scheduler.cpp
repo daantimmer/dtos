@@ -1,17 +1,19 @@
 #include "scheduler.hpp"
 #include "SEGGER_RTT.h"
-#include "elib/intrusivelist.hpp"
+// #include "elib/intrusivelist.hpp"
 #include "kernel/criticalsection.hpp"
 #include "kernel/interruptMasking.hpp"
 #include "kernel/mainthread.hpp"
+#include "kernel/port/breakpoint.hpp"
 #include "kernel/port/systemtick.hpp"
 #include "kernel/port/triggerTaskSwitch.hpp"
+#include "kernel/port/waitForEvent.hpp"
 #include "kernel/scheduler.hpp"
 #include "kernel/spinlock.hpp"
 #include "kernel/task.hpp"
-#include "stm32f103xb.h"
-#include "stm32f1xx.h"
-#include "stm32f1xx_ll_gpio.h"
+// #include "stm32f103xb.h"
+// #include "stm32f1xx.h"
+// #include "stm32f1xx_ll_gpio.h"
 #include <algorithm>
 #include <array>
 #include <cassert>
@@ -31,7 +33,7 @@ namespace
     {
         while (true)
         {
-            __WFE();
+            kernel::port::WaitForEvent();
         }
     }
 }
@@ -45,7 +47,7 @@ void TaskScheduler()
 {
     if (currentTaskControlBlock->StackSafe() == false)
     {
-        asm volatile("bkpt");
+        kernel::port::breakpoint();
     }
 
     if (!kernelInstance->readyTasksV2.empty())
@@ -64,7 +66,7 @@ void TaskScheduler()
 
     if (currentTaskControlBlock->StackSafe() == false)
     {
-        asm volatile("bkpt");
+        kernel::port::breakpoint();
     }
 }
 

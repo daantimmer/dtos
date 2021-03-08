@@ -1,12 +1,7 @@
 #ifndef KERNEL_TASK_HPP
 #define KERNEL_TASK_HPP
 
-#include "elib/intrusivelist.hpp"
-#include "infra/List.hpp"
-// #include "infra/util/IntrusiveList.hpp"
-// #include "infra/util/IntrusivePriorityQueue.hpp"
 #include "infra/util/Function.hpp"
-#include "infra/util/ext/SortedIntrusiveList.hpp"
 #include "kernel/port/systemtick.hpp"
 #include "kernel/stacksize.hpp"
 #include "kernel/taskListItem.hpp"
@@ -47,10 +42,6 @@ namespace kernel
         virtual std::size_t StackAvailable() = 0;
 
         TaskListItem queueItemV2{this};
-        // TaskListItem blockedItemV2{this};
-
-        // elib::IntrusiveListNode queueItem{};
-        elib::IntrusiveListNode blockedItem{};
 
         void* blockedBy = nullptr;
 
@@ -141,8 +132,7 @@ namespace kernel
             : Task(entry,
                    stack.data(), // NOLINT: stack is initialized by Task
                    kernel::StackSize_t{SIZE},
-                   param/*,
-                   std::move(gpioDebug)*/)
+                   param)
         {}
 
         bool StackSafe() const final

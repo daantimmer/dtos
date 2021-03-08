@@ -1,7 +1,7 @@
 
 #include "criticalsection.hpp"
 #include "kernel/interruptMasking.hpp"
-#include "stm32f1xx.h"
+#include "kernel/port/breakpoint.hpp"
 #include <cassert>
 #include <cstdint>
 
@@ -27,6 +27,6 @@ void ExitCriticalSection()
     }
     else
     {
-        __BKPT();
+        kernel::port::breakpoint();
     }
 }

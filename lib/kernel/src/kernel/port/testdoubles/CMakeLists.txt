@@ -1,6 +1,6 @@
 
 add_source(PUBLIC
-    FW
+    TST
         "interruptMasking.cpp"
         "pendSvHandler.cpp"
         "stackframe.hpp"

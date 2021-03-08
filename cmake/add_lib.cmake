@@ -1,26 +1,26 @@
 function(add_lib lib)
 
-    set(TARGETLIB ${lib})
-    set(TARGETLIB ${lib} PARENT_SCOPE)
+    set(TARGET ${lib})
+    set(TARGET ${lib} PARENT_SCOPE)
 
-    add_library(${TARGETLIB} STATIC)
+    add_library(${TARGET} STATIC)
 
-    if (IS_TESTING)
-        add_target(${TARGETLIB} ${ARGN})
-    else()
+    # if (IS_TESTING)
+        # add_target(${TARGET} ${ARGN})
+    # else()
         add_subdirectory(src)
-    endif()
+    # endif()
 
-    target_include_directories(${TARGETLIB} PUBLIC src)
+    target_include_directories(${TARGET} PUBLIC src)
     
     if (MSVC)
-        target_compile_options(${TARGETLIB} PRIVATE /W4 /WX)
+        target_compile_options(${TARGET} PRIVATE /W4  /D_CRT_SECURE_NO_WARNINGS)
     else()
-        target_compile_options(${TARGETLIB} PRIVATE -Wall -Wextra -Wpedantic -Werror -Wno-unused-parameter)
+        target_compile_options(${TARGET} PRIVATE -Wall -Wextra -Wpedantic -Werror -Wno-unused-parameter)
     endif()
 
     set_target_properties(
-        ${TARGETLIB}
+        ${TARGET}
 
         PROPERTIES
             C_STANDARD 11
@@ -32,5 +32,5 @@ function(add_lib lib)
             CXX_EXTENSIONS NO
     )
     
-    target_link_libraries(${TARGETLIB} PUBLIC ${ARGN})
+    target_link_libraries(${TARGET} PUBLIC ${ARGN})
 endfunction()

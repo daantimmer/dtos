@@ -14,10 +14,13 @@ if (UNITTEST)
 else()
     set(IS_FIRMWARE YES)
     set(IS_TESTING NO)
+
+    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
 endif()
 
 include(cmake/add_source.cmake)
 include(cmake/add_target.cmake)
+include(cmake/add_target_test.cmake)
 include(cmake/add_lib.cmake)
 
 # if (IS_TESTING)

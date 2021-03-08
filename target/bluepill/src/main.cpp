@@ -5,6 +5,7 @@
 #include "SEGGER_RTT.h"
 #include "hal/port/peripherals.hpp"
 #include "infra/List.hpp"
+#include "kernel/container/heap.hpp"
 #include "kernel/getkernel.hpp"
 #include "kernel/lockable.hpp"
 #include "kernel/mainthread.hpp"
@@ -32,7 +33,9 @@ namespace
     auto task1Handler = [](const kernel::Task&, void* param) // NOLINT
     {
         int cntr = 10;
-        auto& semaphore = *static_cast<kernel::Semaphore*>(param);
+        // auto& heap = *static_cast<kernel::Heap<int>*>(param);
+        // auto b = heap.Claim().Get<std::reference_wrapper<int>>();
+
         while (true)
         {
             LL_GPIO_ResetOutputPin(GPIOC, LL_GPIO_PIN_13); // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
@@ -43,16 +46,16 @@ namespace
                 --cntr;
                 if (cntr == 0)
                 {
-                    semaphore.Release();
+                    // heap.Release(b);
                 }
             }
         }
     };
 
     auto task2Handler = [](const kernel::Task&, void* param) { // NOLINT
-        auto& semaphore = *static_cast<kernel::Semaphore*>(param);
+        // auto& heap = *static_cast<kernel::Heap<int>*>(param);
 
-        semaphore.Acquire();
+        // heap.Claim().Get<std::reference_wrapper<int>>();
 
         DelayTask(std::chrono::milliseconds{125});
 
@@ -65,13 +68,14 @@ namespace
 
     kernel::MainThread mainThread{};
     kernel::Semaphore semaphore{};
+    // kernel::Heap<int>::WithSize<2> heap;
 
     constexpr auto defaultstacksize = 256U;
     kernel::Task::WithStack<defaultstacksize> task1{task1Handler,
-                                                    &semaphore}; // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
+                                                    nullptr}; // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
 
     kernel::Task::WithStack<defaultstacksize> task2{task2Handler,
-                                                    &semaphore}; // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
+                                                    nullptr}; // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
 }
 
 auto main() -> int
@@ -98,6 +102,8 @@ auto main() -> int
     gpioConfig.Pin = LL_GPIO_PIN_0;
 
     LL_GPIO_Init(hal::GPIOA_Peripheral::Address(), &gpioConfig);
+
+    // heap.Claim().Get<std::reference_wrapper<int>>();
 
     LL_SYSTICK_EnableIT();
 
