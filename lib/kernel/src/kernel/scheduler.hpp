@@ -47,8 +47,8 @@ namespace kernel
 
         bool Tick();
 
-        StatusCode Block(TaskList<>& blockList);
-        StatusCode Block(TaskList<>& blockList, RunnableTask& task);
+        StatusCode Block(TaskList<>& blockList, const kernel::UnblockFunction& = {});
+        StatusCode Block(TaskList<>& blockList, RunnableTask& task, const kernel::UnblockFunction& = {});
 
         void Unblock(RunnableTask& task);
 

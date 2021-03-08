@@ -147,16 +147,24 @@ auto kernel::Scheduler::Tick() -> bool
     return !kernelInstance->readyTasksV2.empty();
 }
 
-kernel::StatusCode kernel::Scheduler::Block(TaskList<>& blockList)
+kernel::StatusCode kernel::Scheduler::Block(TaskList<>& blockList, const kernel::UnblockFunction& externalUnblockHook)
 {
-    return Block(blockList, *currentTaskControlBlock);
+    return Block(blockList, *currentTaskControlBlock, externalUnblockHook);
 }
 
-kernel::StatusCode kernel::Scheduler::Block(TaskList<>& blockList, RunnableTask& task)
+kernel::StatusCode kernel::Scheduler::Block(TaskList<>& blockList,
+                                            RunnableTask& task,
+                                            const kernel::UnblockFunction& externalUnblockHook)
 {
     auto unblockReason = kernel::UnblockReason::Undefined;
     auto isCurrentThread = &task == currentTaskControlBlock;
-    auto unblockReasonFunctor = [&unblockReason](RunnableTask&, UnblockReason reason) { unblockReason = reason; };
+    auto unblockReasonFunctor = [&unblockReason, &externalUnblockHook](RunnableTask& task, UnblockReason reason) {
+        unblockReason = reason;
+        if (static_cast<bool>(externalUnblockHook))
+        {
+            externalUnblockHook(task, reason);
+        }
+    };
 
     {
         const kernel::InterruptMasking interruptMasking;
