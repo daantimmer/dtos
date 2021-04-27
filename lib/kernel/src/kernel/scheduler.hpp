@@ -60,7 +60,7 @@ namespace kernel
         TaskList<> delayedTasksV2;
         TaskList<> readyTasksV2;
 
-        mutable Task::WithStack<64> idleTask;
+        mutable StaticTask<64> idleTask;
 
     private:
         StatusCode InternalBlock(TaskList<>& blockList, RunnableTask& task, UnblockFunction unblockFunction);

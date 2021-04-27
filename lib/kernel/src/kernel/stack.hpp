@@ -4,15 +4,25 @@
 #include "kernel/port/stack.hpp"
 #include <cstddef>
 #include <cstdint>
+#include <type_traits>
 
 namespace kernel
 {
     struct RunnableTask;
 
+    template <std::size_t TStackSize>
+    struct StaticStack
+    {
+        alignas(8) std::uint32_t stack[TStackSize];
+    };
+
     struct Stack
     {
         Stack(std::uint32_t* top, std::size_t size);
-        Stack(Stack&& stack);
+        // Stack(const Stack& stack) = delete;
+        // Stack(Stack&& stack);
+
+        void Initialize(RunnableTask*);
 
         bool IsSafe() const;
 
@@ -24,13 +34,29 @@ namespace kernel
         void SetStackPointer(std::uint32_t*);
 
     private:
+        std::uint32_t* const top;
+        std::size_t size;
+
         std::uint32_t* stackPointer;
         std::uint32_t* edge;
         const std::uint32_t* const stackGuard_begin;
         const std::uint32_t* const stackGuard_end;
-        const volatile std::uint32_t* const top;
-        const volatile std::uint32_t* const end;
     };
+
+    // template <std::size_t TStackSize>
+    // struct Stack
+    //     : private StackStorage<TStackSize>
+    //     , public StackBase
+    // {
+    //     Stack()
+    //         : Storage{}
+    //         , Base{reinterpret_cast<std::uint32_t*>(&Storage::stack[0]), sizeof(Storage::stack)}
+    //     {}
+
+    // private:
+    //     using Storage = StackStorage<TStackSize>;
+    //     using Base = StackBase;
+    // };
 }
 
 #endif

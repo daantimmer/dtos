@@ -6,7 +6,7 @@
 
 namespace kernel
 {
-    struct MainThread: TaskStack
+    struct MainThread: TaskBase
     {
         MainThread();
 
@@ -18,9 +18,9 @@ namespace kernel
 
         void Run() final;
 
-        bool StackSafe() const final;
+        // bool StackSafe() const final;
 
-        std::size_t StackAvailable() final;
+        // std::size_t StackAvailable() final;
     };
 
 }

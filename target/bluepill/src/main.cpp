@@ -30,7 +30,7 @@ namespace
     volatile std::uint32_t adcValue = 0;
     auto temperatureValueSemaphore = kernel::Semaphore{};
 
-    auto task1Handler = [](const kernel::Task&, void*) // NOLINT
+    auto task1Handler = [](const kernel::RunnableTask&, void*) // NOLINT
     {
         while (true)
         {
@@ -40,7 +40,7 @@ namespace
         }
     };
 
-    auto task2Handler = [](const kernel::Task&, void* semaphoreVoidPtr) // NOLINT
+    auto task2Handler = [](const kernel::RunnableTask&, void* semaphoreVoidPtr) // NOLINT
     {
         auto& semaphore = *static_cast<kernel::Semaphore*>(semaphoreVoidPtr);
 
@@ -56,13 +56,13 @@ namespace
     kernel::MainThread mainThread{};
 
     constexpr auto defaultstacksize = 256U;
-    kernel::Task::WithStack<defaultstacksize> task1{"task1",
-                                                    task1Handler,
-                                                    nullptr}; // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
+    kernel::StaticTask<defaultstacksize> task1{"task1",
+                                               +task1Handler,
+                                               nullptr}; // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
 
-    kernel::Task::WithStack<defaultstacksize> task2{
+    kernel::StaticTask<defaultstacksize> task2{
         "task2",
-        task2Handler,
+        +task2Handler,
         &temperatureValueSemaphore}; // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
 }
 

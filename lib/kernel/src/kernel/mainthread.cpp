@@ -8,7 +8,8 @@ extern std::uint32_t __processStack_start[];
 extern std::uint32_t __processStack_end[];
 
 kernel::MainThread::MainThread()
-    : TaskStack{&__processStack_end[0], &__processStack_end[0] - &__processStack_start[0]}
+    : TaskBase{{&__processStack_end[0], static_cast<std::size_t>(&__processStack_end[0] - &__processStack_start[0])},
+               "MainThread"}
 {
     name = "MainThread";
 }
@@ -21,12 +22,12 @@ void kernel::MainThread::Run()
     }
 }
 
-bool kernel::MainThread::StackSafe() const
-{
-    return true;
-}
+// bool kernel::MainThread::StackSafe() const
+// {
+//     return true;
+// }
 
-std::size_t kernel::MainThread::StackAvailable()
-{
-    return 0;
-}
+// std::size_t kernel::MainThread::StackAvailable()
+// {
+//     return 0;
+// }

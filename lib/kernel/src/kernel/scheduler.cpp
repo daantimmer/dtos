@@ -29,7 +29,7 @@ namespace
 {
     kernel::Scheduler* kernelInstance = nullptr;
 
-    void taskIdle(const kernel::Task&, void*)
+    void taskIdle(const kernel::RunnableTask&, void*)
     {
         while (true)
         {
