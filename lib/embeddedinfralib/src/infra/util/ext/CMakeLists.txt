@@ -1,4 +1,2 @@
-add_source( PUBLIC
-    SRC
-        SortedIntrusiveList.hpp
-)
+target_sources(embeddedinfralib PUBLIC
+        SortedIntrusiveList.hpp)

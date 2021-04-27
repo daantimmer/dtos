@@ -1,8 +1,7 @@
-add_source( PRIVATE
-    FW
-        "main.cpp"
-        "startup.cpp"
-        "interrupts.cpp"
-)
 
-add_subdirectory(test)
+if(IS_FIRMWARE)
+    target_sources(bluepill PUBLIC
+        main.cpp
+        startup.cpp
+        interrupts.cpp)
+endif()

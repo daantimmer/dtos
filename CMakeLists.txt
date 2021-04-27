@@ -3,7 +3,7 @@
 #
 cmake_minimum_required (VERSION 3.17.3)
 
-project(ipl C CXX ASM)
+project(bluepill C CXX ASM)
 
 option(UNITTEST "build for unit testing" OFF)
 option(ACCEPTANCETEST "build for integration testing" OFF)
@@ -29,29 +29,47 @@ include(cmake/add_lib.cmake)
 #     set(CMAKE_CXX_CLANG_TIDY "clang-tidy;-p=compile_commands.json;--extra-arg=-DCLANG_TIDY;--extra-arg=-D__GNUC__;--extra-arg=-DSTM32F103xB")
 # endif()
 
-if (IS_FIRMWARE)
-    add_compile_options(
-            -mthumb
-            -mcpu=cortex-m3
-            -ggdb
-            -ffunction-sections
-            -fdata-sections
-            -specs=nano.specs 
-            -specs=nosys.specs 
-            $<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>
-            $<$<COMPILE_LANGUAGE:CXX>:-fno-exceptions>
-    )
-endif()
 
 if(IS_TESTING)
     add_subdirectory(lib/gtest)
 endif()
 
+if (IS_FIRMWARE)
+    add_compile_options(
+            -mthumb
+            -mcpu=cortex-m3
+            -ggdb
+
+            -ffunction-sections
+            -fdata-sections
+
+            -specs=nano.specs 
+            -specs=nosys.specs 
+            $<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>
+            $<$<COMPILE_LANGUAGE:CXX>:-fno-exceptions>
+    )
+
+    add_link_options(
+            -mthumb 
+            -mcpu=cortex-m3 
+            -ggdb 
+
+            -ffunction-sections
+            -fdata-sections
+
+            -specs=nano.specs 
+            -specs=nosys.specs 
+            $<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>
+            $<$<COMPILE_LANGUAGE:CXX>:-fno-exceptions>
+    )
+
+endif()
+
+add_subdirectory(lib/notstd)
+add_subdirectory(lib/target/bluepill)
 add_subdirectory(lib/type_safe)
-add_subdirectory(lib/SeggerRTT)
+add_subdirectory(lib/SEGGER)
 add_subdirectory(lib/embeddedinfralib)
 add_subdirectory(lib/kernel)
 add_subdirectory(lib/hal)
-add_subdirectory(lib/target/stm32f103)
-
 add_subdirectory(target/bluepill)

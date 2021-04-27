@@ -1,6 +1,6 @@
 
-add_source( PRIVATE
-    TST
+if(IS_TESTING)
+    target_sources(test_embeddedinfralib PUBLIC
         BoundedStringMatcher.hpp
         OptionalMatcher.hpp
         MemoryRangeMatcher.hpp
@@ -9,5 +9,5 @@ add_source( PRIVATE
         MonitoredConstructionObject.hpp
         MoveConstructible.hpp
         ProxyCreatorMock.hpp
-        VariantPrintTo.hpp
-)
+        VariantPrintTo.hpp)
+endif()

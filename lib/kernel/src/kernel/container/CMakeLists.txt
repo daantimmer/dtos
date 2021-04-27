@@ -1,6 +1,5 @@
 
-add_source(
-    PUBLIC
-        SRC
-            "heap.hpp"
-)
+target_sources(kernel PUBLIC
+    heap.hpp)
+
+add_subdirectory(test)

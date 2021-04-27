@@ -1,17 +1,23 @@
-cmake_minimum_required (VERSION 3.17.3)
-
-project(BluepillBSP C ASM)
 
 file(GLOB_RECURSE sources CONFIGURE_DEPENDS
-    # *.s
-    *.h
-    *.c)
+    Core/*.h
+    Core/*.c
+    Drivers/*.h
+    Drivers/*.c)
 
 set(VENDOR ST)
 set(FAMILY STM32F1xx)
 set(CHIP STM32F103xB)
 
-add_library(BSP OBJECT EXCLUDE_FROM_ALL ${sources})
+add_library(BSP OBJECT EXCLUDE_FROM_ALL)
+
+if(IS_FIRMWARE)
+    target_sources(BSP PUBLIC ${sources})
+endif()
+
+if(IS_TESTING)
+    target_sources(BSP PUBLIC testdoubles/dummy.cpp)
+endif()
 
 target_compile_definitions(BSP PUBLIC ${CHIP})
 

@@ -1,6 +1,6 @@
 
-add_source( PRIVATE
-    TST
+if(IS_TESTING)
+    target_sources(test_embeddedinfralib PUBLIC
         TestAllocatorFixedSpace.cpp
         TestAllocatorHeap.cpp
         TestAutoResetFunction.cpp
@@ -36,8 +36,7 @@ add_source( PRIVATE
         TestStaticStorage.cpp
         TestTokenizer.cpp
         TestUnit.cpp
-        TestVariant.cpp
-)
+        TestVariant.cpp)
+endif()
 
 add_subdirectory(ext)
-add_subdirectory(test_helper)
