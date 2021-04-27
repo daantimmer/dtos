@@ -1,10 +1,11 @@
-#ifndef INFRA_VARIANT_PRINT_TO_HPP
-#define INFRA_VARIANT_PRINT_TO_HPP
+#ifndef TEST_HELPER_VARIANTPRINTTO_HPP
+#define TEST_HELPER_VARIANTPRINTTO_HPP
 
-#include "gtest/gtest-printers.h"
 #include "infra/util/Variant.hpp"
+#include "gtest/gtest-printers.h"
 
-namespace infra {
+namespace infra
+{
     using testing::internal::PrintTo;
 
     struct PrintToVisitor
@@ -15,7 +16,7 @@ namespace infra {
             : os(os)
         {}
 
-        template<class T>
+        template <class T>
         void operator()(const T& value)
         {
             PrintTo(value, os);
@@ -25,7 +26,7 @@ namespace infra {
         std::ostream* os;
     };
 
-    template<class... T>
+    template <class... T>
     void PrintTo(const Variant<T...>& variant, std::ostream* os)
     {
         *os << "Variant[";
