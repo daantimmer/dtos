@@ -9,7 +9,7 @@ namespace kernel
 {
     struct Semaphore
     {
-        Semaphore(std::size_t initialCounters = 0);
+        Semaphore(std::size_t initialCounters = 0, std::size_t maxCounter = 10);
 
         void Release(std::size_t count = 1);
 
@@ -17,6 +17,7 @@ namespace kernel
         kernel::StatusCode TryAcquire();
 
         std::size_t counter;
+        std::size_t maxCounter;
 
     private:
         void InternalRelease();

@@ -3,6 +3,7 @@
 
 #include "infra/util/Function.hpp"
 #include "kernel/port/systemtick.hpp"
+#include "kernel/stack.hpp"
 #include "kernel/stacksize.hpp"
 #include "kernel/taskListItem.hpp"
 #include "kernel/unblockReason.hpp"
@@ -80,10 +81,11 @@ namespace kernel
         auto GetStackPointer() const -> void* final;
         void SetStackPointer(void* stackPointer) final;
 
-        TaskStack(std::uint32_t* stack);
+        TaskStack(std::uint32_t* stack, std::size_t stackSize);
 
     protected:
-        std::uint32_t* stackPointer;
+        // std::uint32_t* stackPointer;
+        kernel::Stack stack;
     };
 
     struct Task: TaskStack
@@ -119,21 +121,23 @@ namespace kernel
         std::uint32_t* stackEdge;
 
     public:
-        std::uint32_t* stackGuard_begin;
-        std::uint32_t* stackGuard_end;
-
-        /*const TaskDebugGpio gpioDebug = {};*/
+        std::uint32_t* const stackGuard_begin;
+        std::uint32_t* const stackGuard_end;
     };
 
     template <std::size_t SIZE>
     struct Task::WithStack: Task
     {
-        WithStack(void (*entry)(const Task& task, void*), void* param = nullptr /*, TaskDebugGpio gpioDebug = {}*/)
+        WithStack(const char* name,
+                  void (*entry)(const Task& task, void*),
+                  void* param = nullptr /*, TaskDebugGpio gpioDebug = {}*/)
             : Task(entry,
                    stack.data(), // NOLINT: stack is initialized by Task
                    kernel::StackSize_t{SIZE},
                    param)
-        {}
+        {
+            this->name = name;
+        }
 
         bool StackSafe() const final
         {

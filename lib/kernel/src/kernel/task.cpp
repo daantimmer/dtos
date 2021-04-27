@@ -45,18 +45,22 @@ void kernel::RunnableTask::Delay()
     TriggerTaskSwitch();
 }
 
-kernel::TaskStack::TaskStack(std::uint32_t* stack)
-    : stackPointer(stack)
+kernel::TaskStack::TaskStack(std::uint32_t* stack, std::size_t stackSize)
+    // : stackPointer(stack)
+    // , stack{stack, stackSize}
+    : stack{stack, stackSize}
 {}
 
 auto kernel::TaskStack::GetStackPointer() const -> void*
 {
-    return stackPointer;
+    return stack.GetStackPointer();
+    // return stackPointer;
 }
 
 void kernel::TaskStack::SetStackPointer(void* const stackPointer)
 {
-    this->stackPointer = reinterpret_cast<std::uint32_t*>(stackPointer);
+    stack.SetStackPointer(reinterpret_cast<std::uint32_t*>(stackPointer));
+    // this->stackPointer = reinterpret_cast<std::uint32_t*>(stackPointer);
 }
 
 kernel::Task::Task(void (*entry)(const Task& task, void*),
@@ -64,7 +68,8 @@ kernel::Task::Task(void (*entry)(const Task& task, void*),
                    kernel::StackSize_t stackSize,
                    void* param/*,
                    TaskDebugGpio gpioDebug*/)
-    : TaskStack{stackTop + 1} // NOLINT
+    // : TaskStack{stackTop + 1} // NOLINT
+    : TaskStack{stackTop, static_cast<std::size_t>(stackSize)} // NOLINT
     , stackTop(stackTop + 1) // NOLINT
     , stackSize(kernel::StackSize_t{static_cast<std::size_t>(stackSize) - 2})
     , entry(entry)
@@ -75,12 +80,14 @@ kernel::Task::Task(void (*entry)(const Task& task, void*),
     , stackGuard_end(stackGuard_begin + static_cast<std::size_t>(stackSize)-1) // NOLINT
 /*, gpioDebug(gpioDebug)*/
 {
-    std::fill(stackGuard_begin, stackGuard_end, 0xDEADBEEF);
-    *stackGuard_begin = 0xCCCCCCCC;
-    *stackGuard_end = 0xCDCDCDCD;
+    // std::fill(stackGuard_begin, stackGuard_end, 0xDEADBEEF);
+    // *stackGuard_begin = 0xCCCCCCCC;
+    // *stackGuard_end = 0xCDCDCDCD;
 
-    stackPointer = kernel::port::InitialiseStack(this, this->stackTop, this->stackSize);
-    stackEdge = stackPointer;
+    // stackPointer = kernel::port::InitialiseStack(this->stackTop, this->stackSize);
+    // stackPointer = kernel::port::InitialiseStack(this, this->stackTop, this->stackSize);
+    kernel::port::SetEntry(this, stack.GetStackPointer());
+    stackEdge = stack.GetStackPointer();
 }
 
 void kernel::Task::Run()
@@ -90,17 +97,18 @@ void kernel::Task::Run()
 
 auto kernel::Task::StackSafe() const -> bool
 {
-    if (stackGuard_begin == nullptr || stackGuard_end == nullptr)
-    {
-        return true;
-    }
+    return stack.IsSafe();
+    // if (stackGuard_begin == nullptr || stackGuard_end == nullptr)
+    // {
+    //     return true;
+    // }
 
-    if ((*stackGuard_begin == 0xCCCCCCCC) && (*stackGuard_end == 0xCDCDCDCD))
-    {
-        return true;
-    }
+    // if ((*stackGuard_begin == 0xCCCCCCCC) && (*stackGuard_end == 0xCDCDCDCD))
+    // {
+    //     return true;
+    // }
 
-    return false;
+    // return false;
 }
 
 std::size_t kernel::Task::StackAvailable()

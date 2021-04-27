@@ -11,5 +11,5 @@ namespace systemtick
     using tickratio = std::ratio<1, tickfrequency>;
     using ticks = std::chrono::duration<std::int64_t, tickratio>;
 
-    void Setup();
+    // void Setup();
 }

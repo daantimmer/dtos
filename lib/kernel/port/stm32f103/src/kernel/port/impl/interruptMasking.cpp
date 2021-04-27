@@ -51,5 +51,12 @@ auto kernel::port::RestoreInterruptMasking() -> void
 
 auto kernel::port::RestoreInterruptMasking(const InterruptMask maskValue) -> void
 {
-    __set_BASEPRI(static_cast<std::uint32_t>(maskValue));
+    if constexpr (!kernel::IsKernelPriorityHighest())
+    {
+        __set_BASEPRI(static_cast<std::uint32_t>(maskValue));
+    }
+    else
+    {
+        __set_PRIMASK(static_cast<std::uint32_t>(maskValue));
+    }
 }

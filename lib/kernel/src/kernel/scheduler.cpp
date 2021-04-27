@@ -59,10 +59,10 @@ void TaskScheduler()
         currentTaskControlBlock = &kernelInstance->GetIdleTask();
     }
 
-    SEGGER_RTT_printf(0,
-                      "Switch to %s stack >%u<\r\n",
-                      currentTaskControlBlock->name,
-                      currentTaskControlBlock->StackAvailable());
+    // SEGGER_RTT_printf(0,
+    //                   "Switch to %s stack >%u<\r\n",
+    //                   currentTaskControlBlock->name,
+    //                   currentTaskControlBlock->StackAvailable());
 
     if (currentTaskControlBlock->StackSafe() == false)
     {
@@ -206,7 +206,7 @@ kernel::StatusCode
 
     task.BlockHook(unblockFunction);
 
-    SEGGER_RTT_printf(0, "Block %s @ %p\r\n", task.name, &task);
+    // SEGGER_RTT_printf(0, "Block %s @ %p\r\n", task.name, &task);
 
     return StatusCode::Ok;
 }
@@ -217,14 +217,14 @@ void kernel::Scheduler::InternalUnblock(RunnableTask& task, UnblockReason unbloc
 
     task.UnblockHook(unblockReason);
 
-    SEGGER_RTT_printf(0, "Unblock %s @ %p\r\n", task.name, &task);
+    // SEGGER_RTT_printf(0, "Unblock %s @ %p\r\n", task.name, &task);
 }
 
 kernel::Scheduler::Scheduler(MainThread& mainThread)
-    : idleTask{taskIdle /*, {GPIOA, LL_GPIO_PIN_0}*/} // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
+    : idleTask{"idle", taskIdle /*, {GPIOA, LL_GPIO_PIN_0}*/} // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
 {
     currentTaskControlBlock = &mainThread;
-    idleTask.name = "Idle";
+    // idleTask.name = "Idle";
 
     kernelInstance = this;
 

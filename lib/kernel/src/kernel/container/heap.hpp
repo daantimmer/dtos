@@ -28,6 +28,7 @@ namespace kernel
 
     struct Heap: private HeapControlBlock
     {
+        using reference_wrapper = std::reference_wrapper<T>;
         using value_type = infra::Variant<std::size_t, T>;
         using reference = infra::Variant<kernel::StatusCode, std::reference_wrapper<T>>;
 
@@ -39,6 +40,7 @@ namespace kernel
 
         reference Claim();
         reference TryClaim();
+        void Release(reference);
         void Release(const T&);
 
     private:
@@ -139,6 +141,12 @@ namespace kernel
         const kernel::InterruptMasking interruptMasking{};
 
         return InternalTryClaim();
+    }
+
+    template <class T>
+    void Heap<T>::Release(reference ref)
+    {
+        Release(ref.template Get<reference_wrapper>().get());
     }
 
     template <class T>

@@ -4,7 +4,7 @@
 #include "kernel/scheduler.hpp"
 #include "kernel/task.hpp"
 #include "stm32f1xx.h"
-#include "stm32f1xx_ll_gpio.h"
+// #include "stm32f1xx_ll_gpio.h"
 #include <algorithm>
 #include <array>
 #include <cassert>
@@ -188,13 +188,13 @@ extern "C"
             assert(0);
         }
     }
-    void ADC1_2_IRQHandler()
-    {
-        while (true)
-        {
-            assert(0);
-        }
-    }
+    // void ADC1_2_IRQHandler()
+    // {
+    //     while (true)
+    //     {
+    //         assert(0);
+    //     }
+    // }
     void USB_HP_CAN1_TX_IRQHandler()
     {
         while (true)
@@ -202,13 +202,13 @@ extern "C"
             assert(0);
         }
     }
-    void USB_LP_CAN1_RX0_IRQHandler()
-    {
-        while (true)
-        {
-            assert(0);
-        }
-    }
+    // void USB_LP_CAN1_RX0_IRQHandler()
+    // {
+    //     while (true)
+    //     {
+    //         assert(0);
+    //     }
+    // }
     void CAN1_RX1_IRQHandler()
     {
         while (true)
@@ -356,11 +356,11 @@ extern "C"
             assert(0);
         }
     }
-    void USBWakeUp_IRQHandler()
-    {
-        while (true)
-        {
-            assert(0);
-        }
-    }
+    // void USBWakeUp_IRQHandler()
+    // {
+    //     while (true)
+    //     {
+    //         assert(0);
+    //     }
+    // }
 }

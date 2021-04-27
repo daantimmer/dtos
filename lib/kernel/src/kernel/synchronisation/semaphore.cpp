@@ -3,8 +3,9 @@
 #include "kernel/interruptMasking.hpp"
 #include "kernel/scheduler.hpp"
 
-kernel::Semaphore::Semaphore(std::size_t initialCounter)
-    : counter(initialCounter)
+kernel::Semaphore::Semaphore(std::size_t initialCounter, std::size_t maxCounter)
+    : counter{initialCounter}
+    , maxCounter{maxCounter}
 {}
 
 void kernel::Semaphore::Release(std::size_t count)
@@ -19,24 +20,16 @@ void kernel::Semaphore::Release(std::size_t count)
 
 kernel::StatusCode kernel::Semaphore::Acquire()
 {
-    const kernel::InterruptMasking interruptMasking{};
+    const InterruptMasking interruptMasking;
 
-    auto status = kernel::StatusCode::Undefined;
+    const auto status = InternalTryAcquire();
 
-    do
+    if (status != kernel::StatusCode::Busy)
     {
-        if (status = InternalTryAcquire(); status == kernel::StatusCode::Busy)
-        {
-            status = InternalBlock();
-        }
-        else
-        {
-            return status;
-        }
+        return status;
+    }
 
-    } while (status == kernel::StatusCode::Interrupted);
-
-    return kernel::StatusCode::Undefined;
+    return InternalBlock();
 }
 
 kernel::StatusCode kernel::Semaphore::TryAcquire()
@@ -48,26 +41,34 @@ kernel::StatusCode kernel::Semaphore::TryAcquire()
 
 void kernel::Semaphore::InternalRelease()
 {
-    if (blockedList.empty() == true)
+    if (counter == maxCounter)
     {
-        ++counter;
+        return;
     }
 
-    auto& scheduler = kernel::GetScheduler();
-    auto& task = *blockedList.front().task;
-    scheduler.Unblock(task);
+    if (blockedList.empty() == false)
+    {
+        auto& scheduler = kernel::GetScheduler();
+        auto& task = *blockedList.front().task;
+
+        scheduler.Unblock(task);
+
+        return;
+    }
+
+    ++counter;
 }
 
 kernel::StatusCode kernel::Semaphore::InternalTryAcquire()
 {
-    if (counter > 0)
+    if (counter == 0)
     {
-        --counter;
-
-        return kernel::StatusCode::Ok;
+        return kernel::StatusCode::Busy;
     }
 
-    return kernel::StatusCode::Busy;
+    --counter;
+
+    return kernel::StatusCode::Ok;
 }
 
 kernel::StatusCode kernel::Semaphore::InternalBlock()
@@ -75,5 +76,5 @@ kernel::StatusCode kernel::Semaphore::InternalBlock()
     auto& scheduler = kernel::GetScheduler();
     scheduler.Block(blockedList);
 
-    return kernel::StatusCode::Undefined;
+    return kernel::StatusCode::Ok;
 }
