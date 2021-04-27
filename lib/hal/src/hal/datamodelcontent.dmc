@@ -1,0 +1,3 @@
+VALUE_NC(Foo, int)
+VALUE_NN(Bar, int)
+VALUE_NN(Baz, int)
