@@ -11,9 +11,6 @@
 #include "kernel/scheduler.hpp"
 #include "kernel/spinlock.hpp"
 #include "kernel/task.hpp"
-// #include "stm32f103xb.h"
-// #include "stm32f1xx.h"
-// #include "stm32f1xx_ll_gpio.h"
 #include <algorithm>
 #include <array>
 #include <cassert>
@@ -22,7 +19,7 @@
 
 extern "C"
 {
-    kernel::RunnableTask* volatile currentTaskControlBlock = nullptr;
+    kernel::TaskControlBlock* volatile currentTaskControlBlock = nullptr;
 }
 
 namespace
@@ -45,18 +42,18 @@ auto SchedulerTick() -> bool
 
 void TaskScheduler()
 {
-    if (currentTaskControlBlock->StackSafe() == false)
+    if (currentTaskControlBlock->GetStack().IsSafe() == false)
     {
         kernel::port::breakpoint();
     }
 
     if (!kernelInstance->readyTasksV2.empty())
     {
-        currentTaskControlBlock = kernelInstance->readyTasksV2.top().task;
+        currentTaskControlBlock = &kernelInstance->readyTasksV2.top();
     }
     else
     {
-        currentTaskControlBlock = &kernelInstance->GetIdleTask();
+        currentTaskControlBlock = &static_cast<kernel::TaskBase&>(kernelInstance->GetIdleTask()).GetTaskControlBlock();
     }
 
     // SEGGER_RTT_printf(0,
@@ -64,7 +61,7 @@ void TaskScheduler()
     //                   currentTaskControlBlock->name,
     //                   currentTaskControlBlock->StackAvailable());
 
-    if (currentTaskControlBlock->StackSafe() == false)
+    if (currentTaskControlBlock->GetStack().IsSafe() == false)
     {
         kernel::port::breakpoint();
     }
@@ -74,7 +71,7 @@ void YieldTask()
 {
     ScopedCriticalSection critical;
 
-    kernelInstance->readyTasksV2.push(currentTaskControlBlock->queueItemV2);
+    kernelInstance->readyTasksV2.push(*currentTaskControlBlock);
 
     TriggerTaskSwitch();
 }
@@ -93,7 +90,7 @@ void DelayTask(std::uint32_t ticks)
 {
     ScopedCriticalSection critical;
 
-    DelayTask(*currentTaskControlBlock, ticks);
+    DelayTask(currentTaskControlBlock->Owner(), ticks);
 
     TriggerTaskSwitch();
 }
@@ -104,7 +101,7 @@ void DelayTask(kernel::RunnableTask& task, std::uint32_t ticks)
 
     task.tickDelay = static_cast<std::uint32_t>(kernelInstance->systicks) + ticks;
 
-    kernelInstance->delayedTasksV2.push(task.queueItemV2);
+    kernelInstance->delayedTasksV2.push(static_cast<kernel::TaskBase&>(task).GetTaskControlBlock());
 }
 
 auto kernel::Scheduler::Tick() -> bool
@@ -120,19 +117,20 @@ auto kernel::Scheduler::Tick() -> bool
 
         for (; iter != end;)
         {
-            if (auto& task = *iter; task.task->tickDelay <= static_cast<std::uint32_t>(kernelInstance->systicks))
+            if (auto& task = *iter; task.Owner().tickDelay <= static_cast<std::uint32_t>(kernelInstance->systicks))
             {
                 iter = kernelInstance->delayedTasksV2.erase(iter);
 
-                kernelInstance->readyTasksV2.push(task.task->queueItemV2);
+                kernelInstance->readyTasksV2.push(task);
 
-                if (task.task->interval != 0)
+                if (task.Owner().interval != 0)
                 {
-                    task.task->tickDelay = static_cast<std::uint32_t>(kernelInstance->systicks) + task.task->interval;
+                    task.Owner().tickDelay
+                        = static_cast<std::uint32_t>(kernelInstance->systicks) + task.Owner().interval;
                 }
                 else
                 {
-                    task.task->tickDelay = 0;
+                    task.Owner().tickDelay = 0;
                 }
 
                 mustSwitch = true;
@@ -151,7 +149,7 @@ auto kernel::Scheduler::Tick() -> bool
 
 kernel::StatusCode kernel::Scheduler::Block(TaskList<>& blockList, const kernel::UnblockFunction& externalUnblockHook)
 {
-    return Block(blockList, *currentTaskControlBlock, externalUnblockHook);
+    return Block(blockList, currentTaskControlBlock->Owner(), externalUnblockHook);
 }
 
 kernel::StatusCode kernel::Scheduler::Block(TaskList<>& blockList,
@@ -159,7 +157,7 @@ kernel::StatusCode kernel::Scheduler::Block(TaskList<>& blockList,
                                             const kernel::UnblockFunction& externalUnblockHook)
 {
     auto unblockReason = kernel::UnblockReason::Undefined;
-    auto isCurrentThread = &task == currentTaskControlBlock;
+    auto isCurrentThread = &task == &currentTaskControlBlock->Owner();
     auto unblockReasonFunctor = [&unblockReason, &externalUnblockHook](RunnableTask& task, UnblockReason reason) {
         unblockReason = reason;
         if (static_cast<bool>(externalUnblockHook))
@@ -202,7 +200,7 @@ void kernel::Scheduler::Unblock(RunnableTask& task)
 kernel::StatusCode
     kernel::Scheduler::InternalBlock(TaskList<>& blockList, RunnableTask& task, UnblockFunction unblockFunction)
 {
-    blockList.transfer(task.queueItemV2);
+    blockList.transfer(static_cast<TaskBase&>(task).GetTaskControlBlock());
 
     task.BlockHook(unblockFunction);
 
@@ -213,7 +211,7 @@ kernel::StatusCode
 
 void kernel::Scheduler::InternalUnblock(RunnableTask& task, UnblockReason unblockReason)
 {
-    readyTasksV2.transfer(task.queueItemV2);
+    readyTasksV2.transfer(static_cast<TaskBase&>(task).GetTaskControlBlock());
 
     task.UnblockHook(unblockReason);
 
@@ -223,14 +221,14 @@ void kernel::Scheduler::InternalUnblock(RunnableTask& task, UnblockReason unbloc
 kernel::Scheduler::Scheduler(MainThread& mainThread)
     : idleTask{"idle", taskIdle /*, {GPIOA, LL_GPIO_PIN_0}*/} // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
 {
-    currentTaskControlBlock = &mainThread;
+    currentTaskControlBlock = &mainThread.GetTaskControlBlock();
     // idleTask.name = "Idle";
 
     kernelInstance = this;
 
     idleTask.priority = UINT32_MAX - 1;
 
-    readyTasksV2.push(idleTask.queueItemV2);
+    readyTasksV2.push(idleTask.GetTaskControlBlock());
     // readyTasks.insert(idleTask);
 }
 
@@ -241,7 +239,7 @@ kernel::Scheduler::~Scheduler()
 
 auto kernel::Scheduler::CurrentTask() -> RunnableTask&
 {
-    return *currentTaskControlBlock;
+    return currentTaskControlBlock->Owner();
 }
 
 auto kernel::Scheduler::GetIdleTask() const -> RunnableTask&

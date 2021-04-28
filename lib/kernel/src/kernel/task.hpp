@@ -16,35 +16,76 @@
 
 namespace kernel
 {
-    // template <std::size_t TStackSize>
-    // struct Task;
-    struct RunnableTask;
-
-    struct TaskDebugGpio
+    enum class TaskState
     {
-        void* port = nullptr;
-        std::uint32_t pin = 0;
+        Created,
+        Ready,
+        Running,
+        Blocked,
+        Suspended,
     };
+
+    struct RunnableTask;
 
     using UnblockFunction = infra::Function<void(RunnableTask&, UnblockReason)>;
 
-    struct RunnableTask
+    struct TaskControlBlock: infra::IntrusiveList<TaskControlBlock>::NodeType
     {
-        RunnableTask() = default;
+        TaskControlBlock(Stack&& stack, const char* name, std::uint32_t priority, RunnableTask& owner);
 
-        RunnableTask(const RunnableTask&) = delete;
-        RunnableTask(RunnableTask&&) = delete;
+        Stack& GetStack();
+        const Stack& GetStack() const;
 
-        RunnableTask& operator=(const RunnableTask&) = delete;
-        RunnableTask& operator=(RunnableTask&&) = delete;
+        const char* Name() const;
+
+        std::uint32_t EffectivePriority() const;
+        std::uint32_t Priority() const;
+        void Priority(std::uint32_t);
+
+        TaskState State() const;
+        void State(TaskState);
+
+        RunnableTask& Owner();
+        const RunnableTask& Owner() const;
+
+    private:
+        Stack stack;
+
+        const char* name;
+
+        std::uint32_t priority;
+        std::uint32_t minimumPriority;
+
+        TaskState state;
+
+        RunnableTask& owner;
+
+        UnblockFunction unblockHook;
+    };
+
+    struct Task
+    {
+        virtual ~Task() = default;
+
+        virtual std::uint32_t EffectivePriority() const = 0;
+        virtual std::uint32_t Priority() const = 0;
+        virtual void Priority(std::uint32_t) = 0;
+
+        virtual TaskState State() const = 0;
+        virtual void State(TaskState) = 0;
+    };
+
+    struct RunnableTask: Task
+    {
+        virtual ~RunnableTask() = default;
 
         virtual void Run() = 0;
+
+        /* TODO: To be moved to task control block structure */
         virtual void* GetStackPointer() const = 0;
         virtual void SetStackPointer(void* const stackPointer) = 0;
         virtual bool StackSafe() const = 0;
         virtual std::size_t StackAvailable() = 0;
-
-        TaskListItem queueItemV2{this};
 
         void* blockedBy = nullptr;
 
@@ -89,18 +130,29 @@ namespace kernel
     struct TaskBase: RunnableTask
     {
         TaskBase(Stack&& stack, const char* name)
-            : stack{std::move(stack)}
-            , name{name}
+            : taskControlBlock{std::move(stack), name, 0, *this}
         {}
 
+        /* RunnableTask::Task */
+        std::uint32_t EffectivePriority() const final;
+        std::uint32_t Priority() const final;
+        void Priority(std::uint32_t) final;
+
+        TaskState State() const final;
+        void State(TaskState) final;
+
+        TaskControlBlock& GetTaskControlBlock();
+        const TaskControlBlock& GetTaskControlBlock() const;
+
+        /* TODO: To be moved to task control block structure */
         void* GetStackPointer() const final
         {
-            return stack.GetStackPointer();
+            return GetTaskControlBlock().GetStack().GetStackPointer();
         }
 
         void SetStackPointer(void* stackPointer) final
         {
-            stack.SetStackPointer(reinterpret_cast<std::uint32_t*>(stackPointer));
+            GetTaskControlBlock().GetStack().SetStackPointer(reinterpret_cast<std::uint32_t*>(stackPointer));
         }
 
         bool StackSafe() const final
@@ -115,12 +167,11 @@ namespace kernel
 
         void Start()
         {
-            stack.Initialize(this);
+            GetTaskControlBlock().GetStack().Initialize(this);
         }
 
-    protected:
-        Stack stack;
-        const char* name;
+    private:
+        TaskControlBlock taskControlBlock;
     };
 
     template <std::size_t TStackSize>
@@ -134,11 +185,7 @@ namespace kernel
             Start();
         }
 
-        //     Task(void (*entry)(const Task& task, void*),
-        //         //  uint32_t* stackTop,
-        //         //  kernel::StackSize_t stackSize,
-        //          void* param = nullptr/*,
-
+        /* TaskBase::TaskRunner::Run */
         void Run() final
         {
             entry(*this, param);

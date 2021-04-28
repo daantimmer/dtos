@@ -15,7 +15,7 @@ namespace kernel
 
 extern "C"
 {
-    extern kernel::RunnableTask* volatile currentTaskControlBlock;
+    extern kernel::TaskControlBlock* volatile currentTaskControlBlock;
 
     void TaskScheduler();
 }

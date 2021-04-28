@@ -7,14 +7,107 @@
 #include <algorithm>
 #include <cassert>
 
-// static void TaskExitError()
-// {
-//     while (1)
-//     {
-//         assert(false);
-//     }
-// }
+namespace kernel
+{
+    /* TaskControlBlock */
+    TaskControlBlock::TaskControlBlock(Stack&& stack,
+                                       const char* name,
+                                       const std::uint32_t priority,
+                                       RunnableTask& owner)
+        : stack{std::move(stack)}
+        , priority{priority}
+        , state{TaskState::Created}
+        , owner{owner}
+    {}
 
+    Stack& TaskControlBlock::GetStack()
+    {
+        return stack;
+    }
+
+    const Stack& TaskControlBlock::GetStack() const
+    {
+        return stack;
+    }
+
+    const char* TaskControlBlock::Name() const
+    {
+        return name;
+    }
+
+    std::uint32_t TaskControlBlock::EffectivePriority() const
+    {
+        return minimumPriority > priority ? minimumPriority : priority;
+    }
+
+    std::uint32_t TaskControlBlock::Priority() const
+    {
+        return minimumPriority;
+    }
+
+    void TaskControlBlock::Priority(const std::uint32_t priority)
+    {
+        this->minimumPriority = priority;
+    }
+
+    TaskState TaskControlBlock::State() const
+    {
+        return state;
+    }
+
+    void TaskControlBlock::State(const TaskState state)
+    {
+        this->state = state;
+    }
+
+    RunnableTask& TaskControlBlock::Owner()
+    {
+        return owner;
+    }
+
+    const RunnableTask& TaskControlBlock::Owner() const
+    {
+        return owner;
+    }
+
+    /* TaskBase */
+    std::uint32_t TaskBase::EffectivePriority() const
+    {
+        return GetTaskControlBlock().Priority();
+    }
+
+    std::uint32_t TaskBase::Priority() const
+    {
+        return GetTaskControlBlock().Priority();
+    }
+
+    void TaskBase::Priority(const std::uint32_t priority)
+    {
+        GetTaskControlBlock().Priority(priority);
+    }
+
+    TaskState TaskBase::State() const
+    {
+        return GetTaskControlBlock().State();
+    }
+
+    void TaskBase::State(const TaskState state)
+    {
+        GetTaskControlBlock().State(state);
+    }
+
+    TaskControlBlock& TaskBase::GetTaskControlBlock()
+    {
+        return taskControlBlock;
+    }
+
+    const TaskControlBlock& TaskBase::GetTaskControlBlock() const
+    {
+        return taskControlBlock;
+    }
+}
+
+/* TODO: To be moved to task control block structure */
 void kernel::RunnableTask::BlockHook(UnblockFunction func)
 {
     unblockHook = func;
@@ -40,7 +133,8 @@ void kernel::RunnableTask::PrepareDelay(std::uint32_t interval)
 void kernel::RunnableTask::Delay()
 {
     // kernel::GetScheduler().delayedTasks.insert(*this);
-    kernel::GetScheduler().delayedTasksV2.push(this->queueItemV2);
+
+    kernel::GetScheduler().delayedTasksV2.push(static_cast<TaskBase*>(this)->GetTaskControlBlock());
 
     TriggerTaskSwitch();
 }

@@ -25,7 +25,7 @@ void kernel::MutexControlBlock::DoUnlock()
         return;
     }
 
-    owner = blockedList.front().task;
+    owner = &blockedList.front().Owner();
     kernel::GetScheduler().Unblock(*owner);
 }
 

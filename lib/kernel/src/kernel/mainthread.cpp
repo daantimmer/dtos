@@ -10,9 +10,7 @@ extern std::uint32_t __processStack_end[];
 kernel::MainThread::MainThread()
     : TaskBase{{&__processStack_end[0], static_cast<std::size_t>(&__processStack_end[0] - &__processStack_start[0])},
                "MainThread"}
-{
-    name = "MainThread";
-}
+{}
 
 void kernel::MainThread::Run()
 {

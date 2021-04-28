@@ -8,9 +8,9 @@
 
 static auto schedulerSwitchContextWrapper(void* const ptr) -> void*
 {
-    currentTaskControlBlock->SetStackPointer(ptr);
+    currentTaskControlBlock->GetStack().SetStackPointer(ptr);
     TaskScheduler();
-    return currentTaskControlBlock->GetStackPointer();
+    return currentTaskControlBlock->GetStack().GetStackPointer();
 }
 
 extern "C" __attribute__((naked)) void PendSV_Handler()

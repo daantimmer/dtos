@@ -22,8 +22,10 @@ namespace kernel
         top[0] = 0xCCCCCCCC;
         top[size - 1] = 0xCDCDCDCD;
 
-        stackPointer = kernel::port::InitialiseStack(top + 1, size - 2);
-        kernel::port::SetEntry(task, stackPointer);
+        auto* initialStackPointer = kernel::port::InitialiseStack(top + 1, size - 2);
+
+        stackPointer = initialStackPointer;
+        kernel::port::SetEntry(task, initialStackPointer);
     }
 
     // Stack::Stack(Stack&& other)
@@ -58,12 +60,12 @@ namespace kernel
         // return edge - top;
     }
 
-    std::uint32_t* Stack::GetStackPointer() const
+    void* Stack::GetStackPointer() const
     {
         return stackPointer;
     }
 
-    void Stack::SetStackPointer(std::uint32_t* stackPointer)
+    void Stack::SetStackPointer(void* stackPointer)
     {
         this->stackPointer = stackPointer;
     }

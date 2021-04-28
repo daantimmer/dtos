@@ -85,7 +85,7 @@ namespace kernel
         }
 
         auto& scheduler = kernel::GetScheduler();
-        auto& task = *blockList.front().task;
+        auto& task = blockList.front().Owner();
 
         scheduler.Unblock(task);
     }

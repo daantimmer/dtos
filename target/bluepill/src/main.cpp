@@ -82,8 +82,8 @@ extern "C" void RealMain()
     task1.priority = 1;
     task2.priority = 0;
 
-    kernel::GetScheduler().readyTasksV2.push(task1.queueItemV2);
-    kernel::GetScheduler().readyTasksV2.push(task2.queueItemV2);
+    kernel::GetScheduler().readyTasksV2.push(task1.GetTaskControlBlock());
+    kernel::GetScheduler().readyTasksV2.push(task2.GetTaskControlBlock());
 
     // hal::Notification::Callback l1cb{[] { SEGGER_RTT_printf(0, "INIT L1\r\n"); }};
     // hal::Notification::Callback l2cb{[] { SEGGER_RTT_printf(0, "INIT L2\r\n"); }};

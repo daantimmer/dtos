@@ -8,6 +8,7 @@ target_sources(kernel PUBLIC
     stack.hpp
     task.cpp
     task.hpp
+    taskList.cpp
     taskList.hpp
     taskListItem.cpp
     taskListItem.hpp)

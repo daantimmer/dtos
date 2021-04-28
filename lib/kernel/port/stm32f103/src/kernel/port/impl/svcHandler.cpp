@@ -5,7 +5,7 @@ namespace
 {
     auto getStackPointer() -> void*
     {
-        return currentTaskControlBlock->GetStackPointer();
+        return currentTaskControlBlock->GetStack().GetStackPointer();
     }
 }
 

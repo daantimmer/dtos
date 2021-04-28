@@ -30,14 +30,14 @@ namespace kernel
         std::size_t Used();
         std::size_t Available();
 
-        std::uint32_t* GetStackPointer() const;
-        void SetStackPointer(std::uint32_t*);
+        void* GetStackPointer() const;
+        void SetStackPointer(void*);
 
     private:
         std::uint32_t* const top;
         std::size_t size;
 
-        std::uint32_t* stackPointer;
+        void* stackPointer;
         std::uint32_t* edge;
         const std::uint32_t* const stackGuard_begin;
         const std::uint32_t* const stackGuard_end;

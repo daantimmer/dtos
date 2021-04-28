@@ -49,7 +49,7 @@ void kernel::Semaphore::InternalRelease()
     if (blockedList.empty() == false)
     {
         auto& scheduler = kernel::GetScheduler();
-        auto& task = *blockedList.front().task;
+        auto& task = blockedList.front().Owner();
 
         scheduler.Unblock(task);
 
