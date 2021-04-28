@@ -82,10 +82,6 @@ namespace kernel
         virtual void Run() = 0;
 
         /* TODO: To be moved to task control block structure */
-        virtual void* GetStackPointer() const = 0;
-        virtual void SetStackPointer(void* const stackPointer) = 0;
-        virtual bool StackSafe() const = 0;
-        virtual std::size_t StackAvailable() = 0;
 
         void* blockedBy = nullptr;
 
@@ -110,22 +106,12 @@ namespace kernel
 
         std::uint32_t priority = UINT32_MAX;
 
-        const char* name = "unknown";
-
     protected:
         void PrepareDelay(std::uint32_t interval);
         void Delay();
 
         UnblockFunction unblockHook;
     };
-
-    //
-    //
-    //
-    //
-    //
-    //
-    //
 
     struct TaskBase: RunnableTask
     {
@@ -135,35 +121,18 @@ namespace kernel
 
         /* RunnableTask::Task */
         std::uint32_t EffectivePriority() const final;
+
         std::uint32_t Priority() const final;
+
         void Priority(std::uint32_t) final;
 
         TaskState State() const final;
+
         void State(TaskState) final;
 
         TaskControlBlock& GetTaskControlBlock();
+
         const TaskControlBlock& GetTaskControlBlock() const;
-
-        /* TODO: To be moved to task control block structure */
-        void* GetStackPointer() const final
-        {
-            return GetTaskControlBlock().GetStack().GetStackPointer();
-        }
-
-        void SetStackPointer(void* stackPointer) final
-        {
-            GetTaskControlBlock().GetStack().SetStackPointer(reinterpret_cast<std::uint32_t*>(stackPointer));
-        }
-
-        bool StackSafe() const final
-        {
-            return true;
-        }
-
-        std::size_t StackAvailable() final
-        {
-            return 10;
-        }
 
         void Start()
         {
