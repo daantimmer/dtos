@@ -107,6 +107,11 @@ namespace infra
             return base.back();
         }
 
+        reference top()
+        {
+            return base.front();
+        }
+
         const_reference top() const
         {
             return base.front();
