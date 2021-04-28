@@ -15,7 +15,7 @@ else()
     set(IS_FIRMWARE YES)
     set(IS_TESTING NO)
 
-    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
+    # set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
 endif()
 
 include(cmake/add_source.cmake)
