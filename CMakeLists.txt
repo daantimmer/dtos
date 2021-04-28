@@ -18,11 +18,6 @@ else()
     # set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
 endif()
 
-include(cmake/add_source.cmake)
-include(cmake/add_target.cmake)
-include(cmake/add_target_test.cmake)
-include(cmake/add_lib.cmake)
-
 # if (IS_TESTING)
 #     set(CMAKE_CXX_CLANG_TIDY "clang-tidy;-p=compile_commands.json;--extra-arg=-DCLANG_TIDY")
 # else()
