@@ -2,11 +2,11 @@
 #define KERNEL_TASK_HPP
 
 #include "infra/util/Function.hpp"
+#include "infra/util/IntrusiveList.hpp"
 #include "kernel/port/stackframeinitialiser.hpp"
 #include "kernel/port/systemtick.hpp"
 #include "kernel/stack.hpp"
 #include "kernel/stacksize.hpp"
-#include "kernel/taskListItem.hpp"
 #include "kernel/unblockReason.hpp"
 #include <array>
 #include <chrono>

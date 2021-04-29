@@ -3,7 +3,6 @@
 
 #include "kernel/status.hpp"
 #include "kernel/taskList.hpp"
-#include "kernel/taskListItem.hpp"
 
 namespace kernel
 {
