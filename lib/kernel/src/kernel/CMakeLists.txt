@@ -9,7 +9,9 @@ target_sources(kernel PUBLIC
     task.cpp
     task.hpp
     taskList.cpp
-    taskList.hpp)
+    taskList.hpp
+    taskControlBlock.cpp
+    taskControlBlock.hpp)
 
 if(IS_FIRMWARE)
     target_sources(kernel PUBLIC

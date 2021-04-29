@@ -7,6 +7,7 @@
 #include "kernel/port/systemtick.hpp"
 #include "kernel/stack.hpp"
 #include "kernel/stacksize.hpp"
+#include "kernel/taskControlBlock.hpp"
 #include "kernel/unblockReason.hpp"
 #include <array>
 #include <chrono>
@@ -16,52 +17,7 @@
 
 namespace kernel
 {
-    enum class TaskState
-    {
-        Created,
-        Ready,
-        Running,
-        Blocked,
-        Suspended,
-    };
-
     struct RunnableTask;
-
-    using UnblockFunction = infra::Function<void(RunnableTask&, UnblockReason)>;
-
-    struct TaskControlBlock: infra::IntrusiveList<TaskControlBlock>::NodeType
-    {
-        TaskControlBlock(Stack&& stack, const char* name, std::uint32_t priority, RunnableTask& owner);
-
-        Stack& GetStack();
-        const Stack& GetStack() const;
-
-        const char* Name() const;
-
-        std::uint32_t EffectivePriority() const;
-        std::uint32_t Priority() const;
-        void Priority(std::uint32_t);
-
-        TaskState State() const;
-        void State(TaskState);
-
-        RunnableTask& Owner();
-        const RunnableTask& Owner() const;
-
-    private:
-        Stack stack;
-
-        const char* name;
-
-        std::uint32_t priority;
-        std::uint32_t minimumPriority;
-
-        TaskState state;
-
-        RunnableTask& owner;
-
-        UnblockFunction unblockHook;
-    };
 
     struct Task
     {
@@ -82,14 +38,8 @@ namespace kernel
         virtual void Run() = 0;
 
         /* TODO: To be moved to task control block structure */
-        void BlockHook(const UnblockFunction& func);
-        void UnblockHook(UnblockReason reason);
-
         std::uint32_t tickDelay = 0;
         std::uint32_t interval = 0;
-
-    protected:
-        UnblockFunction unblockHook;
     };
 
     struct TaskBase: RunnableTask
@@ -102,21 +52,16 @@ namespace kernel
         std::uint32_t EffectivePriority() const final;
 
         std::uint32_t Priority() const final;
-
         void Priority(std::uint32_t) final;
 
         TaskState State() const final;
-
         void State(TaskState) final;
 
+        /* own members */
         TaskControlBlock& GetTaskControlBlock();
-
         const TaskControlBlock& GetTaskControlBlock() const;
 
-        void Start()
-        {
-            GetTaskControlBlock().GetStack().Initialize(this);
-        }
+        void Start();
 
     private:
         TaskControlBlock taskControlBlock;

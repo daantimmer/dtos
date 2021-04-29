@@ -9,69 +9,6 @@
 
 namespace kernel
 {
-    /* TaskControlBlock */
-    TaskControlBlock::TaskControlBlock(Stack&& stack,
-                                       const char* name,
-                                       const std::uint32_t priority,
-                                       RunnableTask& owner)
-        : stack{stack}
-        , name{name}
-        , priority{priority}
-        , minimumPriority{priority}
-        , state{TaskState::Created}
-        , owner{owner}
-    {}
-
-    Stack& TaskControlBlock::GetStack()
-    {
-        return stack;
-    }
-
-    const Stack& TaskControlBlock::GetStack() const
-    {
-        return stack;
-    }
-
-    const char* TaskControlBlock::Name() const
-    {
-        return name;
-    }
-
-    std::uint32_t TaskControlBlock::EffectivePriority() const
-    {
-        return minimumPriority > priority ? minimumPriority : priority;
-    }
-
-    std::uint32_t TaskControlBlock::Priority() const
-    {
-        return minimumPriority;
-    }
-
-    void TaskControlBlock::Priority(const std::uint32_t priority)
-    {
-        this->minimumPriority = priority;
-    }
-
-    TaskState TaskControlBlock::State() const
-    {
-        return state;
-    }
-
-    void TaskControlBlock::State(const TaskState state)
-    {
-        this->state = state;
-    }
-
-    RunnableTask& TaskControlBlock::Owner()
-    {
-        return owner;
-    }
-
-    const RunnableTask& TaskControlBlock::Owner() const
-    {
-        return owner;
-    }
-
     /* TaskBase */
     std::uint32_t TaskBase::EffectivePriority() const
     {
@@ -107,22 +44,10 @@ namespace kernel
     {
         return taskControlBlock;
     }
-}
 
-/* TODO: To be moved to task control block structure */
-void kernel::RunnableTask::BlockHook(const UnblockFunction& func)
-{
-    unblockHook = func;
-}
-
-void kernel::RunnableTask::UnblockHook(UnblockReason reason)
-{
-    auto unblockFunc = unblockHook;
-    unblockHook = {};
-
-    if (static_cast<bool>(unblockFunc) == true)
+    void TaskBase::Start()
     {
-        unblockFunc(*this, reason);
+        GetTaskControlBlock().GetStack().Initialize(this);
     }
 }
 

@@ -158,7 +158,7 @@ kernel::StatusCode kernel::Scheduler::Block(TaskList<>& blockList,
 {
     auto unblockReason = kernel::UnblockReason::Undefined;
     auto isCurrentThread = &task == &currentTaskControlBlock->Owner();
-    auto unblockReasonFunctor = [&unblockReason, &externalUnblockHook](RunnableTask& task, UnblockReason reason) {
+    auto unblockReasonFunctor = [&unblockReason, &externalUnblockHook](TaskControlBlock& task, UnblockReason reason) {
         unblockReason = reason;
         if (static_cast<bool>(externalUnblockHook))
         {
@@ -200,9 +200,11 @@ void kernel::Scheduler::Unblock(RunnableTask& task)
 kernel::StatusCode
     kernel::Scheduler::InternalBlock(TaskList<>& blockList, RunnableTask& task, UnblockFunction unblockFunction)
 {
-    blockList.transfer(static_cast<TaskBase&>(task).GetTaskControlBlock());
+    auto& tbc = static_cast<TaskBase&>(task).GetTaskControlBlock();
 
-    task.BlockHook(unblockFunction);
+    blockList.transfer(tbc);
+
+    tbc.BlockHook(unblockFunction);
 
     // SEGGER_RTT_printf(0, "Block %s @ %p\r\n", task.name, &task);
 
@@ -211,9 +213,11 @@ kernel::StatusCode
 
 void kernel::Scheduler::InternalUnblock(RunnableTask& task, UnblockReason unblockReason)
 {
-    readyTasksV2.transfer(static_cast<TaskBase&>(task).GetTaskControlBlock());
+    auto& tbc = static_cast<TaskBase&>(task).GetTaskControlBlock();
 
-    task.UnblockHook(unblockReason);
+    readyTasksV2.transfer(tbc);
+
+    tbc.UnblockHook(unblockReason);
 
     // SEGGER_RTT_printf(0, "Unblock %s @ %p\r\n", task.name, &task);
 }
