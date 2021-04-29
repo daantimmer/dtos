@@ -91,9 +91,6 @@ namespace kernel
         std::uint32_t priority = UINT32_MAX;
 
     protected:
-        void PrepareDelay(std::uint32_t interval);
-        void Delay();
-
         UnblockFunction unblockHook;
     };
 

@@ -124,21 +124,6 @@ void kernel::RunnableTask::UnblockHook(UnblockReason reason)
     }
 }
 
-void kernel::RunnableTask::PrepareDelay(std::uint32_t interval)
-{
-    this->interval = interval;
-    tickDelay = static_cast<std::uint32_t>(kernel::GetScheduler().systicks) + this->interval;
-}
-
-void kernel::RunnableTask::Delay()
-{
-    // kernel::GetScheduler().delayedTasks.insert(*this);
-
-    kernel::GetScheduler().delayedTasksV2.push(static_cast<TaskBase*>(this)->GetTaskControlBlock());
-
-    TriggerTaskSwitch();
-}
-
 // kernel::TaskStack::TaskStack(std::uint32_t* stack, std::size_t stackSize)
 // // : stackPointer(stack)
 // // , stack{stack, stackSize}
