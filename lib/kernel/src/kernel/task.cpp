@@ -14,8 +14,10 @@ namespace kernel
                                        const char* name,
                                        const std::uint32_t priority,
                                        RunnableTask& owner)
-        : stack{std::move(stack)}
+        : stack{stack}
+        , name{name}
         , priority{priority}
+        , minimumPriority{priority}
         , state{TaskState::Created}
         , owner{owner}
     {}
