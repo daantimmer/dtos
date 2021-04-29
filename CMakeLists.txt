@@ -18,11 +18,11 @@ else()
     # set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
 endif()
 
-# if (IS_TESTING)
-#     set(CMAKE_CXX_CLANG_TIDY "clang-tidy;-p=compile_commands.json;--extra-arg=-DCLANG_TIDY")
-# else()
-#     set(CMAKE_CXX_CLANG_TIDY "clang-tidy;-p=compile_commands.json;--extra-arg=-DCLANG_TIDY;--extra-arg=-D__GNUC__;--extra-arg=-DSTM32F103xB")
-# endif()
+if (IS_TESTING)
+    set(CMAKE_CXX_CLANG_TIDY "clang-tidy;-p=compile_commands.json;--extra-arg=-DCLANG_TIDY")
+else()
+    set(CMAKE_CXX_CLANG_TIDY "clang-tidy;-p=compile_commands.json;--extra-arg=-DCLANG_TIDY;--extra-arg=-D__GNUC__;--extra-arg=-DSTM32F103xB")
+endif()
 
 
 if(IS_TESTING)

@@ -1,7 +1,20 @@
 
 #include "kernel/port/interruptMasking.hpp"
 #include "kernel/basepri.hpp"
-#include "stm32f103xb.h"
+#include "stm32f1xx.h"
+
+#if defined(CLANG_TIDY)
+namespace
+{
+    constexpr std::uint32_t __get_BASEPRI()
+    {
+        return 0;
+    }
+
+    constexpr void __set_BASEPRI(std::uint32_t /*unused*/)
+    {}
+}
+#endif
 
 auto kernel::port::EnableInterruptMasking() -> InterruptMask
 {
