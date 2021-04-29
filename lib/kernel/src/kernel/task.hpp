@@ -82,20 +82,6 @@ namespace kernel
         virtual void Run() = 0;
 
         /* TODO: To be moved to task control block structure */
-
-        template <class Function>
-        void RepeatEvery(std::chrono::milliseconds interval, Function function)
-        {
-            PrepareDelay(std::chrono::duration_cast<systemtick::ticks>(interval).count());
-
-            while (true)
-            {
-                function();
-
-                Delay();
-            }
-        }
-
         void BlockHook(UnblockFunction func);
         void UnblockHook(UnblockReason reason);
 
