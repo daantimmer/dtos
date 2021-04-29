@@ -108,7 +108,7 @@ namespace kernel
 }
 
 /* TODO: To be moved to task control block structure */
-void kernel::RunnableTask::BlockHook(UnblockFunction func)
+void kernel::RunnableTask::BlockHook(const UnblockFunction& func)
 {
     unblockHook = func;
 }

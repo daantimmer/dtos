@@ -82,7 +82,7 @@ namespace kernel
         virtual void Run() = 0;
 
         /* TODO: To be moved to task control block structure */
-        void BlockHook(UnblockFunction func);
+        void BlockHook(const UnblockFunction& func);
         void UnblockHook(UnblockReason reason);
 
         std::uint32_t tickDelay = 0;
