@@ -1,5 +1,6 @@
 
-file(GLOB_RECURSE sources CONFIGURE_DEPENDS
+set_property(DIRECTORY ${CMAKE_CURRENT_LIST_DIR} PROPERTY CMAKE_CONFIGURE_DEPENDS bluepill.ioc)
+file(GLOB_RECURSE sources
     Core/*.h
     Core/*.c
     Drivers/*.h
