@@ -77,8 +77,8 @@ extern "C" void RealMain()
 
     kernel::Scheduler kernel{mainThread};
 
-    task1.priority = 1;
-    task2.priority = 0;
+    task1.GetTaskControlBlock().Priority(1);
+    task2.GetTaskControlBlock().Priority(0);
 
     kernel::GetScheduler().readyTasksV2.push(task1.GetTaskControlBlock());
     kernel::GetScheduler().readyTasksV2.push(task2.GetTaskControlBlock());

@@ -88,8 +88,6 @@ namespace kernel
         std::uint32_t tickDelay = 0;
         std::uint32_t interval = 0;
 
-        std::uint32_t priority = UINT32_MAX;
-
     protected:
         UnblockFunction unblockHook;
     };

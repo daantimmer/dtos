@@ -226,7 +226,7 @@ kernel::Scheduler::Scheduler(MainThread& mainThread)
 
     kernelInstance = this;
 
-    idleTask.priority = UINT32_MAX - 1;
+    idleTask.GetTaskControlBlock().Priority(UINT32_MAX - 1);
 
     readyTasksV2.push(idleTask.GetTaskControlBlock());
     // readyTasks.insert(idleTask);
