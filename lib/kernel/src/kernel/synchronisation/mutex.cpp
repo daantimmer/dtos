@@ -25,8 +25,9 @@ void kernel::MutexControlBlock::DoUnlock()
         return;
     }
 
-    owner = &blockedList.front().Owner();
-    kernel::GetScheduler().Unblock(*owner);
+    auto& ctrlBlock = blockedList.front();
+    owner = &ctrlBlock.Owner();
+    kernel::GetScheduler().Unblock(ctrlBlock);
 }
 
 kernel::Mutex::Mutex()

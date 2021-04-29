@@ -149,27 +149,30 @@ auto kernel::Scheduler::Tick() -> bool
 
 kernel::StatusCode kernel::Scheduler::Block(TaskList<>& blockList, const kernel::UnblockFunction& externalUnblockHook)
 {
-    return Block(blockList, currentTaskControlBlock->Owner(), externalUnblockHook);
+    return Block(blockList, *currentTaskControlBlock, externalUnblockHook);
 }
 
 kernel::StatusCode kernel::Scheduler::Block(TaskList<>& blockList,
-                                            RunnableTask& task,
+                                            TaskControlBlock& ctrlBlock,
                                             const kernel::UnblockFunction& externalUnblockHook)
 {
     auto unblockReason = kernel::UnblockReason::Undefined;
-    auto isCurrentThread = &task == &currentTaskControlBlock->Owner();
-    auto unblockReasonFunctor = [&unblockReason, &externalUnblockHook](TaskControlBlock& task, UnblockReason reason) {
-        unblockReason = reason;
-        if (static_cast<bool>(externalUnblockHook))
-        {
-            externalUnblockHook(task, reason);
-        }
-    };
+
+    auto isCurrentThread = &ctrlBlock == currentTaskControlBlock;
+
+    auto unblockReasonFunctor
+        = [&unblockReason, &externalUnblockHook](TaskControlBlock& ctrlBlock, UnblockReason reason) {
+              unblockReason = reason;
+              if (static_cast<bool>(externalUnblockHook))
+              {
+                  externalUnblockHook(ctrlBlock, reason);
+              }
+          };
 
     {
         const kernel::InterruptMasking interruptMasking;
 
-        if (const auto ret = InternalBlock(blockList, task, unblockReasonFunctor); ret != kernel::StatusCode::Ok)
+        if (const auto ret = InternalBlock(blockList, ctrlBlock, unblockReasonFunctor); ret != kernel::StatusCode::Ok)
         {
             return ret;
         }
@@ -188,36 +191,33 @@ kernel::StatusCode kernel::Scheduler::Block(TaskList<>& blockList,
                                                           : kernel::StatusCode::Interrupted;
 }
 
-void kernel::Scheduler::Unblock(RunnableTask& task)
+void kernel::Scheduler::Unblock(TaskControlBlock& ctrlBlock)
 {
     const kernel::InterruptMasking interruptMasking;
 
-    InternalUnblock(task, UnblockReason::Request);
+    InternalUnblock(ctrlBlock, UnblockReason::Request);
 
     TriggerTaskSwitch(); // ?? maybe
 }
 
-kernel::StatusCode
-    kernel::Scheduler::InternalBlock(TaskList<>& blockList, RunnableTask& task, UnblockFunction unblockFunction)
+kernel::StatusCode kernel::Scheduler::InternalBlock(TaskList<>& blockList,
+                                                    TaskControlBlock& ctrlBlock,
+                                                    UnblockFunction unblockFunction)
 {
-    auto& tbc = static_cast<TaskBase&>(task).GetTaskControlBlock();
+    blockList.transfer(ctrlBlock);
 
-    blockList.transfer(tbc);
-
-    tbc.BlockHook(unblockFunction);
+    ctrlBlock.BlockHook(unblockFunction);
 
     // SEGGER_RTT_printf(0, "Block %s @ %p\r\n", task.name, &task);
 
     return StatusCode::Ok;
 }
 
-void kernel::Scheduler::InternalUnblock(RunnableTask& task, UnblockReason unblockReason)
+void kernel::Scheduler::InternalUnblock(TaskControlBlock& ctrlBlock, UnblockReason unblockReason)
 {
-    auto& tbc = static_cast<TaskBase&>(task).GetTaskControlBlock();
+    readyTasksV2.transfer(ctrlBlock);
 
-    readyTasksV2.transfer(tbc);
-
-    tbc.UnblockHook(unblockReason);
+    ctrlBlock.UnblockHook(unblockReason);
 
     // SEGGER_RTT_printf(0, "Unblock %s @ %p\r\n", task.name, &task);
 }

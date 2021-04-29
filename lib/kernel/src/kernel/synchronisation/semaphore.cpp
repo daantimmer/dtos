@@ -49,9 +49,9 @@ void kernel::Semaphore::InternalRelease()
     if (blockedList.empty() == false)
     {
         auto& scheduler = kernel::GetScheduler();
-        auto& task = blockedList.front().Owner();
+        auto& ctrlBlock = blockedList.front();
 
-        scheduler.Unblock(task);
+        scheduler.Unblock(ctrlBlock);
 
         return;
     }

@@ -11,6 +11,7 @@
 namespace kernel
 {
     struct RunnableTask;
+    struct TaskControlBlock;
 }
 
 extern "C"
@@ -48,9 +49,9 @@ namespace kernel
         bool Tick();
 
         StatusCode Block(TaskList<>& blockList, const kernel::UnblockFunction& = {});
-        StatusCode Block(TaskList<>& blockList, RunnableTask& task, const kernel::UnblockFunction& = {});
+        StatusCode Block(TaskList<>& blockList, TaskControlBlock& ctrlBlock, const kernel::UnblockFunction& = {});
 
-        void Unblock(RunnableTask& task);
+        void Unblock(TaskControlBlock& ctrlBlock);
 
         static auto CurrentTask() -> RunnableTask&;
         auto GetIdleTask() const -> RunnableTask&;
@@ -63,8 +64,8 @@ namespace kernel
         mutable StaticTask<64> idleTask;
 
     private:
-        StatusCode InternalBlock(TaskList<>& blockList, RunnableTask& task, UnblockFunction unblockFunction);
-        void InternalUnblock(RunnableTask& task, UnblockReason unblockReason);
+        StatusCode InternalBlock(TaskList<>& blockList, TaskControlBlock& ctrlBlock, UnblockFunction unblockFunction);
+        void InternalUnblock(TaskControlBlock& ctrlBlock, UnblockReason unblockReason);
     };
 }
 
