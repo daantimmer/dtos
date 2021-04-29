@@ -9,7 +9,7 @@ namespace kernel
     struct MutexControlBlock
     {
     protected:
-        MutexControlBlock();
+        MutexControlBlock() = default;
 
         MutexControlBlock(const MutexControlBlock&) = delete;
         MutexControlBlock(MutexControlBlock&&) = delete;
@@ -23,13 +23,13 @@ namespace kernel
         void DoUnlock();
 
         TaskList<> blockedList;
-        RunnableTask* owner;
+        RunnableTask* owner{nullptr};
     };
 
     struct Mutex: private MutexControlBlock
     {
-        Mutex();
-        ~Mutex();
+        Mutex() = default;
+        ~Mutex() = default;
 
         StatusCode Lock();
 

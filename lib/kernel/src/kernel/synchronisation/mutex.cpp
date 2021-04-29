@@ -3,9 +3,6 @@
 #include "kernel/interruptMasking.hpp"
 #include "kernel/scheduler.hpp"
 
-kernel::MutexControlBlock::MutexControlBlock()
-{}
-
 kernel::StatusCode kernel::MutexControlBlock::DoBlock()
 {
     return kernel::GetScheduler().Block(blockedList);
@@ -13,8 +10,7 @@ kernel::StatusCode kernel::MutexControlBlock::DoBlock()
 
 void kernel::MutexControlBlock::DoLock()
 {
-    auto& scheduler = kernel::GetScheduler();
-    owner = &scheduler.CurrentTask();
+    owner = &kernel::Scheduler::CurrentTask();
 }
 
 void kernel::MutexControlBlock::DoUnlock()
@@ -29,12 +25,6 @@ void kernel::MutexControlBlock::DoUnlock()
     owner = &ctrlBlock.Owner();
     kernel::GetScheduler().Unblock(ctrlBlock);
 }
-
-kernel::Mutex::Mutex()
-{}
-
-kernel::Mutex::~Mutex()
-{}
 
 kernel::StatusCode kernel::Mutex::Lock()
 {
@@ -58,12 +48,12 @@ kernel::StatusCode kernel::Mutex::Lock()
     return kernel::StatusCode::Undefined;
 }
 
-bool kernel::Mutex::TryLock()
+bool kernel::Mutex::TryLock() // NOLINT
 {
     return false;
 }
 
-bool kernel::Mutex::TryLockFor()
+bool kernel::Mutex::TryLockFor() // NOLINT
 {
     return false;
 }

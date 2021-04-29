@@ -26,7 +26,7 @@ namespace
 {
     kernel::Scheduler* kernelInstance = nullptr;
 
-    void taskIdle(const kernel::RunnableTask&, void*)
+    void taskIdle(const kernel::RunnableTask& /*unused*/, void* /*unused*/)
     {
         while (true)
         {
@@ -53,7 +53,7 @@ void TaskScheduler()
     }
     else
     {
-        currentTaskControlBlock = &static_cast<kernel::TaskBase&>(kernelInstance->GetIdleTask()).GetTaskControlBlock();
+        currentTaskControlBlock = &kernelInstance->GetIdleTask();
     }
 
     // SEGGER_RTT_printf(0,
@@ -104,155 +104,154 @@ void DelayTask(kernel::RunnableTask& task, std::uint32_t ticks)
     kernelInstance->delayedTasksV2.push(static_cast<kernel::TaskBase&>(task).GetTaskControlBlock());
 }
 
-auto kernel::Scheduler::Tick() -> bool
+namespace kernel
 {
-    kernelInstance->systicks++;
-
-    if (!kernelInstance->delayedTasksV2.empty())
+    auto Scheduler::Tick() -> bool
     {
-        bool mustSwitch = false;
+        kernelInstance->systicks++;
 
-        auto iter = kernelInstance->delayedTasksV2.begin();
-        const auto end = kernelInstance->delayedTasksV2.end();
-
-        for (; iter != end;)
+        if (!kernelInstance->delayedTasksV2.empty())
         {
-            if (auto& task = *iter; task.Owner().tickDelay <= static_cast<std::uint32_t>(kernelInstance->systicks))
+            bool mustSwitch = false;
+
+            auto iter = kernelInstance->delayedTasksV2.begin();
+            const auto end = kernelInstance->delayedTasksV2.end();
+
+            for (; iter != end;)
             {
-                iter = kernelInstance->delayedTasksV2.erase(iter);
-
-                kernelInstance->readyTasksV2.push(task);
-
-                if (task.Owner().interval != 0)
+                if (auto& task = *iter; task.Owner().tickDelay <= static_cast<std::uint32_t>(kernelInstance->systicks))
                 {
-                    task.Owner().tickDelay
-                        = static_cast<std::uint32_t>(kernelInstance->systicks) + task.Owner().interval;
+                    iter = kernelInstance->delayedTasksV2.erase(iter);
+
+                    kernelInstance->readyTasksV2.push(task);
+
+                    if (task.Owner().interval != 0)
+                    {
+                        task.Owner().tickDelay
+                            = static_cast<std::uint32_t>(kernelInstance->systicks) + task.Owner().interval;
+                    }
+                    else
+                    {
+                        task.Owner().tickDelay = 0;
+                    }
+
+                    mustSwitch = true;
                 }
                 else
                 {
-                    task.Owner().tickDelay = 0;
+                    ++iter;
                 }
+            }
 
-                mustSwitch = true;
-            }
-            else
-            {
-                ++iter;
-            }
+            return mustSwitch;
         }
 
-        return mustSwitch;
+        return !kernelInstance->readyTasksV2.empty();
     }
-
-    return !kernelInstance->readyTasksV2.empty();
-}
 
 kernel::StatusCode kernel::Scheduler::Block(TaskList<>& blockList, const kernel::UnblockFunction& externalUnblockHook)
-{
-    return Block(blockList, *currentTaskControlBlock, externalUnblockHook);
-}
 
-kernel::StatusCode kernel::Scheduler::Block(TaskList<>& blockList,
-                                            TaskControlBlock& ctrlBlock,
-                                            const kernel::UnblockFunction& externalUnblockHook)
-{
-    auto unblockReason = kernel::UnblockReason::Undefined;
-
-    auto isCurrentThread = &ctrlBlock == currentTaskControlBlock;
-
-    auto unblockReasonFunctor
-        = [&unblockReason, &externalUnblockHook](TaskControlBlock& ctrlBlock, UnblockReason reason) {
-              unblockReason = reason;
-              if (static_cast<bool>(externalUnblockHook))
-              {
-                  externalUnblockHook(ctrlBlock, reason);
-              }
-          };
-
+    StatusCode Scheduler::Block(TaskList<>& blockList, const UnblockFunction& externalUnblockHook)
     {
-        const kernel::InterruptMasking interruptMasking;
-
-        if (const auto ret = InternalBlock(blockList, ctrlBlock, unblockReasonFunctor); ret != kernel::StatusCode::Ok)
-        {
-            return ret;
-        }
-
-        if (isCurrentThread == false)
-        {
-            return kernel::StatusCode::Ok;
-        }
+        return Block(blockList, *currentTaskControlBlock, externalUnblockHook);
     }
 
-    ForceContextSwitch();
+    StatusCode
+        Scheduler::Block(TaskList<>& blockList, TaskControlBlock& ctrlBlock, const UnblockFunction& externalUnblockHook)
+    {
+        auto unblockReason = UnblockReason::Undefined;
 
-    return unblockReason == kernel::UnblockReason::Request
-        ? kernel::StatusCode::Ok
-        : unblockReason == kernel::UnblockReason::Timeout ? kernel::StatusCode::Timeout
-                                                          : kernel::StatusCode::Interrupted;
-}
+        auto isCurrentThread = &ctrlBlock == currentTaskControlBlock;
 
-void kernel::Scheduler::Unblock(TaskControlBlock& ctrlBlock)
-{
-    const kernel::InterruptMasking interruptMasking;
+        auto unblockReasonFunctor
+            = [&unblockReason, &externalUnblockHook](TaskControlBlock& ctrlBlock, UnblockReason reason) {
+                  unblockReason = reason;
+                  if (static_cast<bool>(externalUnblockHook))
+                  {
+                      externalUnblockHook(ctrlBlock, reason);
+                  }
+              };
 
-    InternalUnblock(ctrlBlock, UnblockReason::Request);
+        {
+            const InterruptMasking interruptMasking;
 
-    TriggerTaskSwitch(); // ?? maybe
-}
+            if (const auto ret = InternalBlock(blockList, ctrlBlock, unblockReasonFunctor); ret != StatusCode::Ok)
+            {
+                return ret;
+            }
 
-kernel::StatusCode kernel::Scheduler::InternalBlock(TaskList<>& blockList,
-                                                    TaskControlBlock& ctrlBlock,
-                                                    UnblockFunction unblockFunction)
-{
-    blockList.transfer(ctrlBlock);
+            if (isCurrentThread == false)
+            {
+                return StatusCode::Ok;
+            }
+        }
 
-    ctrlBlock.BlockHook(unblockFunction);
+        ForceContextSwitch();
 
-    // SEGGER_RTT_printf(0, "Block %s @ %p\r\n", task.name, &task);
+        return unblockReason == UnblockReason::Request
+            ? StatusCode::Ok
+            : unblockReason == UnblockReason::Timeout ? StatusCode::Timeout : StatusCode::Interrupted;
+    }
 
-    return StatusCode::Ok;
-}
+    void Scheduler::Unblock(TaskControlBlock& ctrlBlock)
+    {
+        const InterruptMasking interruptMasking;
 
-void kernel::Scheduler::InternalUnblock(TaskControlBlock& ctrlBlock, UnblockReason unblockReason)
-{
-    readyTasksV2.transfer(ctrlBlock);
+        InternalUnblock(ctrlBlock, UnblockReason::Request);
 
-    ctrlBlock.UnblockHook(unblockReason);
+        TriggerTaskSwitch(); // ?? maybe
+    }
 
-    // SEGGER_RTT_printf(0, "Unblock %s @ %p\r\n", task.name, &task);
-}
+    StatusCode
+        Scheduler::InternalBlock(TaskList<>& blockList, TaskControlBlock& ctrlBlock, UnblockFunction unblockFunction)
+    {
+        blockList.transfer(ctrlBlock);
 
-kernel::Scheduler::Scheduler(MainThread& mainThread)
-    : idleTask{"idle", taskIdle /*, {GPIOA, LL_GPIO_PIN_0}*/} // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
-{
-    currentTaskControlBlock = &mainThread.GetTaskControlBlock();
-    // idleTask.name = "Idle";
+        ctrlBlock.BlockHook(unblockFunction);
 
-    kernelInstance = this;
+        // SEGGER_RTT_printf(0, "Block %s @ %p\r\n", task.name, &task);
 
-    idleTask.GetTaskControlBlock().Priority(UINT32_MAX - 1);
+        return StatusCode::Ok;
+    }
 
-    readyTasksV2.push(idleTask.GetTaskControlBlock());
-    // readyTasks.insert(idleTask);
-}
+    void Scheduler::InternalUnblock(TaskControlBlock& ctrlBlock, UnblockReason unblockReason)
+    {
+        readyTasksV2.transfer(ctrlBlock);
 
-kernel::Scheduler::~Scheduler()
-{
-    kernelInstance = nullptr;
-}
+        ctrlBlock.UnblockHook(unblockReason);
 
-auto kernel::Scheduler::CurrentTask() -> RunnableTask&
-{
-    return currentTaskControlBlock->Owner();
-}
+        // SEGGER_RTT_printf(0, "Unblock %s @ %p\r\n", task.name, &task);
+    }
 
-auto kernel::Scheduler::GetIdleTask() const -> RunnableTask&
-{
-    return idleTask;
-}
+    Scheduler::Scheduler(MainThread& mainThread)
+        : idleTask{"idle", taskIdle /*, {GPIOA, LL_GPIO_PIN_0}*/} // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
+    {
+        currentTaskControlBlock = &mainThread.GetTaskControlBlock();
+        // idleTask.name = "Idle";
 
-namespace kernel
-{
+        kernelInstance = this;
+
+        idleTask.GetTaskControlBlock().Priority(UINT32_MAX - 1);
+
+        readyTasksV2.push(idleTask.GetTaskControlBlock());
+        // readyTasks.insert(idleTask);
+    }
+
+    Scheduler::~Scheduler()
+    {
+        kernelInstance = nullptr;
+    }
+
+    auto Scheduler::CurrentTask() -> RunnableTask&
+    {
+        return currentTaskControlBlock->Owner();
+    }
+
+    TaskControlBlock& Scheduler::GetIdleTask() const
+    {
+        return idleTask.GetTaskControlBlock();
+    }
+
     auto GetKernel() -> Scheduler&
     {
         return *kernelInstance;

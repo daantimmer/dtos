@@ -47,6 +47,7 @@ namespace kernel
         Scheduler& operator=(Scheduler&&) = delete;
 
         bool Tick();
+        StatusCode Add(TaskControlBlock& ctrlBlock);
 
         StatusCode Block(TaskList<>& blockList, const kernel::UnblockFunction& = {});
         StatusCode Block(TaskList<>& blockList, TaskControlBlock& ctrlBlock, const kernel::UnblockFunction& = {});
@@ -54,7 +55,7 @@ namespace kernel
         void Unblock(TaskControlBlock& ctrlBlock);
 
         static auto CurrentTask() -> RunnableTask&;
-        auto GetIdleTask() const -> RunnableTask&;
+        TaskControlBlock& GetIdleTask() const;
 
         SysTicks_t systicks{std::uint32_t{0u}};
 
