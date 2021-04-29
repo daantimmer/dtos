@@ -83,8 +83,6 @@ namespace kernel
 
         /* TODO: To be moved to task control block structure */
 
-        void* blockedBy = nullptr;
-
         template <class Function>
         void RepeatEvery(std::chrono::milliseconds interval, Function function)
         {
