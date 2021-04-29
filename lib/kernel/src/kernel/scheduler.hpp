@@ -29,7 +29,7 @@ void YieldTask();
 void DelayTask(std::chrono::microseconds delay);
 void DelayTask(std::chrono::milliseconds delay);
 void DelayTask(std::uint32_t ticks = 0);
-void DelayTask(kernel::RunnableTask& task, std::uint32_t ticks = 0);
+void DelayTask(kernel::TaskControlBlock& ctrlBlock, std::uint32_t ticks = 0);
 
 namespace kernel
 {

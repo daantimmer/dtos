@@ -90,23 +90,23 @@ void DelayTask(std::uint32_t ticks)
 {
     ScopedCriticalSection critical;
 
-    DelayTask(currentTaskControlBlock->Owner(), ticks);
+    DelayTask(*currentTaskControlBlock, ticks);
 
     TriggerTaskSwitch();
 }
 
-void DelayTask(kernel::RunnableTask& task, std::uint32_t ticks)
+void DelayTask(kernel::TaskControlBlock& ctrlBlock, std::uint32_t ticks)
 {
     ScopedCriticalSection critical;
 
-    task.tickDelay = static_cast<std::uint32_t>(kernelInstance->systicks) + ticks;
+    ctrlBlock.Owner().tickDelay = static_cast<std::uint32_t>(kernelInstance->systicks) + ticks;
 
-    kernelInstance->delayedTasksV2.push(static_cast<kernel::TaskBase&>(task).GetTaskControlBlock());
+    kernelInstance->delayedTasksV2.push(ctrlBlock);
 }
 
 namespace kernel
 {
-    auto Scheduler::Tick() -> bool
+    auto Scheduler::Tick() -> bool // NOLINT
     {
         kernelInstance->systicks++;
 
@@ -121,7 +121,7 @@ namespace kernel
             {
                 if (auto& task = *iter; task.Owner().tickDelay <= static_cast<std::uint32_t>(kernelInstance->systicks))
                 {
-                    iter = kernelInstance->delayedTasksV2.erase(iter);
+                    iter = TaskList<>::erase(iter);
 
                     kernelInstance->readyTasksV2.push(task);
 
@@ -149,7 +149,13 @@ namespace kernel
         return !kernelInstance->readyTasksV2.empty();
     }
 
-kernel::StatusCode kernel::Scheduler::Block(TaskList<>& blockList, const kernel::UnblockFunction& externalUnblockHook)
+    StatusCode Scheduler::Add(TaskControlBlock& ctrlBlock)
+    {
+        ctrlBlock.GetStack().Initialize(&ctrlBlock.Owner());
+        readyTasksV2.push(ctrlBlock);
+
+        return StatusCode::Ok;
+    }
 
     StatusCode Scheduler::Block(TaskList<>& blockList, const UnblockFunction& externalUnblockHook)
     {
