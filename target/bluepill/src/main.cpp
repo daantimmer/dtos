@@ -22,8 +22,6 @@ extern "C"
     extern ADC_HandleTypeDef hadc1;
 }
 
-#define IS_EMPTY(n) (_SEGGER_RTT.aUp[n].WrOff == _SEGGER_RTT.aUp[n].RdOff)
-
 namespace
 {
     volatile std::uint32_t count = 0;
