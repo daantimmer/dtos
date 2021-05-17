@@ -20,7 +20,9 @@ if(IS_TESTING)
     target_sources(BSP PUBLIC testdoubles/dummy.cpp)
 endif()
 
-target_compile_definitions(BSP PUBLIC ${CHIP})
+target_compile_definitions(BSP PUBLIC
+    ${CHIP}
+    USE_FULL_LL_DRIVER)
 
 target_include_directories(BSP SYSTEM PUBLIC
     Core/Inc
