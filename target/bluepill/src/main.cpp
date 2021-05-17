@@ -75,7 +75,6 @@ namespace
     }
 
     volatile std::uint32_t count = 0;
-    volatile std::uint32_t adcValue = 0;
     auto temperatureValueSemaphore = kernel::Semaphore{};
 
     std::atomic<bool> doprint{false};
@@ -85,87 +84,86 @@ namespace
         while (true)
         {
             SEGGER_RTT_TerminalOut(0, "Task1\n");
-            HAL_GPIO_TogglePin(LED_BLUE_GPIO_Port, LED_BLUE_Pin);
+            LL_GPIO_TogglePin(LED_BLUE_GPIO_Port, LED_BLUE_Pin);
             DelayTask(std::chrono::milliseconds{1000});
             doprint = true;
         }
     };
+
+    volatile std::uint8_t ping = 0;
+    volatile std::uint8_t readIndex = 0;
+    std::array<std::array<std::uint16_t, 10>, 2> data;
 
     auto task2Handler = [](const kernel::RunnableTask&, void* semaphoreVoidPtr) // NOLINT
     {
         auto& semaphore = *static_cast<kernel::Semaphore*>(semaphoreVoidPtr);
 
         HAL_TIM_Base_Start_IT(&htim3);
-        HAL_ADC_Start_IT(&hadc1);
-
-        // static /*constexpr */ auto disp = dec_to_bcd(123456u);
-        // static auto disp = 0xabcdef;
+        HAL_ADC_Start_DMA(&hadc1, reinterpret_cast<std::uint32_t*>(data[ping].data()), 10);
 
         std::uint32_t col = 0;
+        std::uint16_t adcValue = 0u;
 
         while (true)
         {
             semaphore.Acquire();
 
-            const auto disp = adcValue;
-            const auto value = (disp >> (4 * (5 - col))) & 0xF;
-            const auto segm = number_to_7seg(value);
+            const auto avg = static_cast<std::uint16_t>(
+                std::accumulate(data[readIndex].begin(), data[readIndex].end(), 0) / data[readIndex].size());
 
-            HAL_GPIO_WritePin(COL1_GPIO_Port,
-                              COL1_Pin,
-                              col == 0 ? GPIO_PinState::GPIO_PIN_SET : GPIO_PinState::GPIO_PIN_RESET);
-            HAL_GPIO_WritePin(COL2_GPIO_Port,
-                              COL2_Pin,
-                              col == 1 ? GPIO_PinState::GPIO_PIN_SET : GPIO_PinState::GPIO_PIN_RESET);
-            HAL_GPIO_WritePin(COL3_GPIO_Port,
-                              COL3_Pin,
-                              col == 2 ? GPIO_PinState::GPIO_PIN_SET : GPIO_PinState::GPIO_PIN_RESET);
-            HAL_GPIO_WritePin(COL4_GPIO_Port,
-                              COL4_Pin,
-                              col == 3 ? GPIO_PinState::GPIO_PIN_SET : GPIO_PinState::GPIO_PIN_RESET);
-            HAL_GPIO_WritePin(COL5_GPIO_Port,
-                              COL5_Pin,
-                              col == 4 ? GPIO_PinState::GPIO_PIN_SET : GPIO_PinState::GPIO_PIN_RESET);
-            HAL_GPIO_WritePin(COL6_GPIO_Port,
-                              COL6_Pin,
-                              col == 5 ? GPIO_PinState::GPIO_PIN_SET : GPIO_PinState::GPIO_PIN_RESET);
-
-            HAL_GPIO_WritePin(SegA_GPIO_Port,
-                              SegA_Pin,
-                              segm & segA ? GPIO_PinState::GPIO_PIN_SET : GPIO_PinState::GPIO_PIN_RESET);
-            HAL_GPIO_WritePin(SegB_GPIO_Port,
-                              SegB_Pin,
-                              segm & segB ? GPIO_PinState::GPIO_PIN_SET : GPIO_PinState::GPIO_PIN_RESET);
-            HAL_GPIO_WritePin(SegC_GPIO_Port,
-                              SegC_Pin,
-                              segm & segC ? GPIO_PinState::GPIO_PIN_SET : GPIO_PinState::GPIO_PIN_RESET);
-            HAL_GPIO_WritePin(SegD_GPIO_Port,
-                              SegD_Pin,
-                              segm & segD ? GPIO_PinState::GPIO_PIN_SET : GPIO_PinState::GPIO_PIN_RESET);
-            HAL_GPIO_WritePin(SegE_GPIO_Port,
-                              SegE_Pin,
-                              segm & segE ? GPIO_PinState::GPIO_PIN_SET : GPIO_PinState::GPIO_PIN_RESET);
-            HAL_GPIO_WritePin(SegF_GPIO_Port,
-                              SegF_Pin,
-                              segm & segF ? GPIO_PinState::GPIO_PIN_SET : GPIO_PinState::GPIO_PIN_RESET);
-            HAL_GPIO_WritePin(SegG_GPIO_Port,
-                              SegG_Pin,
-                              segm & segG ? GPIO_PinState::GPIO_PIN_SET : GPIO_PinState::GPIO_PIN_RESET);
-
-            HAL_GPIO_WritePin(DOT_GPIO_Port,
-                              DOT_Pin,
-                              segm & segDot ? GPIO_PinState::GPIO_PIN_SET : GPIO_PinState::GPIO_PIN_RESET);
-
-            ++col;
-            if (col == 6)
+            if (std::abs(adcValue - avg) > 2)
             {
-                col = 0;
+                adcValue = avg;
             }
+            const auto disp = dec_to_bcd(adcValue);
 
-            if (doprint)
+            for (col = 0; col < 7; ++col)
             {
-                SEGGER_RTT_TerminalOut(0, "Task2\n");
-                doprint = false;
+                {
+                    auto mask = COL1_Pin | COL2_Pin | COL3_Pin | COL4_Pin | COL5_Pin | COL6_Pin;
+                    auto setValue = mask
+                        & ((col == 0 ? COL1_Pin : 0u) | (col == 1 ? COL2_Pin : 0u) | (col == 2 ? COL3_Pin : 0u)
+                           | (col == 3 ? COL4_Pin : 0u) | (col == 4 ? COL5_Pin : 0u) | (col == 5 ? COL6_Pin : 0u));
+                    auto resValue = mask ^ setValue;
+
+                    LL_GPIO_ResetOutputPin(GPIOA, resValue);
+                    LL_GPIO_SetOutputPin(GPIOA, setValue);
+                }
+
+                if (col == 6)
+                {
+                    continue;
+                }
+
+                const auto value = (disp >> (4 * (5 - col))) & 0xF;
+                const auto segm = number_to_7seg(value);
+
+                {
+                    auto mask = SegA_Pin | SegB_Pin | SegC_Pin;
+                    auto setValue = mask
+                        & (((segm & segA) == segA ? SegA_Pin : 0) | ((segm & segB) == segB ? SegB_Pin : 0)
+                           | ((segm & segC) == segC ? SegC_Pin : 0));
+                    auto resValue = mask ^ setValue;
+
+                    LL_GPIO_ResetOutputPin(GPIOA, resValue);
+                    LL_GPIO_SetOutputPin(GPIOA, setValue);
+                }
+
+                {
+                    auto mask = SegD_Pin | SegE_Pin | SegF_Pin | SegG_Pin | DOT_Pin;
+                    auto setValue = mask
+                        & (((segm & segD) == segD ? SegD_Pin : 0) | ((segm & segE) == segE ? SegE_Pin : 0)
+                           | ((segm & segF) == segF ? SegF_Pin : 0) | ((segm & segG) == segG ? SegG_Pin : 0)
+                           | ((segm & segDot) == segDot ? DOT_Pin : 0)
+
+                        );
+                    auto resValue = mask ^ setValue;
+
+                    LL_GPIO_ResetOutputPin(GPIOB, resValue);
+                    LL_GPIO_SetOutputPin(GPIOB, setValue);
+                }
+
+                DelayTask(std::chrono::milliseconds{5});
             }
         }
     };
@@ -183,10 +181,12 @@ namespace
         &temperatureValueSemaphore}; // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
 }
 
-extern "C" void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
+extern "C" void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* /*hadc*/)
 {
-    const auto value = HAL_ADC_GetValue(hadc);
-    adcValue = (value + adcValue) / 2;
+    readIndex = ping;
+    ping = ping ^ 1;
+
+    HAL_ADC_Start_DMA(&hadc1, reinterpret_cast<std::uint32_t*>(data[ping].data()), 10);
     temperatureValueSemaphore.Release();
 }
 
@@ -201,12 +201,6 @@ extern "C" void RealMain()
 
     kernel::GetScheduler().readyTasksV2.push(task1.GetTaskControlBlock());
     kernel::GetScheduler().readyTasksV2.push(task2.GetTaskControlBlock());
-
-    // hal::Notification::Callback l1cb{[] { SEGGER_RTT_printf(0, "INIT L1\r\n"); }};
-    // hal::Notification::Callback l2cb{[] { SEGGER_RTT_printf(0, "INIT L2\r\n"); }};
-
-    // hal::Value<hal::Foo>::Attach(l1cb);
-    // hal::Value<hal::Foo>::Attach(l2cb);
 
     __enable_irq();
 
