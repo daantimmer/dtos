@@ -139,13 +139,13 @@ extern "C"
             assert(0);
         }
     }
-    void DMA1_Channel1_IRQHandler()
-    {
-        while (true)
-        {
-            assert(0);
-        }
-    }
+    // void DMA1_Channel1_IRQHandler()
+    // {
+    //     while (true)
+    //     {
+    //         assert(0);
+    //     }
+    // }
     void DMA1_Channel2_IRQHandler()
     {
         while (true)
