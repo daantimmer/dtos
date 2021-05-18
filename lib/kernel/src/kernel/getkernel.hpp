@@ -5,7 +5,6 @@ namespace kernel
 {
     struct Scheduler;
 
-    [[deprecated]] Scheduler& GetKernel();
     Scheduler& GetScheduler();
 }
 
