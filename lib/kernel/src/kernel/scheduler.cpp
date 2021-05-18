@@ -173,8 +173,9 @@ namespace kernel
         return Block(blockList, *currentTaskControlBlock, externalUnblockHook);
     }
 
-    StatusCode
-        Scheduler::Block(TaskList<>& blockList, TaskControlBlock& ctrlBlock, const UnblockFunction& externalUnblockHook)
+    StatusCode Scheduler::Block(TaskList<>& blockList, // NOLINT(readability-convert-member-functions-to-static)
+                                TaskControlBlock& ctrlBlock,
+                                const UnblockFunction& externalUnblockHook)
     {
         auto unblockReason = UnblockReason::Undefined;
 
