@@ -74,9 +74,7 @@ namespace kernel
             : TaskBase{{staticStack.stack, TStackSize}, name}
             , entry{entry}
             , param{param}
-        {
-            Start();
-        }
+        {}
 
         /* TaskBase::TaskRunner::Run */
         void Run() final

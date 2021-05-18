@@ -14,18 +14,9 @@ namespace kernel
     struct TaskControlBlock;
 }
 
-extern "C"
-{
-    extern kernel::TaskControlBlock* volatile currentTaskControlBlock;
-
-    void TaskScheduler();
-}
-
 auto SchedulerTick() -> bool;
 
 void YieldTask();
-// void BlockTask();
-
 void DelayTask(std::chrono::microseconds delay);
 void DelayTask(std::chrono::milliseconds delay);
 void DelayTask(std::uint32_t ticks = 0);
@@ -47,7 +38,12 @@ namespace kernel
         Scheduler& operator=(Scheduler&&) = delete;
 
         bool Tick();
+        void* SwitchContext(void*);
+
         StatusCode Add(TaskControlBlock& ctrlBlock);
+
+        StatusCode Yield();
+        StatusCode Yield(TaskControlBlock& ctrlBlock);
 
         StatusCode Block(TaskList<>& blockList, const kernel::UnblockFunction& = {});
         StatusCode Block(TaskList<>& blockList, TaskControlBlock& ctrlBlock, const kernel::UnblockFunction& = {});
@@ -57,15 +53,23 @@ namespace kernel
         static auto CurrentTask() -> RunnableTask&;
         TaskControlBlock& GetIdleTask() const;
 
+        TaskControlBlock& CurrentTaskControlBlock()
+        {
+            return *currentTaskControlBlock;
+        }
+
         SysTicks_t systicks{std::uint32_t{0u}};
 
         TaskList<> delayedTasksV2;
-        TaskList<> readyTasksV2;
 
         mutable StaticTask<64> idleTask;
 
     private:
         void InternalUnblock(TaskControlBlock& ctrlBlock, UnblockReason unblockReason);
+
+        TaskList<> readyTasksV2;
+
+        TaskControlBlock* volatile currentTaskControlBlock;
     };
 }
 

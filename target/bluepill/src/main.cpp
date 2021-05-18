@@ -199,8 +199,8 @@ extern "C" void RealMain()
     task1.GetTaskControlBlock().Priority(1);
     task2.GetTaskControlBlock().Priority(0);
 
-    kernel::GetScheduler().readyTasksV2.push(task1.GetTaskControlBlock());
-    kernel::GetScheduler().readyTasksV2.push(task2.GetTaskControlBlock());
+    task1.Start();
+    task2.Start();
 
     __enable_irq();
 

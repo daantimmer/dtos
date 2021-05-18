@@ -1,11 +1,11 @@
+#include "kernel/getkernel.hpp"
 #include "kernel/scheduler.hpp"
 #include "kernel/task.hpp"
-
 namespace
 {
     auto getStackPointer() -> void*
     {
-        return currentTaskControlBlock->GetStack().GetStackPointer();
+        return kernel::GetScheduler().CurrentTaskControlBlock().GetStack().GetStackPointer();
     }
 }
 

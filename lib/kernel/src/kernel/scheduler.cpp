@@ -1,7 +1,7 @@
 #include "scheduler.hpp"
 #include "SEGGER_RTT.h"
-// #include "elib/intrusivelist.hpp"
 #include "kernel/criticalsection.hpp"
+#include "kernel/getkernel.hpp"
 #include "kernel/interruptMasking.hpp"
 #include "kernel/mainthread.hpp"
 #include "kernel/port/breakpoint.hpp"
@@ -16,11 +16,6 @@
 #include <cassert>
 #include <chrono>
 #include <cstdint>
-
-extern "C"
-{
-    kernel::TaskControlBlock* volatile currentTaskControlBlock = nullptr;
-}
 
 namespace
 {
@@ -51,40 +46,9 @@ auto SchedulerTick() -> bool
     return kernelInstance->Tick();
 }
 
-void TaskScheduler()
-{
-    if (currentTaskControlBlock->GetStack().IsSafe() == false)
-    {
-        kernel::port::breakpoint();
-    }
-
-    if (!kernelInstance->readyTasksV2.empty())
-    {
-        currentTaskControlBlock = &kernelInstance->readyTasksV2.top();
-    }
-    else
-    {
-        currentTaskControlBlock = &kernelInstance->GetIdleTask();
-    }
-
-    // SEGGER_RTT_printf(0,
-    //                   "Switch to %s stack >%u<\r\n",
-    //                   currentTaskControlBlock->name,
-    //                   currentTaskControlBlock->StackAvailable());
-
-    if (currentTaskControlBlock->GetStack().IsSafe() == false)
-    {
-        kernel::port::breakpoint();
-    }
-}
-
 void YieldTask()
 {
-    ScopedCriticalSection critical;
-
-    kernelInstance->readyTasksV2.push(*currentTaskControlBlock);
-
-    TriggerTaskSwitch();
+    kernel::GetScheduler().Yield();
 }
 
 void DelayTask(std::chrono::microseconds delay)
@@ -101,7 +65,7 @@ void DelayTask(std::uint32_t ticks)
 {
     ScopedCriticalSection critical;
 
-    DelayTask(*currentTaskControlBlock, ticks);
+    DelayTask(kernel::GetScheduler().CurrentTaskControlBlock(), ticks);
 
     TriggerTaskSwitch();
 }
@@ -160,10 +124,59 @@ namespace kernel
         return !kernelInstance->readyTasksV2.empty();
     }
 
+    void* Scheduler::SwitchContext(void* stackPointer)
+    {
+        CurrentTaskControlBlock().GetStack().SetStackPointer(stackPointer);
+
+        if (CurrentTaskControlBlock().GetStack().IsSafe() == false)
+        {
+            kernel::port::breakpoint();
+        }
+
+        if (!kernelInstance->readyTasksV2.empty())
+        {
+            currentTaskControlBlock = &kernelInstance->readyTasksV2.top();
+        }
+        else
+        {
+            currentTaskControlBlock = &kernelInstance->GetIdleTask();
+        }
+
+        if (CurrentTaskControlBlock().GetStack().IsSafe() == false)
+        {
+            kernel::port::breakpoint();
+        }
+
+        return CurrentTaskControlBlock().GetStack().GetStackPointer();
+    }
+
     StatusCode Scheduler::Add(TaskControlBlock& ctrlBlock)
     {
         ctrlBlock.GetStack().Initialize(&ctrlBlock.Owner());
+
         readyTasksV2.push(ctrlBlock);
+
+        return StatusCode::Ok;
+    }
+
+    StatusCode Scheduler::Yield()
+    {
+        ScopedCriticalSection critical;
+
+        readyTasksV2.push(CurrentTaskControlBlock());
+
+        TriggerTaskSwitch();
+
+        return StatusCode::Ok;
+    }
+
+    StatusCode Scheduler::Yield(TaskControlBlock& ctrlBlock)
+    {
+        ScopedCriticalSection critical;
+
+        readyTasksV2.push(ctrlBlock);
+
+        TriggerTaskSwitch();
 
         return StatusCode::Ok;
     }
@@ -225,22 +238,17 @@ namespace kernel
         readyTasksV2.transfer(ctrlBlock);
 
         ctrlBlock.UnblockHook(unblockReason);
-
-        // SEGGER_RTT_printf(0, "Unblock %s @ %p\r\n", task.name, &task);
     }
 
     Scheduler::Scheduler(MainThread& mainThread)
-        : idleTask{"idle", taskIdle /*, {GPIOA, LL_GPIO_PIN_0}*/} // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
+        : idleTask{"idle", taskIdle} // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
     {
         currentTaskControlBlock = &mainThread.GetTaskControlBlock();
-        // idleTask.name = "Idle";
 
         kernelInstance = this;
 
         idleTask.GetTaskControlBlock().Priority(UINT32_MAX - 1);
-
-        readyTasksV2.push(idleTask.GetTaskControlBlock());
-        // readyTasks.insert(idleTask);
+        idleTask.Start();
     }
 
     Scheduler::~Scheduler()
@@ -250,7 +258,7 @@ namespace kernel
 
     auto Scheduler::CurrentTask() -> RunnableTask&
     {
-        return currentTaskControlBlock->Owner();
+        return GetScheduler().CurrentTaskControlBlock().Owner();
     }
 
     TaskControlBlock& Scheduler::GetIdleTask() const

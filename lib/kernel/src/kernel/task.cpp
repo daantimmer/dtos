@@ -47,7 +47,7 @@ namespace kernel
 
     void TaskBase::Start()
     {
-        GetTaskControlBlock().GetStack().Initialize(this);
+        GetScheduler().Add(GetTaskControlBlock());
     }
 }
 

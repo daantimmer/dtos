@@ -3,14 +3,13 @@
 
 #include "kernel/pendSvHandler.hpp"
 #include "kernel/basepri.hpp"
+#include "kernel/getkernel.hpp"
 #include "kernel/scheduler.hpp"
 #include "kernel/task.hpp"
 
 static auto schedulerSwitchContextWrapper(void* const ptr) -> void*
 {
-    currentTaskControlBlock->GetStack().SetStackPointer(ptr);
-    TaskScheduler();
-    return currentTaskControlBlock->GetStack().GetStackPointer();
+    return kernel::GetScheduler().SwitchContext(ptr);
 }
 
 extern "C" __attribute__((naked)) void PendSV_Handler()
