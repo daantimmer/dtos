@@ -65,7 +65,6 @@ namespace kernel
         mutable StaticTask<64> idleTask;
 
     private:
-        StatusCode InternalBlock(TaskList<>& blockList, TaskControlBlock& ctrlBlock, UnblockFunction unblockFunction);
         void InternalUnblock(TaskControlBlock& ctrlBlock, UnblockReason unblockReason);
     };
 }

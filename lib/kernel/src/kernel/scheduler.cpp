@@ -33,6 +33,17 @@ namespace
             kernel::port::WaitForEvent();
         }
     }
+
+    kernel::StatusCode InternalBlock(kernel::TaskList<>& blockList,
+                                     kernel::TaskControlBlock& ctrlBlock,
+                                     const kernel::UnblockFunction& unblockFunction)
+    {
+        blockList.transfer(ctrlBlock);
+
+        ctrlBlock.BlockHook(unblockFunction);
+
+        return kernel::StatusCode::Ok;
+    }
 }
 
 auto SchedulerTick() -> bool
@@ -206,18 +217,6 @@ namespace kernel
         InternalUnblock(ctrlBlock, UnblockReason::Request);
 
         TriggerTaskSwitch(); // ?? maybe
-    }
-
-    StatusCode
-        Scheduler::InternalBlock(TaskList<>& blockList, TaskControlBlock& ctrlBlock, UnblockFunction unblockFunction)
-    {
-        blockList.transfer(ctrlBlock);
-
-        ctrlBlock.BlockHook(unblockFunction);
-
-        // SEGGER_RTT_printf(0, "Block %s @ %p\r\n", task.name, &task);
-
-        return StatusCode::Ok;
     }
 
     void Scheduler::InternalUnblock(TaskControlBlock& ctrlBlock, UnblockReason unblockReason)
