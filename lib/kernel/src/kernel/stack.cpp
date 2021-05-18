@@ -26,24 +26,24 @@ namespace kernel
         kernel::port::SetEntry(task, initialStackPointer);
     }
 
-    bool Stack::IsSafe() const
+    bool Stack::IsSafe() const // NOLINT(readability-convert-member-functions-to-static)
     {
         return true;
     }
 
-    std::size_t Stack::Size()
+    std::size_t Stack::Size() // NOLINT(readability-make-member-function-const)
     {
         return size;
         // return end - top;
     }
 
-    std::size_t Stack::Used()
+    std::size_t Stack::Used() // NOLINT(readability-convert-member-functions-to-static)
     {
         return 0;
         // return end - edge;
     }
 
-    std::size_t Stack::Available()
+    std::size_t Stack::Available() // NOLINT(readability-make-member-function-const)
     {
         return size;
         // return edge - top;

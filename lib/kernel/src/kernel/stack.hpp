@@ -18,7 +18,7 @@ namespace kernel
 
     struct Stack
     {
-        Stack(std::uint32_t* top, std::size_t size);
+        Stack(std::uint32_t* stack, std::size_t size);
         // Stack(const Stack& stack) = delete;
         // Stack(Stack&& stack);
 
