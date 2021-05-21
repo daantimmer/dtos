@@ -6,7 +6,15 @@ static void ThreadRunner(kernel::RunnableTask* runnable)
     runnable->Run();
 }
 
-std::uint32_t* kernel::port::InitialiseStack(void*, std::uint32_t*, StackSize_t)
+std::uint32_t* kernel::port::InitialiseStack(std::uint32_t* stack, size_t)
 {
-    return nullptr;
+    return stack;
 }
+
+std::uint32_t* kernel::port::InitialiseStack(std::uint32_t* stack, StackSize_t)
+{
+    return stack;
+}
+
+void kernel::port::SetEntry(kernel::RunnableTask*, std::uint32_t*)
+{}
