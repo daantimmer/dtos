@@ -1,6 +1,7 @@
 #include "kernel/getkernel.hpp"
 #include "kernel/scheduler.hpp"
 #include "kernel/task.hpp"
+
 namespace
 {
     auto getStackPointer() -> void*
