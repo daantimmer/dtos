@@ -31,7 +31,17 @@
         "xlocbuf": "cpp",
         "xlocmon": "cpp",
         "xlocnum": "cpp",
-        "xstring": "cpp"
+        "xstring": "cpp",
+        "variant": "cpp",
+        "chrono": "cpp",
+        "exception": "cpp",
+        "iterator": "cpp",
+        "initializer_list": "cpp",
+        "iosfwd": "cpp",
+        "new": "cpp",
+        "ratio": "cpp",
+        "stdexcept": "cpp",
+        "type_traits": "cpp"
     },
     "C/C++ Include Guard.Comment Style": "None",
     "C/C++ Include Guard.Macro Type": "Filepath",
