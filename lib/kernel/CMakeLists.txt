@@ -20,7 +20,7 @@ target_include_directories(kernel PUBLIC
 target_link_libraries(kernel
     PUBLIC notstd
     PUBLIC BSP
-    PUBLIC embeddedinfralib
+    PUBLIC embeddedinfralibwrapper
     PUBLIC type_safe
     PUBLIC Segger)
 
