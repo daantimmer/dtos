@@ -44,7 +44,7 @@ if(IS_TESTING)
     target_link_libraries(test_kernel PUBLIC
         gtest gmock gmock_main
         kernel
-        embeddedinfralib
+        embeddedinfralibwrapper
         type_safe)
 endif()
 
