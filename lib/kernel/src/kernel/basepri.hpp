@@ -4,13 +4,15 @@
 #include "stm32f1xx.h"
 #include <cstdint>
 
+#if !defined(CMAKE_RTOS_KERNEL_BASEPRI)
+#define CMAKE_RTOS_KERNEL_BASEPRI 0
+#endif
+
+#define IS_KERNEL_PRIORITY_HIGHEST() (CMAKE_RTOS_KERNEL_BASEPRI == 0)
+
 namespace kernel
 {
-#if defined(CMAKE_RTOS_KERNEL_BASEPRI)
     constexpr auto RTOS_KERNEL_BASEPRI = CMAKE_RTOS_KERNEL_BASEPRI;
-#else
-    constexpr auto RTOS_KERNEL_BASEPRI = 0;
-#endif
 
     constexpr auto GetBasePriorityRegisterValue()
     {
@@ -24,6 +26,6 @@ namespace kernel
 
     constexpr auto IsKernelPriorityHighest()
     {
-        return RTOS_KERNEL_BASEPRI == 0;
+        return IS_KERNEL_PRIORITY_HIGHEST();
     }
 }
