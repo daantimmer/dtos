@@ -1,7 +1,6 @@
 #ifndef KERNEL_TASK_HPP
 #define KERNEL_TASK_HPP
 
-#include "infra/util/Function.hpp"
 #include "infra/util/IntrusiveList.hpp"
 #include "kernel/port/stackframeinitialiser.hpp"
 #include "kernel/port/systemtick.hpp"
