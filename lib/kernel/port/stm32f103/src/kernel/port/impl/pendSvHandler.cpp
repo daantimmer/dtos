@@ -15,44 +15,37 @@ static auto schedulerSwitchContextWrapper(void* const ptr) -> void*
 extern "C" __attribute__((naked)) void PendSV_Handler()
 {
 #ifndef CLANG_TIDY
-    if constexpr (!kernel::IsKernelPriorityHighest())
-    {
-        asm volatile("mov r0, %[basePriority]" ::[basePriority] "i"(kernel::GetBasePriorityRegisterValue()));
-        asm volatile("msr basepri, r0");
-    }
-    else
-    {
-        asm volatile("cpsid i");
-    }
+#if !IS_KERNEL_PRIORITY_HIGHEST()
+    asm volatile("mov r0, %[basePriority]" ::[basePriority] "i"(kernel::GetBasePriorityRegisterValue()));
+    asm volatile("msr basepri, r0");
+#else
+    asm volatile("cpsid i");
 
-    if constexpr (false /* ARMv6*/)
-    {
-    }
-    else
-    {
-        asm volatile("mrs r0, psp");
-        asm volatile("stmdb r0!, {r4-r11}");
-        asm volatile("mov r4, lr");
-        asm volatile("bl %[schedulerSwitchContext]" ::[schedulerSwitchContext] "i"(schedulerSwitchContextWrapper));
-        asm volatile("mov lr, r4");
-        asm volatile("ldmia r0!, {r4-r11}");
-        asm volatile("msr psp, r0");
-    }
+#endif
 
-    if constexpr (!kernel::IsKernelPriorityHighest())
-    {
-        asm volatile("mov r0, #0");
-        asm volatile("msr basepri, r0");
-    }
-    else
-    {
-        asm volatile("cpsie i");
-    }
+    // if constexpr (false /* ARMv6*/)
+    // {}
+    // else
+    // {
+    asm volatile("mrs r0, psp");
+    asm volatile("stmdb r0!, {r4-r11}");
+    asm volatile("mov r4, lr");
+    asm volatile("bl %[schedulerSwitchContext]" ::[schedulerSwitchContext] "i"(schedulerSwitchContextWrapper));
+    asm volatile("mov lr, r4");
+    asm volatile("ldmia r0!, {r4-r11}");
+    asm volatile("msr psp, r0");
+    // }
+
+#if !IS_KERNEL_PRIORITY_HIGHEST()
+    asm volatile("mov r0, #0");
+    asm volatile("msr basepri, r0");
+
+#else
+    asm volatile("cpsie i");
+#endif
 
     asm volatile("bx lr");
     asm volatile(".ltorg");
-
-    __builtin_unreachable();
 #endif
 }
 
