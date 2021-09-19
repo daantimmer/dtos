@@ -1,4 +1,4 @@
-﻿# CMakeList.txt : CMake project for rtos, include src and define
+# CMakeList.txt : CMake project for rtos, include src and define
 # project specific logic here.
 #
 cmake_minimum_required (VERSION 3.17.3)
@@ -19,9 +19,10 @@ else()
 endif()
 
 if (IS_TESTING)
-    set(CMAKE_CXX_CLANG_TIDY "clang-tidy;-p=compile_commands.json;--extra-arg=-DCLANG_TIDY")
+    # set(CMAKE_CXX_CLANG_TIDY "clang-tidy;-p=compile_commands.json;--extra-arg=-DCLANG_TIDY")
+    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
 else()
-    set(CMAKE_CXX_CLANG_TIDY "clang-tidy;-p=compile_commands.json;--extra-arg=-DCLANG_TIDY;--extra-arg=-D__GNUC__;--extra-arg=-DSTM32F103xB")
+    # set(CMAKE_CXX_CLANG_TIDY "clang-tidy;-p=compile_commands.json;--extra-arg=-DCLANG_TIDY;--extra-arg=-D__GNUC__;--extra-arg=-DSTM32F103xB")
 endif()
 
 
