@@ -3,6 +3,8 @@
 
 cmake_minimum_required(VERSION 2.8.8)
 
+  set(CMAKE_CXX_CLANG_TIDY "")
+
 if (POLICY CMP0048)
   cmake_policy(SET CMP0048 NEW)
 endif (POLICY CMP0048)
