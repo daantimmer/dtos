@@ -1,7 +1,8 @@
 {
-    "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
-    "C_Cpp.intelliSenseEngine": "Default",
-    "C_Cpp.default.intelliSenseMode": "gcc-arm",
+    "cmake.useCMakePresets": "always",
+    "cmake.exportCompileCommandsFile": true,
+    "cmake.copyCompileCommands": "${workspaceFolder}/out/compile_commands.json",
+    "C_Cpp.default.compileCommands": "${workspaceFolder}/out/compile_commands.json",
     "files.associations": {
         "xutility": "cpp",
         "unordered_map": "cpp",
@@ -41,7 +42,9 @@
         "new": "cpp",
         "ratio": "cpp",
         "stdexcept": "cpp",
-        "type_traits": "cpp"
+        "type_traits": "cpp",
+        "filesystem": "cpp",
+        "cassert": "cpp"
     },
     "C/C++ Include Guard.Comment Style": "None",
     "C/C++ Include Guard.Macro Type": "Filepath",

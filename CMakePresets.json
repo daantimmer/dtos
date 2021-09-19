@@ -1,0 +1,64 @@
+{
+    "version": 2,
+    "configurePresets": [
+        {
+            "name": "defaults",
+            "binaryDir": "${sourceDir}/out/build/${presetName}",
+            "hidden": true,
+            "generator": "Ninja",
+            "cacheVariables": {
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}"
+            }
+        },
+        {
+            "name": "defaults-firmware",
+            "hidden": true,
+            "cacheVariables": {
+                "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/cmake/toolchains/arm-none-eabi/10 2021.07/toolchain.cmake"
+            }
+        },
+        {
+            "name": "debug",
+            "inherits": [
+                "defaults",
+                "defaults-firmware"
+            ],
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "release",
+            "inherits": [
+                "defaults",
+                "defaults-firmware"
+            ],
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+            }
+        },
+        {
+            "name": "test",
+            "inherits": [
+                "defaults"
+            ],
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "UNITTEST": "ON"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "test",
+            "configurePreset": "test"
+        }
+    ],
+    "testPresets": [
+        {
+            "name": "test",
+            "configurePreset": "test"
+        }
+    ]
+}
