@@ -18,5 +18,5 @@ target_include_directories(hal PUBLIC
     src)
 
 target_link_libraries(hal 
-    PRIVATE embeddedinfralibwrapper
-    PRIVATE BSP)
+    PUBLIC embeddedinfralibwrapper
+    PUBLIC BSP)
