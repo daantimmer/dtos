@@ -5,3 +5,5 @@ if(IS_FIRMWARE)
         startup.cpp
         interrupts.cpp)
 endif()
+
+add_subdirectory(newlib)

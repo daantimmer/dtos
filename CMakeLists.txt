@@ -1,4 +1,4 @@
-# CMakeList.txt : CMake project for rtos, include src and define
+﻿# CMakeList.txt : CMake project for rtos, include src and define
 # project specific logic here.
 #
 cmake_minimum_required (VERSION 3.17.3)
@@ -32,6 +32,8 @@ endif()
 
 if (IS_FIRMWARE)
     add_compile_options(
+            -nostdlib
+
             -mthumb
             -mcpu=cortex-m3
             -ggdb
@@ -46,6 +48,8 @@ if (IS_FIRMWARE)
     )
 
     add_link_options(
+            -nostdlib
+
             -mthumb 
             -mcpu=cortex-m3 
             -ggdb 
@@ -68,4 +72,5 @@ add_subdirectory(lib/SEGGER)
 add_subdirectory(lib/embeddedinfralibwrapper)
 add_subdirectory(lib/kernel)
 add_subdirectory(lib/hal)
+
 add_subdirectory(target/bluepill)

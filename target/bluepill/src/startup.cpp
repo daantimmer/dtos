@@ -34,6 +34,7 @@ extern int main(); /*!< The entry point for the application.    */
 extern "C"
 {
     void __libc_init_array(void);
+    void __libc_fini_array(void);
 
     /*----------Stack Configuration-----------------------------------------------*/
     // #define STACK_SIZE       0x00000400      /*!< The Stack size suggest using even number     */
@@ -108,7 +109,7 @@ extern "C"
     /*----------Function prototypes-----------------------------------------------*/
     // extern void SystemInit(void);      /*!< Setup the microcontroller system(CMSIS) */
     [[noreturn]] void Default_Reset_Handler(); /*!< Default reset handler                */
-    static void Default_Handler(); /*!< Default exception handler            */
+    void Default_Handler(); /*!< Default exception handler            */
 
     using ExceptionVector = void (*)();
 
@@ -236,16 +237,33 @@ extern "C"
         main();
 #pragma GCC diagnostic pop
 
+        __libc_fini_array();
+
+        while (true)
+        {}
+    }
+
+    /**
+     * @brief  This is the code that gets called when the processor receives an
+     *         unexpected interrupt.  This simply enters an infinite loop,
+     *         preserving the system state for examination by a debugger.
+     * @param  None
+     * @retval None
+     */
+    void Default_Handler() // NOLINT: Clang does not see this function being used, probably due to the 'weak' attribute
+    {
+        /* Go into an infinite loop. */
         while (true)
         {
+            __BKPT();
         }
     }
 
-/**
- *@brief Provide weak aliases for each Exception handler to the Default_Handler.
- *       As they are weak aliases, any function with the same name will override
- *       this definition.
- */
+    /**
+     *@brief Provide weak aliases for each Exception handler to the Default_Handler.
+     *       As they are weak aliases, any function with the same name will override
+     *       this definition.
+     */
 #pragma weak Reset_Handler = Default_Reset_Handler
 #pragma weak NMI_Handler = Default_Handler
 #pragma weak HardFault_Handler = Default_Handler
@@ -299,22 +317,5 @@ extern "C"
 #pragma weak EXTI15_10_IRQHandler = Default_Handler
 #pragma weak RTCAlarm_IRQHandler = Default_Handler
 #pragma weak USBWakeUp_IRQHandler = Default_Handler
-
-    /**
-     * @brief  This is the code that gets called when the processor receives an
-     *         unexpected interrupt.  This simply enters an infinite loop,
-     *         preserving the system state for examination by a debugger.
-     * @param  None
-     * @retval None
-     */
-    static void
-        Default_Handler() // NOLINT: Clang does not see this function being used, probably due to the 'weak' attribute
-    {
-        /* Go into an infinite loop. */
-        while (true)
-        {
-            __BKPT();
-        }
-    }
 }
 /*********************** (C) COPYRIGHT 2009 Coocox ************END OF FILE*****/
