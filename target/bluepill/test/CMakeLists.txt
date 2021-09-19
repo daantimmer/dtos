@@ -1,4 +1,3 @@
-add_source( PRIVATE
-    TST
-        tst.cpp
+target_sources(test_bluepill PRIVATE
+    tst.cpp
 )

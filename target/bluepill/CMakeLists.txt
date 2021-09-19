@@ -8,6 +8,20 @@ if(IS_FIRMWARE)
     add_executable(bluepill)
 else()
     add_library(bluepill STATIC)
+    add_executable(test_bluepill)
+
+    set_target_properties(
+        test_bluepill
+
+        PROPERTIES
+            C_STANDARD 11
+            C_STANDARD_REQUIRED YES
+            C_EXTENSIONS NO
+
+            CXX_STANDARD 17
+            CXX_STANDARD_REQUIRED YES
+            CXX_EXTENSIONS NO
+    )
 endif()
 
 set_target_properties(
@@ -44,6 +58,17 @@ target_link_libraries(bluepill PUBLIC
     # Segger
     # PRIVATE BSP
     )
+
+if (IS_TESTING)
+    add_subdirectory(test)
+
+    target_link_libraries(test_bluepill PUBLIC
+        bluepill
+        gtest
+        gmock
+        gmock_main
+    )
+endif()
 
 if(IS_FIRMWARE)
     # generate the lst file

@@ -7,6 +7,7 @@ set(CMAKE_CXX_CLANG_TIDY "")
 file(GLOB SOURCES
     embeddedinfralib/infra/event/*.cpp
     embeddedinfralib/infra/stream/*.cpp
+    embeddedinfralib/infra/syntax/*.cpp
     embeddedinfralib/infra/timer/*.cpp
     embeddedinfralib/infra/util/*.cpp
 
@@ -15,6 +16,8 @@ file(GLOB SOURCES
     embeddedinfralib/hal/interfaces/Gpio.cpp
     embeddedinfralib/hal/interfaces/Gpio.hpp
 )
+
+list(REMOVE_ITEM SOURCES "${CMAKE_CURRENT_LIST_DIR}/embeddedinfralib/infra/syntax/JsonObjectNavigator.cpp")
 
 add_library(embeddedinfralibwrapper STATIC EXCLUDE_FROM_ALL ${SOURCES})
 
