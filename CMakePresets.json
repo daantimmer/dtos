@@ -35,7 +35,7 @@
                 "defaults-firmware"
             ],
             "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+                "CMAKE_BUILD_TYPE": "MinSizeRel"
             }
         },
         {
@@ -47,18 +47,6 @@
                 "CMAKE_BUILD_TYPE": "Debug",
                 "UNITTEST": "ON"
             }
-        }
-    ],
-    "buildPresets": [
-        {
-            "name": "test",
-            "configurePreset": "test"
-        }
-    ],
-    "testPresets": [
-        {
-            "name": "test",
-            "configurePreset": "test"
         }
     ]
 }
