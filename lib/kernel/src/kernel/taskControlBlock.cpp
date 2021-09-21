@@ -87,4 +87,14 @@ namespace kernel
             unblockFunc(*this, reason);
         }
     }
+
+    infra::IntrusiveList<TaskControlBlock>* TaskControlBlock::ParentList()
+    {
+        return parentList;
+    }
+
+    void TaskControlBlock::ParentList(infra::IntrusiveList<TaskControlBlock>* parentList)
+    {
+        this->parentList = parentList;
+    }
 }

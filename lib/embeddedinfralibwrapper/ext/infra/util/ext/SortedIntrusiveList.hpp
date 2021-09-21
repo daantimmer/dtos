@@ -29,14 +29,17 @@ namespace infra
         {
             return base.begin();
         }
+
         const_iterator begin() const
         {
             return base.begin();
         }
+
         iterator end()
         {
             return base.end();
         }
+
         const_iterator end() const
         {
             return base.end();
@@ -46,14 +49,17 @@ namespace infra
         {
             return base.rbegin();
         }
+
         const_reverse_iterator rbegin() const
         {
             return base.rbegin();
         }
+
         reverse_iterator rend()
         {
             return base.rend();
         }
+
         const_reverse_iterator rend() const
         {
             return base.rend();
@@ -63,6 +69,7 @@ namespace infra
         {
             return base.cbegin();
         }
+
         const_iterator cend() const
         {
             return base.cend();
@@ -72,6 +79,7 @@ namespace infra
         {
             return base.crbegin();
         }
+
         const_reverse_iterator crend() const
         {
             return base.crend();
@@ -81,10 +89,12 @@ namespace infra
         {
             return base.size();
         }
+
         bool empty() const
         {
             return base.empty();
         }
+
         bool has_element(const_reference value) const // Runs in O(n) time
         {
             return base.has_element(value);
@@ -94,14 +104,17 @@ namespace infra
         {
             return base.front();
         }
+
         const_reference front() const
         {
             return base.front();
         }
+
         reference back()
         {
             return base.back();
         }
+
         const_reference back() const
         {
             return base.back();
@@ -119,46 +132,45 @@ namespace infra
 
         void push(reference value)
         {
-            auto iter = std::find_if(std::begin(base), std::end(base), [/*this, */ &value](const auto& element) {
+            auto iter = std::find_if(std::begin(base), std::end(base), [&value](const auto& element) {
                 return TCompare()(element, value);
             });
+
+            erase(value);
             base.insert(iter, value);
+
+            value.ParentList(&base);
         }
 
         void pop()
         {
-            base.pop_front();
+            erase(base.front());
         }
 
         static void erase(reference value)
         {
-            UnsortedIntrusiveList::erase(value);
+            auto parentListRef = value.ParentList();
+            if (parentListRef)
+            {
+                parentListRef->erase(value);
+                value.ParentList(nullptr);
+            }
         }
 
-        static iterator erase(iterator position)
+        static iterator erase(const_reference value)
         {
-            return UnsortedIntrusiveList::erase(position);
-        }
-
-        static iterator erase(const_iterator position)
-        {
-            return UnsortedIntrusiveList::erase(position);
+            auto parentListRef = value.ParentList();
+            if (parentListRef)
+            {
+                parentListRef->erase(value);
+                value.ParentList(nullptr);
+            }
         }
 
         void transfer(reference value)
         {
-            UnsortedIntrusiveList::erase(value);
+            erase(value);
             push(value);
-        }
-
-        void swap(SortedIntrusiveList& other)
-        {
-            base.swap(other);
-        }
-
-        void clear()
-        {
-            base.clear();
         }
 
         bool operator==(const SortedIntrusiveList& other) const

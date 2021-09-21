@@ -94,9 +94,12 @@ namespace kernel
 
             for (; iter != end;)
             {
-                if (auto& task = *iter; task.Owner().tickDelay <= static_cast<std::uint32_t>(kernelInstance->systicks))
+                auto& task = *iter;
+                ++iter;
+
+                if (task.Owner().tickDelay <= static_cast<std::uint32_t>(kernelInstance->systicks))
                 {
-                    iter = TaskList<>::erase(iter);
+                    TaskList<>::erase(task);
 
                     kernelInstance->readyTasksV2.push(task);
 
@@ -111,10 +114,6 @@ namespace kernel
                     }
 
                     mustSwitch = true;
-                }
-                else
-                {
-                    ++iter;
                 }
             }
 
@@ -219,9 +218,9 @@ namespace kernel
 
         ForceContextSwitch();
 
-        return unblockReason == UnblockReason::Request
-            ? StatusCode::Ok
-            : unblockReason == UnblockReason::Timeout ? StatusCode::Timeout : StatusCode::Interrupted;
+        return unblockReason == UnblockReason::Request ? StatusCode::Ok
+            : unblockReason == UnblockReason::Timeout  ? StatusCode::Timeout
+                                                       : StatusCode::Interrupted;
     }
 
     void Scheduler::Unblock(TaskControlBlock& ctrlBlock)

@@ -45,6 +45,9 @@ namespace kernel
         void BlockHook(const UnblockFunction& func);
         void UnblockHook(UnblockReason reason);
 
+        infra::IntrusiveList<TaskControlBlock>* ParentList();
+        void ParentList(infra::IntrusiveList<TaskControlBlock>*);
+
     private:
         Stack stack;
 
@@ -56,6 +59,7 @@ namespace kernel
         TaskState state;
 
         RunnableTask& owner;
+        infra::IntrusiveList<TaskControlBlock>* parentList{nullptr};
 
         UnblockFunction unblockHook;
     };
