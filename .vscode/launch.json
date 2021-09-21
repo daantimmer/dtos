@@ -32,7 +32,8 @@
             "device": "STM32F103C8",
             "runToMain": true,
             "runToEntryPoint": "RealMain",
-            "svdFile": "${workspaceRoot}//STM32F103xx.svd"
+            "svdFile": "${workspaceRoot}//STM32F103xx.svd",
+            "armToolchainPath": "${env:ProgramFiles(x86)}/GNU Arm Embedded Toolchain/10 2021.07/bin"
         }
     ]
 }
